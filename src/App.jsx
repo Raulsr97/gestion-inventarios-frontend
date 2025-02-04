@@ -1,13 +1,18 @@
 import { BrowserRouter as Router } from "react-router-dom";
-import Navbar from "./components/Navbar"
+import Sidebar from "./components/Sidebar"
 import AppRouter from "./routes/AppRouter";
 
 function App() {
   return (
     <Router>
-      <Navbar />
-      <div className="container mx-auto p-4">
-        <AppRouter />
+      <div className="flex h-screen">
+        {/* Navbar lateral */}
+        <Sidebar />
+
+        {/* Contenido derecho */}
+        <div className="flex-1 p-0 bg-gray-200 overflow-auto">
+          <AppRouter />
+        </div>
       </div>
     </Router>
   )
