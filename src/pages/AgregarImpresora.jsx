@@ -3,7 +3,10 @@ import { useEffect, useState } from "react"
 function AgregarImpresora () {
   const [modelo, setModelo ] = useState('')
   const [estado, setEstado] = useState('Nueva')
+  const [tipo, setTipo] = useState('')
   const [ubicacion, setUbicacion] = useState('Almacén')
+  const [ marca, setMarca] = useState('')
+  const [ nuevaMarca, setNuevaMarca] = useState('')
   const [cliente, setCliente] = useState('')
   const [proyecto, setProyecto] = useState('')
   // Estados para almacenar la lista de clientes y proyectos
@@ -103,6 +106,8 @@ function AgregarImpresora () {
     const datosRegistro = {
       modelo,
       estado,
+      marca,
+      tipo,
       ubicacion,
       cliente_id: clienteId || null,
       proyecto_id: proyectoId || null,
@@ -127,8 +132,10 @@ function AgregarImpresora () {
     if (response.ok) {
       alert('Impresoras registradas exitosamente!')
       // Limpiar el formulario del envío
+      setMarca('')
+      setTipo('')
       setModelo('')
-      setEstado('Nueva')
+      setEstado('Estado')
       setCliente('')
       setProyecto('')
       setNuevoCliente('')
@@ -141,86 +148,368 @@ function AgregarImpresora () {
 
   }
 
-  return(
-    <div>
-      <form action="" onSubmit={handleSubmit}>
-        {/* Input para agregar modelo */}
-        <input 
-        type="text" 
-        name="modelo" 
-        placeholder="Modelo" 
-        onChange={(e) => setModelo(e.target.value)}
-        disabled={bloquearCampos}
-        />
-        
-        {/* Select estado(nuevo o usado) */}
-        <select name="Estado" onChange={(e) => setEstado(e.target.value)} disabled={bloquearCampos}>
-            <option value="nuevo">Nuevo</option>
-            <option value="usado">Usado</option>
-        </select>
+  // return (
+  //   <div className="flex justify-center items-center min-h-screen bg-gray-100">
+  //     <div className="bg-white shadow-lg rounded-lg p-4 w-full max-w-3xl">
+  //       <h1 className="text-xl font-semibold text-gray-700 mb-4">Agregar Impresoras</h1>
+  
+  //       <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-2">
+  //         {/* Marca */}
+  //         <div>
+  //           <label className="block text-gray-700">Marca</label>
+  //           <select
+  //             className="w-full p-2 border-none bg-gray-200 rounded"
+  //             onChange={(e) => setMarca(e.target.value)}
+  //             disabled={bloquearCampos}
+  //           >
+  //             <option value="marca">Marca</option>
+  //             <option value="lexmark">Lexmark</option>
+  //             <option value="nuevaMarca">Agregar Marca</option>
+  //           </select>
+  //         </div>
+  
+  //         {/* Nueva Marca */}
+  //         {marca === "nuevaMarca" && (
+  //           <input
+  //             type="text"
+  //             placeholder="Nueva Marca"
+  //             value={nuevaMarca}
+  //             onChange={(e) => setNuevaMarca(e.target.value)}
+  //             className="w-full p-2 border-none bg-gray-200 rounded"
+  //           />
+  //         )}
+  
+  //         {/* Modelo */}
+  //         <div>
+  //           <label className="block text-gray-700">Modelo</label>
+  //           <input
+  //             type="text"
+  //             placeholder="Modelo"
+  //             value={modelo}
+  //             onChange={(e) => setModelo(e.target.value.toUpperCase())}
+  //             disabled={bloquearCampos}
+  //             className="w-full p-2 border-none bg-gray-200 rounded"
+  //           />
+  //         </div>
+  
+  //         {/* Estado */}
+  //         <div>
+  //           <label className="block text-gray-700">Estado</label>
+  //           <select
+  //             className="w-full p-2 border-none bg-gray-200 rounded"
+  //             onChange={(e) => setEstado(e.target.value)}
+  //             disabled={bloquearCampos}
+  //           >
+  //             <option value="estado">Estado</option>
+  //             <option value="nueva">Nueva</option>
+  //             <option value="usada">Usada</option>
+  //           </select>
+  //         </div>
+  
+  //         {/* Tipo */}
+  //         <div>
+  //           <label className="block text-gray-700">Tipo</label>
+  //           <select
+  //             className="w-full p-2 border-none bg-gray-200 rounded"
+  //             onChange={(e) => setTipo(e.target.value)}
+  //             disabled={bloquearCampos}
+  //           >
+  //             <option value="tipo">Tipo</option>
+  //             <option value="propia">Propia</option>
+  //             <option value="proyecto">Proyecto</option>
+  //           </select>
+  //         </div>
+  
+          // {/* Cliente */}
+          // <div>
+          //   <label className="block text-gray-700">Cliente</label>
+          //   <select
+          //     className="w-full p-2 border-none bg-gray-200 rounded"
+          //     onChange={(e) => setCliente(e.target.value)}
+          //     disabled={bloquearCampos}
+          //   >
+          //     <option value="">Selecciona un Cliente</option>
+          //     {clientes.map((c) => (
+          //       <option key={c.id} value={c.id}>
+          //         {c.nombre}
+          //       </option>
+          //     ))}
+          //     <option value="nuevo">Agregar Cliente</option>
+          //   </select>
+          // </div>
+  
+          // {/* Nuevo Cliente */}
+          // {cliente === "nuevo" && (
+          //   <input
+          //     type="text"
+          //     placeholder="Nuevo Cliente"
+          //     value={nuevoCliente}
+          //     onChange={(e) => setNuevoCliente(e.target.value)}
+          //     className="w-full p-2 border-none bg-gray-200 rounded"
+          //   />
+          // )}
+  
+          // {/* Proyecto */}
+          // <div>
+          //   <label className="block text-gray-700">Proyecto</label>
+          //   <select
+          //     className="w-full p-2 border-none bg-gray-200 rounded"
+          //     onChange={(e) => setProyecto(e.target.value)}
+          //     disabled={bloquearCampos}
+          //   >
+          //     <option value="">Selecciona un Proyecto</option>
+          //     {proyectos.map((p) => (
+          //       <option key={p.id} value={p.id}>
+          //         {p.nombre}
+          //       </option>
+          //     ))}
+          //     <option value="nuevo">Agregar Proyecto</option>
+          //   </select>
+          // </div>
+  
+          // {/* Nuevo Proyecto */}
+          // {proyecto === "nuevo" && (
+          //   <input
+          //     type="text"
+          //     placeholder="Nuevo Proyecto"
+          //     value={nuevoProyecto}
+          //     onChange={(e) => setNuevoProyecto(e.target.value)}
+          //     className="w-full p-2 border-none bg-gray-200 rounded"
+          //   />
+          // )}
+  
+  //         {/* Escaneo de Series */}
+  //         <div className="col-span-2">
+  //           <label className="block text-gray-700">Escanear Serie</label>
+  //           <input
+  //             type="text"
+  //             placeholder="Escanear número de serie"
+  //             onKeyDown={agregarSerie}
+  //             disabled={modelo === ""}
+  //             className="w-full p-2 border-none bg-gray-200 rounded"
+  //           />
+  //         </div>
+  
+  //         {/* Lista de series con scroll interno */}
+  //         <div className="col-span-2 bg-gray-50 p-4 rounded-md">
+  //           <h3 className="text-lg font-semibold text-gray-700 mb-2">
+  //             Series Escaneadas: {series.length}
+  //           </h3>
+  //           <ul className="max-h-[200px] overflow-y-auto bg-white p-2 rounded-md shadow-sm">
+  //             {series.map((serie, index) => (
+  //               <li
+  //                 key={index}
+  //                 className="flex justify-between items-center p-2 border-b last:border-none"
+  //               >
+  //                 <span className="text-gray-700">{serie}</span>
+  //                 <button
+  //                   onClick={() => eliminarSerie(serie)}
+  //                   className="text-red-600 hover:text-red-800"
+  //                 >
+  //                   🗑️
+  //                 </button>
+  //               </li>
+  //             ))}
+  //           </ul>
+  //         </div>
+  
+  //         {/* Botón de agregar */}
+  //         <button className="col-span-2 bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700">
+  //           Agregar
+  //         </button>
+  //       </form>
+  //     </div>
+  //   </div>
+  // );
+  return (
+    <div className="flex min-h-screen bg-gray-100">
+     {/* Contenedor principal */}
+      <div className="flex-1 flex flex-col lg:flex-row p-6 gap-6">
+        {/* Formulario */}
+        <div className="bg-white shadow-lg rounded-lg p-6 w-full lg:w-2/3">
+          <h1 className="text-2xl font-semibold text-gray-700 mb-4">Agregar Impresoras</h1>
+          <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
+            {/* Marca */}
+            <div>
+              <label className="block text-gray-700">Marca</label>
+              <select
+                className="w-full p-2 border rounded"
+                onChange={(e) => setMarca(e.target.value)}
+                disabled={bloquearCampos}
+              >
+                <option value="marca">Marca</option>
+                <option value="lexmark">Lexmark</option>
+                <option value="nuevaMarca">Agregar Marca</option>
+              </select>
+            </div>
+  
+            {/* Nueva Marca */}
+            {marca === "nuevaMarca" && (
+              <input
+                type="text"
+                placeholder="Nueva Marca"
+                value={nuevaMarca}
+                onChange={(e) => setNuevaMarca(e.target.value)}
+                className="w-full p-2 border rounded"
+              />
+            )}
+  
+            {/* Modelo */}
+            <div>
+              <label className="block text-gray-700">Modelo</label>
+              <input
+                type="text"
+                placeholder="Modelo"
+                value={modelo}
+                onChange={(e) => setModelo(e.target.value.toUpperCase())}
+                disabled={bloquearCampos}
+                className="w-full p-2 border rounded"
+              />
+            </div>
+  
+            {/* Estado */}
+            <div>
+              <label className="block text-gray-700">Estado</label>
+              <select
+                className="w-full p-2 border rounded"
+                onChange={(e) => setEstado(e.target.value)}
+                disabled={bloquearCampos}
+              >
+                <option value="estado">Estado</option>
+                <option value="nueva">Nueva</option>
+                <option value="usada">Usada</option>
+              </select>
+            </div>
+  
+            {/* Tipo */}
+            <div>
+              <label className="block text-gray-700">Tipo</label>
+              <select
+                className="w-full p-2 border rounded"
+                onChange={(e) => setTipo(e.target.value)}
+                disabled={bloquearCampos}
+              >
+                <option value="tipo">Tipo</option>
+                <option value="propia">Propia</option>
+                <option value="proyecto">Proyecto</option>
+              </select>
+            </div>
 
-        {/* Select cliente */}
-        <select name="Cliente" onChange={(e) => setCliente(e.target.value)}  disabled={bloquearCampos}>
-          <option value="">Selecciona un Cliente</option>
-          {clientes.map((c) => (
-            <option key={c.id} value={c.id}>{c.nombre}</option>
-          ))}
-          <option value="nuevo">Agregar nuevo Cliente</option>
-        </select>
-        {/* Input para escribir un nuevo cliente */}
-        {cliente === 'nuevo' && (
-          <input 
-            type="text"
-            placeholder="Nuevo Cliente"
-            value={nuevoCliente}
-            onChange={(e) => setNuevoCliente(e.target.value)} 
-          />
-        )}
+            {/* Cliente */}
+<div>
+  <label className="block text-gray-700">Cliente</label>
+  {cliente === "nuevo" ? (
+    <input
+      type="text"
+      placeholder="Nuevo Cliente"
+      value={nuevoCliente}
+      onChange={(e) => setNuevoCliente(e.target.value)}
+      onBlur={() => {
+        if (!nuevoCliente.trim()) setCliente(""); // Si el campo queda vacío, vuelve a ser select
+      }}
+      className="w-full p-2 border-none bg-gray-200 rounded"
+      autoFocus
+    />
+  ) : (
+    <select
+      className="w-full p-2 border-none bg-gray-200 rounded"
+      onChange={(e) => setCliente(e.target.value)}
+      disabled={bloquearCampos}
+    >
+      <option value="">Selecciona un Cliente</option>
+      {clientes.map((c) => (
+        <option key={c.id} value={c.id}>
+          {c.nombre}
+        </option>
+      ))}
+      <option value="nuevo">Agregar Cliente</option>
+    </select>
+  )}
+</div>
 
-        {/* Select proyecto */}
-        <select name="Proyecto" onChange={(e) => setProyecto(e.target.value)} disabled={bloquearCampos}>
-          <option value="">Selecciona un Proyecto</option>
-          {proyectos.map((p) => (
-            <option key={p.id} value={p.id}>{p.nombre}</option>
-          ))}
-          <option value="nuevo">Agregar nuevo Proyecto</option>
-        </select>
-        {/* Input para escribir un nuevo cliente */}
-        {proyecto === 'nuevo' && (
-          <input 
-            type="text"
-            placeholder="Nuevo Proyecto"
-            value={nuevoProyecto}
-            onChange={(e) => setNuevoProyecto(e.target.value)} 
-          />
-        )}
+{/* Proyecto */}
+<div>
+  <label className="block text-gray-700">Proyecto</label>
+  {proyecto === "nuevo" ? (
+    <input
+      type="text"
+      placeholder="Nuevo Proyecto"
+      value={nuevoProyecto}
+      onChange={(e) => setNuevoProyecto(e.target.value)}
+      onBlur={() => {
+        if (!nuevoProyecto.trim()) setProyecto(""); // Si el campo queda vacío, vuelve a ser select
+      }}
+      className="w-full p-2 border-none bg-gray-200 rounded"
+      autoFocus
+    />
+  ) : (
+    <select
+      className="w-full p-2 border-none bg-gray-200 rounded"
+      onChange={(e) => setProyecto(e.target.value)}
+      disabled={bloquearCampos}
+    >
+      <option value="">Selecciona un Proyecto</option>
+      {proyectos.map((p) => (
+        <option key={p.id} value={p.id}>
+          {p.nombre}
+        </option>
+      ))}
+      <option value="nuevo">Agregar Proyecto</option>
+    </select>
+  )}
+</div>
 
-        {/* Input para escanear series */}
-        <input 
-          type="text"
-          placeholder="Escanear número de serie"
-          onKeyDown={(e) => agregarSerie(e)} 
-          disabled={modelo === ''} // Deshabilita si no de ha seleccionado un modelo
-        />
-          
-        
-        {/* Boton para agregar a la lista de series */}
-        <button>Agregar</button>
-      </form>
-
-      {/* Contador de series */}
-      <h3>Series escaneadas: {series.length}</h3>
-
-      {/* Lista de series escaneadas */}
-      <ul>
-        {series.map((serie, index) => (
-          <li key={index}>
-            {serie}
-            <button onClick={() => eliminarSerie(serie)}>🗑️</button>
-          </li>
-        ))}
-      </ul>
+  
+            {/* Escaneo de Series */}
+            <div className="col-span-2">
+              <label className="block text-gray-700">Escanear Serie</label>
+              <input
+                type="text"
+                placeholder="Escanear número de serie"
+                onKeyDown={agregarSerie}
+                disabled={modelo === ""}
+                className="w-full p-2 border rounded"
+              />
+            </div>
+  
+            {/* Botón de agregar */}
+            <button className="col-span-2 bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700">
+              Agregar
+            </button>
+          </form>
+        </div>
+  
+        {/* Sección de lista de series */}
+        <div className="bg-white shadow-lg rounded-lg p-6 w-full lg:w-1/3 flex flex-col">
+          <h3 className="text-xl font-semibold text-gray-700 mb-2">
+            Series Escaneadas: {series.length}
+          </h3>
+  
+          {/* Lista de series con scroll interno */}
+          <div className="flex-1 overflow-y-auto bg-gray-50 p-4 rounded-md">
+            <ul>
+              {series.map((serie, index) => (
+                <li
+                  key={index}
+                  className="flex justify-between items-center p-2 border-b last:border-none bg-white shadow-md rounded-md mb-2"
+                >
+                  <span className="text-gray-700">{serie}</span>
+                  <button
+                    onClick={() => eliminarSerie(serie)}
+                    className="text-red-600 hover:text-red-800"
+                  >
+                    🗑️
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
     </div>
-  )
+  );
+  
 }
 export default AgregarImpresora
+
+
