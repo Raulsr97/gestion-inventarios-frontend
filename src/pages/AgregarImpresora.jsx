@@ -19,6 +19,7 @@ function AgregarImpresora () {
   const [ series, setSeries] = useState([])
   // Bloquea los selects al escanear
   const [ bloquearCampos, setBloquearCampos] = useState(false)
+  const [ tieneAccesorios, setTieneAccesorios] = useState(false)
 
 
 
@@ -111,6 +112,7 @@ function AgregarImpresora () {
       ubicacion,
       cliente_id: clienteId || null,
       proyecto_id: proyectoId || null,
+      tiene_accesorios: tieneAccesorios,
       series
     }
 
@@ -142,6 +144,7 @@ function AgregarImpresora () {
       setNuevoProyecto('')
       setSeries([])
       setBloquearCampos(false)
+      setTieneAccesorios(false)
     } else {
       alert('Error al registrar impresoras')
     }
@@ -153,13 +156,12 @@ function AgregarImpresora () {
      {/* Contenedor principal */}
       <div className="flex-1 flex flex-col lg:flex-row p-6 gap-6">
         {/* Formulario */}
-        <div className="bg-white shadow-lg rounded-lg p-6 w-full lg:w-2/3">
-          <h1 className="text-2xl font-semibold text-gray-700 mb-4">Agregar Impresoras</h1>
+        <div className="bg-white shadow-lg rounded-lg p-6 px-10 w-full lg:w-1/3">
+          <h1 className="text-2xl font-semibold text-gray-700 mb-8 mt-6">Agregar Impresoras</h1>
           <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
             {/* Marca */}
             <div>
-              <label className="block text-gray-700">Marca</label>
-              {marca === "nuevaMarca" ? (
+             {marca === "nuevaMarca" ? (
                 <input
                   type="text"
                   placeholder="Nueva Marca"
@@ -168,16 +170,15 @@ function AgregarImpresora () {
                   onBlur={() => {
                     if (!nuevaMarca.trim()) setMarca(""); // Si el campo queda vacío, vuelve a ser select
                   }}
-                  className="w-full p-2 border-none bg-gray-200 rounded"
-                  autoFocus
+                  className="w-full p-3 border border-gray-300 rounded  focus:border-blue-700 focus:ring-0 focus:outline-none"
                 />
               ) : (
                 <select
-                  className="w-full p-2 border-none bg-gray-200 rounded"
+                  className="w-full p-2.5 border border-gray-300 rounded focus:border-blue-700"
                   onChange={(e) => setMarca(e.target.value)}
                   disabled={bloquearCampos}
                 >
-                  <option value="" hidden>Selecciona una opción</option> {/* ✅ Opción vacía inicial */}
+                  <option value="" disabled selected hidden>Marca</option>
                   <option value="lexmark">Lexmark</option>
                   <option value="nuevaMarca">Agregar Marca</option>
                 </select>
@@ -186,27 +187,36 @@ function AgregarImpresora () {
 
   
             {/* Modelo */}
-            <div>
-              <label className="block text-gray-700">Modelo</label>
+            <div className="relative w-full">
               <input
                 type="text"
-                placeholder="Modelo"
+                id="modelo"
+                placeholder=" " // El espacio es necesario para que funcione peer-placeholder-shown
                 value={modelo}
                 onChange={(e) => setModelo(e.target.value.toUpperCase())}
                 disabled={bloquearCampos}
-                className="w-full p-2 border-none bg-gray-200 rounded"
+                className="peer w-full p-3 border border-gray-300 rounded text-sm focus:border-blue-700 focus:ring-0 focus:outline-none"
               />
+              <label
+                htmlFor="modelo"
+                className="absolute left-3 top-2.5 text-gray-500 transition-all 
+                  peer-placeholder-shown:top-3 peer-placeholder-shown:text-base
+                  peer-focus:top-[-10px] peer-focus:text-sm peer-focus:text-blue-700
+                  peer-not-placeholder-shown:top-[-10px] peer-not-placeholder-shown:text-sm peer-not-placeholder-shown:text-gray-700
+                  bg-white px-1"
+              >
+                Modelo
+              </label>
             </div>
-  
+
             {/* Estado */}
             <div>
-              <label className="block text-gray-700">Estado</label>
               <select
-                className="w-full p-2 border-none bg-gray-200 rounded"
+                className="w-full p-2.5 border border-gray-300 rounded focus:border-blue-700"
                 onChange={(e) => setEstado(e.target.value)}
                 disabled={bloquearCampos}
               >
-                <option value="estado">Estado</option>
+                <option value="estado" disabled selected hidden>Estado</option>
                 <option value="nueva">Nueva</option>
                 <option value="usada">Usada</option>
               </select>
@@ -214,13 +224,12 @@ function AgregarImpresora () {
   
             {/* Tipo */}
             <div>
-              <label className="block text-gray-700">Tipo</label>
               <select
-                className="w-full p-2 border-none bg-gray-200 rounded"
+                className="w-full p-2.5 border border-gray-300 rounded focus:border-blue-700"
                 onChange={(e) => setTipo(e.target.value)}
                 disabled={bloquearCampos}
               >
-                <option value="tipo">Tipo</option>
+                <option value="tipo" disabled selected hidden>Tipo</option>
                 <option value="propia">Propia</option>
                 <option value="proyecto">Proyecto</option>
               </select>
@@ -228,7 +237,6 @@ function AgregarImpresora () {
 
             {/* Cliente */}
             <div>
-              <label className="block text-gray-700">Cliente</label>
               {cliente === "nuevo" ? (
                 <input
                   type="text"
@@ -238,16 +246,16 @@ function AgregarImpresora () {
                   onBlur={() => {
                     if (!nuevoCliente.trim()) setCliente(""); // Si el campo queda vacío, vuelve a ser select
                   }}
-                  className="w-full p-2 border-none bg-gray-200 rounded"
+                  className="w-full p-3 border border-gray-300 rounded  focus:border-blue-700 focus:ring-0 focus:outline-none"
                   autoFocus
                 />
               ) : (
                 <select
-                  className="w-full p-2 border-none bg-gray-200 rounded"
+                  className="w-full p-2.5 border border-gray-300 rounded focus:border-blue-700"
                   onChange={(e) => setCliente(e.target.value)}
                   disabled={bloquearCampos}
                 >
-                  <option value="">Selecciona un Cliente</option>
+                  <option value=""disabled selected hidden>Cliente</option>
                   {clientes.map((c) => (
                     <option key={c.id} value={c.id}>
                       {c.nombre}
@@ -260,7 +268,6 @@ function AgregarImpresora () {
 
             {/* Proyecto */}
             <div>
-              <label className="block text-gray-700">Proyecto</label>
               {proyecto === "nuevo" ? (
                 <input
                   type="text"
@@ -270,16 +277,16 @@ function AgregarImpresora () {
                   onBlur={() => {
                     if (!nuevoProyecto.trim()) setProyecto(""); // Si el campo queda vacío, vuelve a ser select
                   }}
-                  className="w-full p-2 border-none bg-gray-200 rounded"
+                  className="w-full p-3 border border-gray-300 rounded  focus:border-blue-700 focus:ring-0 focus:outline-none"
                   autoFocus
                 />
               ) : (
                 <select
-                  className="w-full p-2 border-none bg-gray-200 rounded"
+                  className="w-full p-2.5 border border-gray-300 rounded focus:border-blue-700"
                   onChange={(e) => setProyecto(e.target.value)}
                   disabled={bloquearCampos}
                 >
-                  <option value="">Selecciona un Proyecto</option>
+                  <option value="" disabled selected hidden>Proyecto</option>
                   {proyectos.map((p) => (
                     <option key={p.id} value={p.id}>
                       {p.nombre}
@@ -289,31 +296,51 @@ function AgregarImpresora () {
                 </select>
               )}
             </div>
+            
+            
+        {/* Tiene Accesorios - Checkbox estilo botón */}
+        <div className="flex items-center gap-3">
+          <span className="text-gray-700">Tiene Accesorios</span>
+          <button
+            type="button"
+            onClick={() => setTieneAccesorios(!tieneAccesorios)}
+            className={`px-4 py-2 rounded-md cursor-pointer transition-all duration-300 ${
+              tieneAccesorios ? "bg-blue-600 text-white" : "bg-gray-300 text-gray-700"
+            }`}
+          >
+            {tieneAccesorios ? "Sí" : "No"}
+          </button>
+        </div>
 
-  
-            {/* Escaneo de Series */}
-            <div className="col-span-2">
-              <label className="block text-gray-700">Escanear Serie</label>
+        {/* Escaneo de Series */}
+            <div className="col-span-2 relative w-full">
               <input
                 type="text"
-                placeholder="Escanear número de serie"
                 onKeyDown={agregarSerie}
                 disabled={modelo === ""}
-                className="w-full p-2 border-none bg-gray-200 rounded"
+                className="peer w-full p-3 border border-gray-300 rounded text-sm focus:border-blue-700 focus:ring-0 focus:outline-none"
               />
+              <label
+                htmlFor="modelo"
+                className="absolute left-3 top-2 text-gray-500 transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-focus:top-[-10px] peer-focus:text-sm peer-focus:text-gray-500 bg-white p-0"
+              >
+                Escanear series
+              </label>
             </div>
   
             {/* Botón de agregar */}
-            <button className="bg-blue-600 text-white text-sm px-4 py-2 rounded-md hover:bg-blue-700">
-              Agregar
-            </button>
+            <div className="col-span-2 flex justify-end mt-20">
+              <button className="bg-blue-600 text-white text-sm px-3 py-3 rounded-md hover:bg-blue-700">
+                Agregar
+              </button>
+            </div>
             
 
           </form>
         </div>
   
         {/* Sección de lista de series */}
-        <div className="bg-white shadow-lg rounded-lg p-6 w-full lg:w-1/3 flex flex-col">
+        <div className="bg-white shadow-lg rounded-lg p-6 w-full lg:w-2/3 flex flex-col">
           <h3 className="text-xl font-semibold text-gray-700 mb-2">
             Series Escaneadas: {series.length}
           </h3>
