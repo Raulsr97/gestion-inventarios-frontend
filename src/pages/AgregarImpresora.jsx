@@ -1,4 +1,7 @@
 import { useEffect, useState } from "react"
+import { FaTrash } from "react-icons/fa"
+import { toast } from "react-toastify"
+import SelectDinamico from "../components/SelectDinamico"
 
 function AgregarImpresora () {
   const [modelo, setModelo ] = useState('')
@@ -46,7 +49,7 @@ function AgregarImpresora () {
 
       if (serie === '') return // Evita agregar una serie vacía  
       if (series.includes(serie)) {
-        alert('Esta serie ya fue escaneada')
+        toast.error('Esta serie ya fue escaneada')
         return
       }
 
@@ -73,7 +76,7 @@ function AgregarImpresora () {
     event.preventDefault()
 
     if (!modelo || series.length === 0) {
-      alert('Debes seleccionar un modelo y escanear al menos una serie')
+      toast.error('Debes seleccionar un modelo y escanear al menos una serie')
       return
     }
 
@@ -132,7 +135,7 @@ function AgregarImpresora () {
 
     
     if (response.ok) {
-      alert('Impresoras registradas exitosamente!')
+      toast.success('Impresoras registradas exitosamente!')
       // Limpiar el formulario del envío
       setMarca('')
       setTipo('')
@@ -146,7 +149,7 @@ function AgregarImpresora () {
       setBloquearCampos(false)
       setTieneAccesorios(false)
     } else {
-      alert('Error al registrar impresoras')
+      toast.error('Error al registrar impresoras')
     }
 
   }
@@ -210,7 +213,7 @@ function AgregarImpresora () {
             </div>
 
             {/* Estado */}
-            <div>
+            {/* <div>
               <select
                 className="w-full p-2.5 border border-gray-300 rounded focus:border-blue-700"
                 onChange={(e) => setEstado(e.target.value)}
@@ -220,7 +223,18 @@ function AgregarImpresora () {
                 <option value="nueva">Nueva</option>
                 <option value="usada">Usada</option>
               </select>
-            </div>
+            </div> */}
+            <SelectDinamico 
+              opciones={[
+                { id: "nueva", nombre: "Nueva" },
+                { id: "usada", nombre: "Usada" }
+              ]}
+              valorSeleccionado={estado} 
+              setValorSeleccionado={setEstado} 
+              placeholder="Estado"
+              disabled={bloquearCampos}
+            />
+
   
             {/* Tipo */}
             <div>
@@ -338,27 +352,30 @@ function AgregarImpresora () {
 
           </form>
         </div>
-  
+          
         {/* Sección de lista de series */}
         <div className="bg-white shadow-lg rounded-lg p-6 w-full lg:w-2/3 flex flex-col">
-          <h3 className="text-xl font-semibold text-gray-700 mb-2">
-            Series Escaneadas: {series.length}
-          </h3>
-  
-          {/* Lista de series con scroll interno */}
-          <div className="flex-1 overflow-y-auto bg-gray-50 p-4 rounded-md">
-            <ul>
-              {series.map((serie, index) => (
+        <h3 className="text-xl font-semibold text-gray-700 mb-4 flex items-center gap-2">
+          Series Escaneadas:
+          <span className="bg-gray-200 text-gray-700 text-sm font-semibold px-3 py-1 rounded-md">
+            {series.length}
+          </span>
+        </h3>
+
+          {/* Lista de series con scroll interno más sutil */}
+          <div className="flex-1 overflow-y-auto bg-gray-50 p-4 rounded-md max-h-138 border border-gray-200 shadow-inner scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+            <ul className="grid grid-cols-3 gap-4">
+              {series.slice(0).reverse().map((serie, index) => (
                 <li
                   key={index}
-                  className="flex justify-between items-center p-2 border-b last:border-none bg-white shadow-md rounded-md mb-2"
+                  className="flex justify-between items-center p-3 bg-white border border-gray-300 rounded-md shadow-sm transition-all hover:shadow-md"
                 >
-                  <span className="text-gray-700">{serie}</span>
+                  <span className="text-gray-700 font-medium">{serie}</span>
                   <button
                     onClick={() => eliminarSerie(serie)}
-                    className="text-red-600 hover:text-red-800"
+                    className="text-red-700 hover:text-red-500 transition-all p-1 rounded-md"
                   >
-                    🗑️
+                    <FaTrash size={16} /> {/* ✅ Ícono de eliminación de react-icons */}
                   </button>
                 </li>
               ))}
