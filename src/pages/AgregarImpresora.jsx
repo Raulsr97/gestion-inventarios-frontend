@@ -186,7 +186,8 @@ function AgregarImpresora () {
                   <option value="nuevaMarca">Agregar Marca</option>
                 </select>
               )}
-            </div>
+            </div> 
+            
 
   
             {/* Modelo */}
@@ -213,17 +214,6 @@ function AgregarImpresora () {
             </div>
 
             {/* Estado */}
-            {/* <div>
-              <select
-                className="w-full p-2.5 border border-gray-300 rounded focus:border-blue-700"
-                onChange={(e) => setEstado(e.target.value)}
-                disabled={bloquearCampos}
-              >
-                <option value="estado" disabled selected hidden>Estado</option>
-                <option value="nueva">Nueva</option>
-                <option value="usada">Usada</option>
-              </select>
-            </div> */}
             <SelectDinamico 
               opciones={[
                 { id: "nueva", nombre: "Nueva" },
@@ -233,6 +223,7 @@ function AgregarImpresora () {
               setValorSeleccionado={setEstado} 
               placeholder="Estado"
               disabled={bloquearCampos}
+              permitirNuevo={false}
             />
 
   
@@ -250,7 +241,7 @@ function AgregarImpresora () {
             </div>
 
             {/* Cliente */}
-            <div>
+            {/* <div>
               {cliente === "nuevo" ? (
                 <input
                   type="text"
@@ -278,7 +269,15 @@ function AgregarImpresora () {
                   <option value="nuevo">Agregar Cliente</option>
                 </select>
               )}
-            </div>
+            </div> */}
+            <SelectDinamico 
+              opciones={clientes}
+              valorSeleccionado={cliente}
+              setValorSeleccionado={setCliente}
+              placeholder='Cliente'
+              disabled={bloquearCampos}
+              permitirNuevo={true} // Permite agregar nuevos clientes
+            />
 
             {/* Proyecto */}
             <div>
