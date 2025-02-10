@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react"
-import { FaTrash } from "react-icons/fa"
 import { toast } from "react-toastify"
 import SelectDinamico from "../components/SelectDinamico"
+import InputModelo from "../components/InputModelo"
+import InputSerie from "../components/InputSerie"
+import BotonAgregar from "../components/BotonAgregar"
+import ListaSeries from "../components/ListaSeries"
 
 function AgregarImpresora () {
   const [modelo, setModelo ] = useState('')
@@ -9,22 +12,21 @@ function AgregarImpresora () {
   const [tipo, setTipo] = useState('')
   const [ubicacion, setUbicacion] = useState('Almacén')
   const [ marca, setMarca] = useState('')
-  const [ nuevaMarca, setNuevaMarca] = useState('')
   const [cliente, setCliente] = useState('')
   const [proyecto, setProyecto] = useState('')
-  // Estados para almacenar la lista de clientes y proyectos
-  const [clientes, setClientes] = useState([]);
-  const [proyectos, setProyectos] = useState([]);
-  // Etados para manejar nuevos clientes y proyectos
-  const [nuevoCliente, setNuevoCliente] = useState("");
-  const [nuevoProyecto, setNuevoProyecto] = useState("");
+  // Estados para almacenar la lista de clientes, proyectos y marcas
+  const [clientes, setClientes] = useState([])
+  const [proyectos, setProyectos] = useState([])
+  const [marcas, setMarcas] = useState([])
+  // Etados para manejar nuevos clientes, proyectos y marcas
+  const [nuevoCliente, setNuevoCliente] = useState('')
+  const [nuevoProyecto, setNuevoProyecto] = useState('')
+  const [nuevaMarca, setNuevaMarca] = useState('')
   // lista de series escaneadas
   const [ series, setSeries] = useState([])
   // Bloquea los selects al escanear
   const [ bloquearCampos, setBloquearCampos] = useState(false)
   const [ tieneAccesorios, setTieneAccesorios] = useState(false)
-
-
 
   useEffect(() => {
     fetch("http://localhost:3000/api/clientes")
@@ -38,7 +40,12 @@ function AgregarImpresora () {
       .then((data) => {
         setProyectos(data)
       })
-
+    
+    fetch("http://localhost:3000/api/marcas")
+      .then((res) => res.json())
+      .then((data) => {
+        setMarcas(data)
+      }) 
   }, [])
 
   const agregarSerie = (e) => {
@@ -73,86 +80,122 @@ function AgregarImpresora () {
   }
 
   const handleSubmit = async (event) => {
-    event.preventDefault()
-
+    event.preventDefault();
+  
     if (!modelo || series.length === 0) {
-      toast.error('Debes seleccionar un modelo y escanear al menos una serie')
-      return
+      toast.error("Debes seleccionar un modelo y escanear al menos una serie.");
+      return;
     }
 
-    let clienteId = cliente
-    let proyectoId = proyecto
-
-    // Si se ingreso un nuevo cliente, lo creamos en la base de datos
-    if (cliente === 'nuevo' && nuevoCliente) {
-      const res = await fetch("http://localhost:3000/api/clientes", {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nombre: nuevoCliente })
-      })
-      const data = await res.json()
-      clienteId = data.id // Usamos el ID del cleinte recién creado
-
-    }
-
-     // Si se ingresó un nuevo proyecto, lo creamos en la base de datos
-    if (proyecto === "nuevo" && nuevoProyecto) {
-    const res = await fetch("http://localhost:3000/api/proyectos", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nombre: nuevoProyecto }),
-    });
-    const data = await res.json();
-    proyectoId = data.id; // Usamos el ID del proyecto recién creado
-    }
-
-    // Datos finales a enviar
+    // 📌 Intentamos registrar las impresoras primero
     const datosRegistro = {
       modelo,
       estado,
-      marca,
+      marca_id: marca === 'nuevo' ? null : marca,
       tipo,
       ubicacion,
-      cliente_id: clienteId || null,
-      proyecto_id: proyectoId || null,
+      cliente_id: cliente === 'nuevo' ? null : cliente,
+      proyecto_id: proyecto === 'nuevo' ? null : proyecto,
       tiene_accesorios: tieneAccesorios,
-      series
-    }
+      series,
+    };
 
-    console.log('Enviando datos las backend:', datosRegistro);
-    console.log("Datos que se enviarán al backend:", JSON.stringify(datosRegistro, null, 2));
-
-
-    // Enviar al backend
+    console.log("Datos que se enviarán al backend:", {
+      modelo,
+      estado,
+      marca_id: marca === "nuevo" ? null : marca,  // 🔍 Aquí revisamos
+      tipo,
+      ubicacion,
+      cliente_id: cliente === "nuevo" ? null : cliente,
+      proyecto_id: proyecto === "nuevo" ? null : proyecto,
+      tiene_accesorios: tieneAccesorios,
+      series,
+    });
+  
     const response = await fetch("http://localhost:3000/api/impresoras/registrar-lote", {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(datosRegistro)
-    })
-
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(datosRegistro),
+    });
+  
     const responseData = await response.json();
     console.log("Respuesta del backend:", responseData);
-
-    
-    if (response.ok) {
-      toast.success('Impresoras registradas exitosamente!')
-      // Limpiar el formulario del envío
-      setMarca('')
-      setTipo('')
-      setModelo('')
-      setEstado('Estado')
-      setCliente('')
-      setProyecto('')
-      setNuevoCliente('')
-      setNuevoProyecto('')
-      setSeries([])
-      setBloquearCampos(false)
-      setTieneAccesorios(false)
-    } else {
-      toast.error('Error al registrar impresoras')
+  
+    if (!response.ok) {
+      toast.error("Error al registrar impresoras.");
+      return; // 🚨 DETENEMOS la ejecución si falla el registro de impresoras
     }
 
-  }
+    // 🟢 Si el usuario ingresó una nueva marca, lo enviamos al backend solo si el registro de impresoras fue exitoso
+    let marcaId = marca
+    if (marca === "nuevo" && nuevaMarca) {
+      const res = await fetch("http://localhost:3000/api/marcas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nombre: nuevaMarca }),
+      });
+  
+      if (!res.ok) {
+        toast.error("Error al registrar la nueva marca.");
+        return; // 🚨 Si hay error al registrar la marca, detenemos la ejecución
+      }
+  
+      const data = await res.json();
+      marcaId = data.id;
+    }
+  
+    // 🟢 Si el usuario ingresó un nuevo Cliente, lo enviamos al backend solo si el registro de impresoras fue exitoso
+    let clienteId = cliente
+    if (cliente === "nuevo" && nuevoCliente) {
+      const res = await fetch("http://localhost:3000/api/clientes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nombre: nuevoCliente }),
+      });
+  
+      if (!res.ok) {
+        toast.error("Error al registrar el nuevo cliente.");
+        return; // 🚨 Si hay error al registrar el cliente, detenemos la ejecución
+      }
+  
+      const data = await res.json();
+      clienteId = data.id;
+    }
+  
+    // 🔵 Si el usuario ingresó un nuevo Proyecto, lo enviamos al backend solo si el registro de impresoras fue exitoso
+    let proyectoId = proyecto
+    if (proyecto === "nuevo" && nuevoProyecto) {
+      const res = await fetch("http://localhost:3000/api/proyectos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nombre: nuevoProyecto }),
+      });
+  
+      if (!res.ok) {
+        toast.error("Error al registrar el nuevo proyecto.");
+        return; // 🚨 Si hay error al registrar el proyecto, detenemos la ejecución
+      }
+  
+      const data = await res.json(); 
+      proyectoId = data.id;
+    }
+  
+    // 🔄 Si todo salió bien, mostramos mensaje de éxito y limpiamos el formulario
+    toast.success("Impresoras registradas exitosamente!");
+  
+    setMarca("");
+    setTipo("");
+    setModelo("");
+    setEstado("Estado");
+    setCliente("");
+    setProyecto("");
+    setNuevoCliente("");
+    setNuevoProyecto("");
+    setSeries([]);
+    setBloquearCampos(false);
+    setTieneAccesorios(false);
+  };
+  
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -163,55 +206,22 @@ function AgregarImpresora () {
           <h1 className="text-2xl font-semibold text-gray-700 mb-8 mt-6">Agregar Impresoras</h1>
           <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
             {/* Marca */}
-            <div>
-             {marca === "nuevaMarca" ? (
-                <input
-                  type="text"
-                  placeholder="Nueva Marca"
-                  value={nuevaMarca}
-                  onChange={(e) => setNuevaMarca(e.target.value)}
-                  onBlur={() => {
-                    if (!nuevaMarca.trim()) setMarca(""); // Si el campo queda vacío, vuelve a ser select
-                  }}
-                  className="w-full p-3 border border-gray-300 rounded  focus:border-blue-700 focus:ring-0 focus:outline-none"
-                />
-              ) : (
-                <select
-                  className="w-full p-2.5 border border-gray-300 rounded focus:border-blue-700"
-                  onChange={(e) => setMarca(e.target.value)}
-                  disabled={bloquearCampos}
-                >
-                  <option value="" disabled selected hidden>Marca</option>
-                  <option value="lexmark">Lexmark</option>
-                  <option value="nuevaMarca">Agregar Marca</option>
-                </select>
-              )}
-            </div> 
+            <SelectDinamico 
+              opciones={marcas}
+              valorSeleccionado={marca}
+              setValorSeleccionado={setMarca}
+              setNuevoValor={setNuevaMarca}
+              placeholder={'Marca'}
+              disabled={bloquearCampos}
+              permitirNuevo={true}
+            />
             
-
-  
             {/* Modelo */}
-            <div className="relative w-full">
-              <input
-                type="text"
-                id="modelo"
-                placeholder=" " // El espacio es necesario para que funcione peer-placeholder-shown
-                value={modelo}
-                onChange={(e) => setModelo(e.target.value.toUpperCase())}
-                disabled={bloquearCampos}
-                className="peer w-full p-3 border border-gray-300 rounded text-sm focus:border-blue-700 focus:ring-0 focus:outline-none"
-              />
-              <label
-                htmlFor="modelo"
-                className="absolute left-3 top-2.5 text-gray-500 transition-all 
-                  peer-placeholder-shown:top-3 peer-placeholder-shown:text-base
-                  peer-focus:top-[-10px] peer-focus:text-sm peer-focus:text-blue-700
-                  peer-not-placeholder-shown:top-[-10px] peer-not-placeholder-shown:text-sm peer-not-placeholder-shown:text-gray-700
-                  bg-white px-1"
-              >
-                Modelo
-              </label>
-            </div>
+            <InputModelo 
+              value={modelo}
+              onChange={setModelo}
+              disabled={bloquearCampos}
+            />
 
             {/* Estado */}
             <SelectDinamico 
@@ -226,161 +236,72 @@ function AgregarImpresora () {
               permitirNuevo={false}
             />
 
-  
             {/* Tipo */}
-            <div>
-              <select
-                className="w-full p-2.5 border border-gray-300 rounded focus:border-blue-700"
-                onChange={(e) => setTipo(e.target.value)}
-                disabled={bloquearCampos}
-              >
-                <option value="tipo" disabled selected hidden>Tipo</option>
-                <option value="propia">Propia</option>
-                <option value="proyecto">Proyecto</option>
-              </select>
-            </div>
+            <SelectDinamico 
+              opciones={[
+                {id: 'propia', nombre:'Propia'},
+                {id: 'proyecto', nombre:'Proyecto'}
+              ]}
+              valorSeleccionado={tipo}
+              setValorSeleccionado={setTipo}
+              placeholder='Tipo'
+              disabled={bloquearCampos}
+              permitirNuevo={false}
+            />
 
             {/* Cliente */}
-            {/* <div>
-              {cliente === "nuevo" ? (
-                <input
-                  type="text"
-                  placeholder="Nuevo Cliente"
-                  value={nuevoCliente}
-                  onChange={(e) => setNuevoCliente(e.target.value)}
-                  onBlur={() => {
-                    if (!nuevoCliente.trim()) setCliente(""); // Si el campo queda vacío, vuelve a ser select
-                  }}
-                  className="w-full p-3 border border-gray-300 rounded  focus:border-blue-700 focus:ring-0 focus:outline-none"
-                  autoFocus
-                />
-              ) : (
-                <select
-                  className="w-full p-2.5 border border-gray-300 rounded focus:border-blue-700"
-                  onChange={(e) => setCliente(e.target.value)}
-                  disabled={bloquearCampos}
-                >
-                  <option value=""disabled selected hidden>Cliente</option>
-                  {clientes.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.nombre}
-                    </option>
-                  ))}
-                  <option value="nuevo">Agregar Cliente</option>
-                </select>
-              )}
-            </div> */}
             <SelectDinamico 
               opciones={clientes}
               valorSeleccionado={cliente}
               setValorSeleccionado={setCliente}
+              setNuevoValor={setNuevoCliente} // Guardamos temporalmente el nuevo cliente
               placeholder='Cliente'
               disabled={bloquearCampos}
               permitirNuevo={true} // Permite agregar nuevos clientes
             />
 
             {/* Proyecto */}
-            <div>
-              {proyecto === "nuevo" ? (
-                <input
-                  type="text"
-                  placeholder="Nuevo Proyecto"
-                  value={nuevoProyecto}
-                  onChange={(e) => setNuevoProyecto(e.target.value)}
-                  onBlur={() => {
-                    if (!nuevoProyecto.trim()) setProyecto(""); // Si el campo queda vacío, vuelve a ser select
-                  }}
-                  className="w-full p-3 border border-gray-300 rounded  focus:border-blue-700 focus:ring-0 focus:outline-none"
-                  autoFocus
-                />
-              ) : (
-                <select
-                  className="w-full p-2.5 border border-gray-300 rounded focus:border-blue-700"
-                  onChange={(e) => setProyecto(e.target.value)}
-                  disabled={bloquearCampos}
-                >
-                  <option value="" disabled selected hidden>Proyecto</option>
-                  {proyectos.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.nombre}
-                    </option>
-                  ))}
-                  <option value="nuevo">Agregar Proyecto</option>
-                </select>
-              )}
-            </div>
+            <SelectDinamico
+              opciones={proyectos}
+              valorSeleccionado={proyecto}
+              setValorSeleccionado={setProyecto}
+              setNuevoValor={setNuevoProyecto}
+              placeholder={'Proyecto'}
+              disabled={bloquearCampos}
+              permitirNuevo={true}
+            />
             
             
-        {/* Tiene Accesorios - Checkbox estilo botón */}
-        <div className="flex items-center gap-3">
-          <span className="text-gray-700">Tiene Accesorios</span>
-          <button
-            type="button"
-            onClick={() => setTieneAccesorios(!tieneAccesorios)}
-            className={`px-4 py-2 rounded-md cursor-pointer transition-all duration-300 ${
-              tieneAccesorios ? "bg-blue-600 text-white" : "bg-gray-300 text-gray-700"
-            }`}
-          >
-            {tieneAccesorios ? "Sí" : "No"}
-          </button>
-        </div>
-
-        {/* Escaneo de Series */}
-            <div className="col-span-2 relative w-full">
-              <input
-                type="text"
-                onKeyDown={agregarSerie}
-                disabled={modelo === ""}
-                className="peer w-full p-3 border border-gray-300 rounded text-sm focus:border-blue-700 focus:ring-0 focus:outline-none"
-              />
-              <label
-                htmlFor="modelo"
-                className="absolute left-3 top-2 text-gray-500 transition-all peer-placeholder-shown:top-4 peer-placeholder-shown:text-base peer-focus:top-[-10px] peer-focus:text-sm peer-focus:text-gray-500 bg-white p-0"
+            {/* Tiene Accesorios - Checkbox estilo botón */}
+            <div className="flex items-center gap-3">
+              <span className="text-gray-700">Tiene Accesorios</span>
+              <button
+                type="button"
+                onClick={() => setTieneAccesorios(!tieneAccesorios)}
+                className={`px-4 py-2 rounded-md cursor-pointer transition-all duration-300 ${
+                  tieneAccesorios ? "bg-blue-600 text-white" : "bg-gray-300 text-gray-700"
+                }`}
               >
-                Escanear series
-              </label>
-            </div>
-  
-            {/* Botón de agregar */}
-            <div className="col-span-2 flex justify-end mt-20">
-              <button className="bg-blue-600 text-white text-sm px-3 py-3 rounded-md hover:bg-blue-700">
-                Agregar
+                {tieneAccesorios ? "Sí" : "No"}
               </button>
             </div>
-            
 
+            {/* Escaneo de Series */}
+              <InputSerie 
+                onScan={agregarSerie}
+                disabled={modelo === ''}
+              />
+  
+            {/* Botón de agregar */}
+            <BotonAgregar onClick={handleSubmit}/>
           </form>
         </div>
           
         {/* Sección de lista de series */}
-        <div className="bg-white shadow-lg rounded-lg p-6 w-full lg:w-2/3 flex flex-col">
-        <h3 className="text-xl font-semibold text-gray-700 mb-4 flex items-center gap-2">
-          Series Escaneadas:
-          <span className="bg-gray-200 text-gray-700 text-sm font-semibold px-3 py-1 rounded-md">
-            {series.length}
-          </span>
-        </h3>
-
-          {/* Lista de series con scroll interno más sutil */}
-          <div className="flex-1 overflow-y-auto bg-gray-50 p-4 rounded-md max-h-138 border border-gray-200 shadow-inner scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-            <ul className="grid grid-cols-3 gap-4">
-              {series.slice(0).reverse().map((serie, index) => (
-                <li
-                  key={index}
-                  className="flex justify-between items-center p-3 bg-white border border-gray-300 rounded-md shadow-sm transition-all hover:shadow-md"
-                >
-                  <span className="text-gray-700 font-medium">{serie}</span>
-                  <button
-                    onClick={() => eliminarSerie(serie)}
-                    className="text-red-700 hover:text-red-500 transition-all p-1 rounded-md"
-                  >
-                    <FaTrash size={16} /> {/* ✅ Ícono de eliminación de react-icons */}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
+        <ListaSeries
+          series={series}
+          onDeleteSerie={eliminarSerie}
+        />
       </div>
     </div>
   );
