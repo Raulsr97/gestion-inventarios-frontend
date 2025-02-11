@@ -10,15 +10,12 @@ function CardStockGeneral() {
     fetch("http://localhost:3000/api/impresoras")
       .then((res) => res.json())
       .then((data) => {
-        // Filtrar solo las impresoras en almacén
         const impresorasEnAlmacen = data.filter(
           (impresora) => impresora.ubicacion === "Almacén"
         );
 
-        // Obtener conteo total
         setStockTotal(impresorasEnAlmacen.length);
 
-        // Calcular stock por modelo
         const conteoModelos = impresorasEnAlmacen.reduce((acc, impresora) => {
           acc[impresora.modelo] = (acc[impresora.modelo] || 0) + 1;
           return acc;
@@ -32,29 +29,51 @@ function CardStockGeneral() {
   }, []);
 
   return (
-    <div
-      className="bg-white shadow-lg rounded-lg p-6 flex flex-col items-center text-center cursor-pointer hover:shadow-xl transition-transform hover:scale-105"
-      onClick={() => setMostrarDetalle(!mostrarDetalle)}
-    >
-      <FaPrint className="text-blue-600 text-4xl mb-3" />
-      <h2 className="text-lg font-semibold text-gray-700">Stock General</h2>
-      <p className="text-gray-500 text-sm">Total de impresoras en almacén</p>
+    <>
+      {/* Card de Stock General */}
+      <div
+        className="bg-white shadow-lg rounded-lg p-6 flex flex-col items-center text-center cursor-pointer hover:shadow-xl transition-transform hover:scale-105"
+        onClick={() => setMostrarDetalle(true)}
+      >
+        <FaPrint className="text-blue-600 text-4xl mb-3" />
+        <h2 className="text-lg font-semibold text-gray-700">Stock General</h2>
+        <p className="text-gray-500 text-sm">Total de impresoras en almacén</p>
+        <span className="text-3xl font-bold text-blue-700 mt-2">{stockTotal}</span>
+      </div>
 
-      {/* 🔹 Mostrar el total general o el desglose por modelo */}
-      {mostrarDetalle ? (
-        <div className="mt-3 text-gray-700 text-sm">
-          {Object.entries(stockPorModelo).map(([modelo, cantidad]) => (
-            <p key={modelo} className="font-medium">
-              {modelo}: <span className="font-bold text-blue-700">{cantidad}</span>
-            </p>
-          ))}
+      {/* 🔹 Mini-card flotante centrada con fondo desenfocado */}
+      {mostrarDetalle && (
+        <div 
+          className="fixed inset-0 backdrop-blur-sm flex justify-center items-center z-50"
+          onClick={() => setMostrarDetalle(false)}
+        >
+          <div 
+            className="bg-white shadow-lg rounded-lg
+            p-6 w-[350px] max-h-[80vh] overflow-hidden flex flex-col items-center"
+            onClick={(e) => e.stopPropagation()} // Evita que se cierre al hacer clic dentro de la mini-card
+          >
+            <h3 className="text-lg font-semibold text-gray-700 mb-3 text-center">Desglose por Modelo</h3>
+            
+            {/* Lista vertical correctamente alineada */}
+            <ul className="w-full text-gray-600 text-sm space-y-2 overflow-y-auto max-h-60 px-2 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200 rounded-lg">
+              {Object.entries(stockPorModelo).map(([modelo, cantidad]) => (
+                <li key={modelo} className="flex justify-between border-b py-2 w-full">
+                  <span className="font-medium">{modelo}</span>
+                  <span className="font-bold">{cantidad}</span>
+                </li>
+              ))}
+            </ul>
+
+            <button 
+              className="mt-4 w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition"
+              onClick={() => setMostrarDetalle(false)}
+            >
+              Cerrar
+            </button>
+          </div>
         </div>
-      ) : (
-        <span className="text-3xl font-bold text-blue-700 mt-2">
-          {stockTotal}
-        </span>
       )}
-    </div>
+    </>
   );
 }
 

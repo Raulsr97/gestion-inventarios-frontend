@@ -1,6 +1,8 @@
 import { useEffect } from "react";
 import { useState } from "react";
 import CardStockGeneral from "../components/CardStockGeneral";
+import CardMovimientosMes from "../components/CardMovimientos";
+import CardStockProyectos from "../components/CardStockProyectos";
 
 function ConsultaImpresoras() {
   return (
@@ -14,18 +16,10 @@ function ConsultaImpresoras() {
           <CardStockGeneral />
 
           {/* Movimientos del último mes */}
-          <div className="bg-white shadow-lg rounded-lg p-6 cursor-pointer hover:shadow-xl transition-all">
-            <h3 className="text-lg font-semibold text-gray-700">entradas</h3>
-            <p className="text-3xl font-bold text-green-600">25</p>
-            <p className="text-sm text-gray-500">En el último mes</p>
-          </div>
+          <CardMovimientosMes />
 
           {/* Impresoras por Proyecto */}
-          <div className="bg-white shadow-lg rounded-lg p-6 cursor-pointer hover:shadow-xl transition-all">
-            <h3 className="text-lg font-semibold text-gray-700">Por Proyecto</h3>
-            <p className="text-3xl font-bold text-orange-600">10</p>
-            <p className="text-sm text-gray-500">Proyectos activos</p>
-          </div>
+          <CardStockProyectos />
 
           {/* Impresoras por Cliente */}
           <div className="bg-white shadow-lg rounded-lg p-6 cursor-pointer hover:shadow-xl transition-all">
