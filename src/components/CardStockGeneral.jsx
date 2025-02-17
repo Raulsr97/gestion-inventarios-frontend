@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { FaPrint } from "react-icons/fa";
 
 function CardStockGeneral() {
+  const [modeloSeleccionado, setModeloSeleccionado] = useState(null)
   const [stockTotal, setStockTotal] = useState(0);
   const [stockPorModelo, setStockPorModelo] = useState({});
   const [mostrarDetalle, setMostrarDetalle] = useState(false);
@@ -57,7 +58,14 @@ function CardStockGeneral() {
             {/* Lista vertical correctamente alineada */}
             <ul className="w-full text-gray-600 text-sm space-y-2 overflow-y-auto max-h-60 px-2 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200 rounded-lg">
               {Object.entries(stockPorModelo).map(([modelo, cantidad]) => (
-                <li key={modelo} className="flex justify-between border-b py-2 w-full">
+                <li 
+                  key={modelo} 
+                  className="flex justify-between border-b py-2 w-full"
+                  onClick={() => {
+                    setModeloSeleccionado(modelo)
+                    setMostrarDetalle(false)
+                  }}
+                >
                   <span className="font-medium">{modelo}</span>
                   <span className="font-bold">{cantidad}</span>
                 </li>
