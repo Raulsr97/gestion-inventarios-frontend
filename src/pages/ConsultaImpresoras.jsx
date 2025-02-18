@@ -1,5 +1,5 @@
 import { toast } from 'react-toastify';
-import Papa from 'papaparse'
+import * as XLSX from 'xlsx'
 import { useEffect, useState } from "react";
 import CardStockGeneral from "../components/CardStockGeneral";
 import CardMovimientosMes from "../components/CardMovimientos";
@@ -50,42 +50,52 @@ function ConsultaImpresoras() {
   // Eliminamos las marcas repetidas
   const marcasUnicas = ['Sin marca', ...new Set(impresoras.map((impresora) => impresora.marca?.nombre).filter(Boolean))]
 
-  const exportarAExcel = () => {
+  const exportarAExcel = (resultados) => {
     if (resultados.length === 0) {
-      toast.error('No hay datos para exportar.')
-      return
+      toast.error("No hay datos para exportar.");
+      return;
     }
-
-    // Covertimos los datos a formato csv
-    const csv = Papa.unparse(
-      resultados.map((impresora) => ({
-        "Serie": impresora.serie,
-        "Modelo": impresora.modelo,
-        "Estado": impresora.estado,
-        "Tipo": impresora.tipo,
-        "Ubicación": impresora.ubicacion,
-        "Cliente": impresora.cliente?.nombre || "Sin cliente",
-        "Proyecto": impresora.proyecto?.nombre || "Sin proyecto",
-        "Marca": impresora.marca?.nombre || "Sin marca",
-        "Fecha de Entrada": impresora.fecha_entrada
-          ? new Date(impresora.fecha_entrada).toLocaleDateString()
-          : "No registrada",
-        "Fecha de Salida": impresora.fecha_salida
-          ? new Date(impresora.fecha_salida).toLocaleDateString()
-          : "No registrada",
-      }))
-    )
-
-    // blob(archivo descargable)
-    const blob = new Blob([csv], {type: 'text/csv;charset=utf-8'})
-
-    // Enlace para la descarga
-    const link = document.createElement('a')
-    link.href = URL.createObjectURL(blob)
-    link.setAttribute('download', 'reporte_impresoras.csv')
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+  
+    // Definir los encabezados de la tabla
+    const encabezados = [
+      ["Serie", "Modelo", "Estado", "Tipo", "Ubicación", "Cliente", "Proyecto", "Marca", "Fecha de Entrada", "Fecha de Salida"]
+    ];
+  
+    // Convertir los datos en formato adecuado para XLSX
+    const datos = resultados.map((impresora) => [
+      impresora.serie,
+      impresora.modelo,
+      impresora.estado,
+      impresora.tipo,
+      impresora.ubicacion,
+      impresora.cliente?.nombre || "Sin cliente",
+      impresora.proyecto?.nombre || "Sin proyecto",
+      impresora.marca?.nombre || "Sin marca",
+      impresora.fecha_entrada ? new Date(impresora.fecha_entrada).toLocaleDateString() : "No registrada",
+      impresora.fecha_salida ? new Date(impresora.fecha_salida).toLocaleDateString() : "No registrada"
+    ]);
+  
+    // Crear la hoja de trabajo (worksheet)
+    const ws = XLSX.utils.aoa_to_sheet([...encabezados, ...datos]);
+  
+    // Aplicar estilos a los encabezados
+    const range = XLSX.utils.decode_range(ws["!ref"]);
+    for (let C = range.s.c; C <= range.e.c; C++) {
+      const cell_address = XLSX.utils.encode_cell({ r: 0, c: C });
+      if (!ws[cell_address]) continue;
+      ws[cell_address].s = {
+        font: { bold: true, color: { rgb: "FFFFFF" } }, // Texto blanco
+        fill: { fgColor: { rgb: "4472C4" } }, // Azul oscuro
+        alignment: { horizontal: "center" }
+      };
+    }
+  
+    // Crear el libro de Excel y agregar la hoja
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Reporte de Impresoras");
+  
+    // Descargar el archivo
+    XLSX.writeFile(wb, "reporte_impresoras.xlsx");
   }
 
   
@@ -112,8 +122,7 @@ function ConsultaImpresoras() {
               // Evita el refresh de la pagina 
               e.preventDefault();
               // Aplica los filtros al conjunto de impresoras
-              setResultados(
-                impresoras.filter((impresora) => {
+              const resultadosFiltrados = impresoras.filter((impresora) => {
                   const fechaEntradaImpresora = impresora.fecha_entrada ? new Date(impresora.fecha_entrada).toISOString().split("T")[0] : null;
 
                   const fechaSalidaImpresora = impresora.fecha_salida ? new Date(impresora.fecha_salida).toISOString().split('T')[0] : null
@@ -136,7 +145,27 @@ function ConsultaImpresoras() {
                     )
                   );
                 })
-              );
+              
+              if(resultadosFiltrados.length === 0) {
+                toast.warn('No se encontraron resultados con los filtros aplicados')
+              } 
+
+              setResultados(resultadosFiltrados)
+
+              setFiltrosAplicados({
+                serie: '',
+                modelo: '',
+                estado: '',
+                tipo: '',
+                cliente: '',
+                proyecto: '',
+                marca: '',
+                fechaEntradaInicio: '',
+                fechaEntradaFin: '',
+                fechaSalidaInicio: '',
+                fechaSalidaFin: '',
+                enAlmacen: ''
+              })
             }}
           >
             {/* Número de Serie */}
@@ -297,16 +326,7 @@ function ConsultaImpresoras() {
               </button>
             </div>
           </form>
-          {/* Botón para exportar a Excel - FUERA del formulario */}
-          <div className="col-span-full flex justify-center mt-3">
-            <button
-              type="button"
-              className="bg-green-600 text-white py-2 px-6 rounded-md hover:bg-green-700 transition"
-              onClick={exportarAExcel} // 🔥 Llama a la función directamente
-            >
-              📥 Exportar a Excel
-            </button>
-          </div>
+          
         </div>
 
         {/* 🔹 Resultados */}
@@ -357,6 +377,16 @@ function ConsultaImpresoras() {
                   ))}
                 </tbody>
               </table>
+            </div>
+            {/* Botón para exportar a Excel */}
+            <div className="col-span-full flex justify-center mt-3">
+              <button
+                type="button"
+                className="bg-green-600 text-white py-2 px-6 rounded-md hover:bg-green-700 transition"
+                onClick={() => exportarAExcel(resultados)} // 🔥 Llama a la función directamente
+              >
+                📥 Exportar a Excel
+              </button>
             </div>
           </div>
         )}
