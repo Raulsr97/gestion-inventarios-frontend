@@ -10,6 +10,7 @@ function MovimientosImpresoras() {
     proyecto: '',
     series: []
   })
+  const [seriesDisponibles, setSeriesDisponibles] = useState([])
 
   useEffect(() => {
     fetch('http://localhost:3000/api/impresoras')
@@ -23,9 +24,17 @@ function MovimientosImpresoras() {
 
         setClientesUnicos(clientes)
         setProyectosUnicos(proyectos)
+
+        // Filtrar series segun cliente y proyecto seleccionados
+        let seriesFiltradas = data.filter(impresora => 
+            (!datosSalida.cliente || impresora.cliente?.nombre === datosSalida.cliente) &&
+            (!datosSalida.proyecto || impresora.proyecto?.nombre === datosSalida.proyecto)
+        ) 
+
+        setSeriesDisponibles(seriesFiltradas)
       })
       .catch(error => console.error('Error al obtener los datos:', error))
-  }, [])
+  }, [datosSalida.cliente, datosSalida.proyecto]) // Dependencias para actualizar cuando cambie cliente/proyecto
 
  return (
     <div className="min-h-screen bg-gray-100 p-6">
@@ -96,7 +105,7 @@ function MovimientosImpresoras() {
                 <h4 className="text-sm font-semibold text-gray-700 mb-2">Selecciona las series a dar salida:</h4>
 
                 <ul className="text-gray-600 text-sm space-y-1 max-h-40 overflow-y-auto border p-2 rounded">
-                  {impresoras
+                  {seriesDisponibles
                     .filter(impresora => !impresora.fecha_salida) // Solo las impresoras que no tienen salida
                     .map(impresora => (
                       <li key={impresora.serie} className="flex justify-between items-center border-b py-1">
