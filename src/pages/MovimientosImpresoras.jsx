@@ -11,6 +11,9 @@ function MovimientosImpresoras() {
     series: []
   })
   const [seriesDisponibles, setSeriesDisponibles] = useState([])
+  const [busquedaSerie, setBusquedaSerie] = useState('') // Guarda el texto del buscador
+  
+
 
   useEffect(() => {
     fetch('http://localhost:3000/api/impresoras')
@@ -26,15 +29,19 @@ function MovimientosImpresoras() {
         setProyectosUnicos(proyectos)
 
         // Filtrar series segun cliente y proyecto seleccionados
-        let seriesFiltradas = data.filter(impresora => 
-            (!datosSalida.cliente || impresora.cliente?.nombre === datosSalida.cliente) &&
-            (!datosSalida.proyecto || impresora.proyecto?.nombre === datosSalida.proyecto)
-        ) 
+        let seriesFiltradas = data.filter(impresora =>
+          !impresora.fecha_salida && // Solo las que siguen en almacén
+          (!datosSalida.cliente || impresora.cliente?.nombre === datosSalida.cliente) &&
+          (!datosSalida.proyecto || impresora.proyecto?.nombre === datosSalida.proyecto)
+        )
 
         setSeriesDisponibles(seriesFiltradas)
       })
       .catch(error => console.error('Error al obtener los datos:', error))
   }, [datosSalida.cliente, datosSalida.proyecto]) // Dependencias para actualizar cuando cambie cliente/proyecto
+
+  const totalSeriesDisponibles = seriesDisponibles.length
+  const totalSeriesSeleccionadas = datosSalida.series.length
 
  return (
     <div className="min-h-screen bg-gray-100 p-6">
@@ -77,10 +84,16 @@ function MovimientosImpresoras() {
                 <label className="block text-sm font-medium text-gray-700" >Cliente</label>
                 <select  
                   className="w-full p-3 border border-gray-300 rounded text-sm focus:border-blue-700 focus:ring-0 focus:outline-none" 
-                  value={datosSalida.cliente}
-                  onChange={(e) => setDatosSalida({...datosSalida, cliente: e.target.value})}
+                  value={datosSalida.cliente || ''}
+                  onChange={(e) => setDatosSalida({
+                    cliente: e.target.value === 'Sin asignar' ? '' : e.target.value,
+                    proyecto: e.target.value !== 'Sin asignar' ? '' : datosSalida.proyecto,
+                    series: []
+                  })}
+                  disabled={!!datosSalida.proyecto}
                 >
                   <option value="" disabled hidden>Selecciona un cliente</option>
+                  <option value="Sin asignar">Sin asignar</option>
                   {clientesUnicos.map(cliente => (
                     <option key={cliente} value={cliente}>{cliente}</option>
                   ))}
@@ -91,15 +104,41 @@ function MovimientosImpresoras() {
                 <label className="block text-sm font-medium text-gray-700" >Proyecto</label>
                 <select  
                   className="w-full p-3 border border-gray-300 rounded text-sm focus:border-blue-700 focus:ring-0 focus:outline-none" 
-                  value={datosSalida.proyecto}
-                  onChange={(e) => setDatosSalida({...datosSalida, proyecto: e.target.value})}
+                  value={datosSalida.proyecto || ''}
+                  onChange={(e) => setDatosSalida({
+                    cliente: e.target.value !== 'Sin asignar' ? '' : datosSalida.cliente,
+                    proyecto: e.target.value === 'Sin asignar' ? '' : e.target.value,
+                    series: []
+                  })}
+                  disabled={!!datosSalida.cliente}
                 >
                   <option value="" disabled hidden>Selecciona un proyecto</option>
+                  <option value="Sin asignar">Sin asignar</option>
                   {proyectosUnicos.map(proyecto => (
                     <option key={proyecto} value={proyecto}>{proyecto}</option>
                   ))}
                 </select>
               </div>
+              
+              {/* Filtrador de Series */}
+              <input
+                type="text"
+                placeholder="Buscar serie..."
+                className="w-full p-2 border border-gray-300 rounded text-sm focus:border-blue-700 focus:ring-0 focus:outline-none" 
+                value={busquedaSerie}
+                onChange={(e) => setBusquedaSerie(e.target.value)}
+                />
+              
+              {/* Contador de Series */}
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-gray-600 text-sm">
+                  📦 Total disponibles: <strong>{totalSeriesDisponibles}</strong>
+                </span>
+                <span className="text-blue-600 text-sm">
+                  ✅ Seleccionadas: <strong>{totalSeriesSeleccionadas}</strong>
+                </span>
+              </div>
+        
               {/* Lista de series disponibles */}
               <div className="mb-4">
                 <h4 className="text-sm font-semibold text-gray-700 mb-2">Selecciona las series a dar salida:</h4>
@@ -107,6 +146,9 @@ function MovimientosImpresoras() {
                 <ul className="text-gray-600 text-sm space-y-1 max-h-40 overflow-y-auto border p-2 rounded">
                   {seriesDisponibles
                     .filter(impresora => !impresora.fecha_salida) // Solo las impresoras que no tienen salida
+                    .filter(impresora => 
+                      busquedaSerie === '' || impresora.serie.includes(busquedaSerie.toUpperCase())
+                    )
                     .map(impresora => (
                       <li key={impresora.serie} className="flex justify-between items-center border-b py-1">
                         <label className="flex items-center space-x-2">
