@@ -14,14 +14,17 @@ function AgregarImpresora () {
   const [ marca, setMarca] = useState('')
   const [cliente, setCliente] = useState('')
   const [proyecto, setProyecto] = useState('')
+  const [proveedor, setProveedor] = useState('')
   // Estados para almacenar la lista de clientes, proyectos y marcas
   const [clientes, setClientes] = useState([])
   const [proyectos, setProyectos] = useState([])
   const [marcas, setMarcas] = useState([])
+  const [proveedores, setProveedores] = useState([])
   // Etados para manejar nuevos clientes, proyectos y marcas
   const [nuevoCliente, setNuevoCliente] = useState('')
   const [nuevoProyecto, setNuevoProyecto] = useState('')
   const [nuevaMarca, setNuevaMarca] = useState('')
+  const [nuevoProveedor, setNuevoProveedor] = useState('')
   // lista de series escaneadas
   const [ series, setSeries] = useState([])
   // Bloquea los selects al escanear
@@ -46,6 +49,13 @@ function AgregarImpresora () {
       .then((data) => {
         setMarcas(data)
       }) 
+
+    fetch("http://localhost:3000/api/proveedores")
+    .then((res) => res.json())
+    .then((data) => {
+      setProveedores(data)
+    }) 
+     
   }, [])
 
   const agregarSerie = (e) => {
@@ -98,6 +108,7 @@ function AgregarImpresora () {
       proyecto_id: proyecto === 'nuevo' ? null : proyecto,
       tiene_accesorios: tieneAccesorios,
       series,
+      proveedor_id: proveedor === 'nuevo' ? null : proveedor
     };
 
     console.log("Datos que se enviarán al backend:", {
@@ -110,6 +121,7 @@ function AgregarImpresora () {
       proyecto_id: proyecto === "nuevo" ? null : proyecto,
       tiene_accesorios: tieneAccesorios,
       series,
+      proveedor_id: proveedor === 'nuevo' ? null : proveedor
     });
   
     const response = await fetch("http://localhost:3000/api/impresoras/registrar-lote", {
@@ -179,6 +191,23 @@ function AgregarImpresora () {
       const data = await res.json(); 
       proyectoId = data.id;
     }
+
+    let proveedorId = proveedor
+    if (proveedor === "nuevo" && nuevoProveedor) {
+      const res = await fetch("http://localhost:3000/api/proveedores", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nombre: nuevoProveedor }),
+      });
+  
+      if (!res.ok) {
+        toast.error("Error al registrar el nuevo proveedor.");
+        return; // Si hay error al registrar el proveedor, detenemos la ejecución
+      }
+  
+      const data = await res.json(); 
+      proveedorId = data.id;
+    }
   
     // 🔄 Si todo salió bien, mostramos mensaje de éxito y limpiamos el formulario
     toast.success("Impresoras registradas exitosamente!");
@@ -194,6 +223,7 @@ function AgregarImpresora () {
     setSeries([]);
     setBloquearCampos(false);
     setTieneAccesorios(false);
+    setProveedor("")
   };
   
 
@@ -239,8 +269,8 @@ function AgregarImpresora () {
             {/* Tipo */}
             <SelectDinamico 
               opciones={[
-                {id: 'propia', nombre:'Propia'},
-                {id: 'proyecto', nombre:'Proyecto'}
+                {id: 'propia', nombre:'Compra'},
+                {id: 'distribucion', nombre:'Distribucion'}
               ]}
               valorSeleccionado={tipo}
               setValorSeleccionado={setTipo}
@@ -267,6 +297,17 @@ function AgregarImpresora () {
               setValorSeleccionado={setProyecto}
               setNuevoValor={setNuevoProyecto}
               placeholder={'Proyecto'}
+              disabled={bloquearCampos}
+              permitirNuevo={true}
+            />
+
+            {/* Proveedor */}
+            <SelectDinamico
+              opciones={proveedores}
+              valorSeleccionado={proveedor}
+              setValorSeleccionado={setProveedor}
+              setNuevoValor={setNuevoProveedor}
+              placeholder={'Proveedor'}
               disabled={bloquearCampos}
               permitirNuevo={true}
             />
