@@ -269,7 +269,7 @@ function AgregarImpresora () {
             {/* Tipo */}
             <SelectDinamico 
               opciones={[
-                {id: 'propia', nombre:'Compra'},
+                {id: 'compra', nombre:'Compra'},
                 {id: 'distribucion', nombre:'Distribucion'}
               ]}
               valorSeleccionado={tipo}
