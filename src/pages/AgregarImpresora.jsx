@@ -8,7 +8,7 @@ import ListaSeries from "../components/ListaSeries"
 
 function AgregarImpresora () {
   const [modelo, setModelo ] = useState('')
-  const [estado, setEstado] = useState('Nueva')
+  const [estado, setEstado] = useState('')
   const [tipo, setTipo] = useState('')
   const [ubicacion, setUbicacion] = useState('Almacén')
   const [ marca, setMarca] = useState('')
@@ -30,6 +30,8 @@ function AgregarImpresora () {
   // Bloquea los selects al escanear
   const [ bloquearCampos, setBloquearCampos] = useState(false)
   const [ tieneAccesorios, setTieneAccesorios] = useState(false)
+
+  const proyectosDisponibles = proyectos.filter(p => p.cliente_id === cliente)
 
   useEffect(() => {
     fetch("http://localhost:3000/api/clientes")
@@ -91,139 +93,151 @@ function AgregarImpresora () {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-  
+
     if (!modelo || series.length === 0) {
       toast.error("Debes seleccionar un modelo y escanear al menos una serie.");
       return;
     }
 
-    // 📌 Intentamos registrar las impresoras primero
-    const datosRegistro = {
-      modelo,
-      estado,
-      marca_id: marca === 'nuevo' ? null : marca,
-      tipo,
-      ubicacion,
-      cliente_id: cliente === 'nuevo' ? null : cliente,
-      proyecto_id: proyecto === 'nuevo' ? null : proyecto,
-      tiene_accesorios: tieneAccesorios,
-      series,
-      proveedor_id: proveedor === 'nuevo' ? null : proveedor
-    };
+    try {
+      let marcaId = marca
+      let clienteId = cliente
+      let proyectoId = proyecto === "nuevo" ? null : proyecto
+      let proveedorId = proveedor === "nuevo" ? null : proveedor
 
-    console.log("Datos que se enviarán al backend:", {
-      modelo,
-      estado,
-      marca_id: marca === "nuevo" ? null : marca,  // 🔍 Aquí revisamos
-      tipo,
-      ubicacion,
-      cliente_id: cliente === "nuevo" ? null : cliente,
-      proyecto_id: proyecto === "nuevo" ? null : proyecto,
-      tiene_accesorios: tieneAccesorios,
-      series,
-      proveedor_id: proveedor === 'nuevo' ? null : proveedor
-    });
-  
-    const response = await fetch("http://localhost:3000/api/impresoras/registrar-lote", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(datosRegistro),
-    });
-  
-    const responseData = await response.json();
-    console.log("Respuesta del backend:", responseData);
-  
-    if (!response.ok) {
-      toast.error("Error al registrar impresoras.");
-      return; // 🚨 DETENEMOS la ejecución si falla el registro de impresoras
-    }
+      // Crear marca si no existe 
+      if (marca === 'nuevo' && nuevaMarca) {
+        const res = await fetch("http://localhost:3000/api/marcas", {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({nombre: nuevaMarca})
+        })
 
-    // 🟢 Si el usuario ingresó una nueva marca, lo enviamos al backend solo si el registro de impresoras fue exitoso
-    let marcaId = marca
-    if (marca === "nuevo" && nuevaMarca) {
-      const res = await fetch("http://localhost:3000/api/marcas", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nombre: nuevaMarca }),
-      });
-  
-      if (!res.ok) {
-        toast.error("Error al registrar la nueva marca.");
-        return; // 🚨 Si hay error al registrar la marca, detenemos la ejecución
+        if (!res.ok) {
+          toast.error('Error al registrar la nueva marca')
+          return
+        } 
+        
+        const data = await res.json()
+        marcaId = data.id
       }
-  
-      const data = await res.json();
-      marcaId = data.id;
-    }
-  
-    // 🟢 Si el usuario ingresó un nuevo Cliente, lo enviamos al backend solo si el registro de impresoras fue exitoso
-    let clienteId = cliente
-    if (cliente === "nuevo" && nuevoCliente) {
-      const res = await fetch("http://localhost:3000/api/clientes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nombre: nuevoCliente }),
-      });
-  
-      if (!res.ok) {
-        toast.error("Error al registrar el nuevo cliente.");
-        return; // 🚨 Si hay error al registrar el cliente, detenemos la ejecución
-      }
-  
-      const data = await res.json();
-      clienteId = data.id;
-    }
-  
-    // 🔵 Si el usuario ingresó un nuevo Proyecto, lo enviamos al backend solo si el registro de impresoras fue exitoso
-    let proyectoId = proyecto
-    if (proyecto === "nuevo" && nuevoProyecto) {
-      const res = await fetch("http://localhost:3000/api/proyectos", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nombre: nuevoProyecto }),
-      });
-  
-      if (!res.ok) {
-        toast.error("Error al registrar el nuevo proyecto.");
-        return; // 🚨 Si hay error al registrar el proyecto, detenemos la ejecución
-      }
-  
-      const data = await res.json(); 
-      proyectoId = data.id;
-    }
 
-    let proveedorId = proveedor
-    if (proveedor === "nuevo" && nuevoProveedor) {
-      const res = await fetch("http://localhost:3000/api/proveedores", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nombre: nuevoProveedor }),
-      });
-  
-      if (!res.ok) {
-        toast.error("Error al registrar el nuevo proveedor.");
-        return; // Si hay error al registrar el proveedor, detenemos la ejecución
+      // Crear Cliente si no existe
+      if (cliente === "nuevo" && nuevoCliente) {
+        const res = await fetch("http://localhost:3000/api/clientes", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ nombre: nuevoCliente }),
+        });
+    
+        if (!res.ok) {
+            toast.error("Error al registrar el nuevo cliente.");
+            return;
+        }
+    
+        const data = await res.json();
+        clienteId = data.id;  // ✅ Asignamos el ID correcto del cliente creado
       }
-  
-      const data = await res.json(); 
-      proveedorId = data.id;
+        
+      // Crear Proyecto si no existe (y asignar cliente_id si aplica)
+      if (proyecto === "nuevo" && nuevoProyecto) {
+        if (!cliente) {
+          toast.error("Debes seleccionar un cliente antes de agregar un proyecto.");
+          return;
+        }
+      
+        const res = await fetch("http://localhost:3000/api/proyectos", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ 
+            nombre: nuevoProyecto,
+            cliente_id: cliente // 🔥 Relacionamos el proyecto con el cliente seleccionado
+          }),
+        });
+      
+        if (!res.ok) {
+          toast.error("Error al registrar el nuevo proyecto.");
+          return;
+        }
+      
+        const data = await res.json(); 
+        setProyecto(data.id);
+      }
+      
+
+         // Crear Proveedor si no existe
+         if (proveedor === "nuevo" && nuevoProveedor) {
+          const res = await fetch("http://localhost:3000/api/proveedores", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ nombre: nuevoProveedor })
+          });
+          if (!res.ok) throw new Error("Error al registrar el nuevo proveedor.");
+          const data = await res.json();
+          proveedorId = data.id;
+        }
+
+        // registramos las impresoras con los IDs ya generados
+        const datosRegistro = {
+          modelo,
+          estado,
+          marca_id: marcaId,
+          tipo,
+          ubicacion,
+          cliente_id: clienteId,
+          proyecto_id: proyectoId,
+          tiene_accesorios: tieneAccesorios,
+          series,
+          proveedor_id: proveedorId
+        };
+
+        console.log("Datos que se enviarán al backend:", {
+          modelo,
+          estado,
+          marca_id: marcaId,
+          tipo,
+          ubicacion,
+          cliente_id: clienteId,
+          proyecto_id: proyectoId,
+          tiene_accesorios: tieneAccesorios,
+          series,
+          proveedor_id: proveedorId
+        });
+
+        const response = await fetch("http://localhost:3000/api/impresoras/registrar-lote", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(datosRegistro),
+        });
+
+        const responseData = await response.json();
+        console.log("Respuesta del backend:", responseData);
+      
+        if (!response.ok) {
+          toast.error("Error al registrar impresoras.");
+          return; // 🚨 DETENEMOS la ejecución si falla el registro de impresoras
+        }
+
+        // Si todo salió bien, mostramos mensaje de éxito y limpiamos el formulario
+        toast.success("Impresoras registradas exitosamente!");
+      
+        setMarca("");
+        setTipo("");
+        setModelo("");
+        setEstado("");
+        setCliente("");
+        setProyecto("");
+        setNuevoCliente("");
+        setNuevoProyecto("");
+        setSeries([]);
+        setBloquearCampos(false);
+        setTieneAccesorios(false);
+        setProveedor("")
+      
+    } catch (error) {
+      console.error("Error en el registro:", error);
+      toast.error(error.message);
     }
-  
-    // 🔄 Si todo salió bien, mostramos mensaje de éxito y limpiamos el formulario
-    toast.success("Impresoras registradas exitosamente!");
-  
-    setMarca("");
-    setTipo("");
-    setModelo("");
-    setEstado("Estado");
-    setCliente("");
-    setProyecto("");
-    setNuevoCliente("");
-    setNuevoProyecto("");
-    setSeries([]);
-    setBloquearCampos(false);
-    setTieneAccesorios(false);
-    setProveedor("")
   };
   
 
@@ -292,12 +306,12 @@ function AgregarImpresora () {
 
             {/* Proyecto */}
             <SelectDinamico
-              opciones={proyectos}
+              opciones={proyectosDisponibles}
               valorSeleccionado={proyecto}
               setValorSeleccionado={setProyecto}
               setNuevoValor={setNuevoProyecto}
               placeholder={'Proyecto'}
-              disabled={bloquearCampos}
+              disabled={!cliente || bloquearCampos}
               permitirNuevo={true}
             />
 
