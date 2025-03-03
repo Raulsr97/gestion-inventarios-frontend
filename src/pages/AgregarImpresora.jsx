@@ -271,107 +271,122 @@ function AgregarImpresora () {
         <div className="bg-white shadow-lg rounded-lg p-6 px-10 w-full lg:w-1/3">
           <h1 className="text-2xl font-semibold text-gray-700 mb-8 mt-6">Agregar Impresoras</h1>
           <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-4">
-            {/* Marca */}
-            <SelectDinamico 
-              opciones={marcas}
-              valorSeleccionado={marca}
-              setValorSeleccionado={setMarca}
-              setNuevoValor={setNuevaMarca}
-              placeholder={'Marca'}
-              disabled={bloquearCampos}
-              permitirNuevo={true}
-            />
+          
+          {/* Marca */}
+          <SelectDinamico 
+            opciones={marcas}
+            valorSeleccionado={marca}
+            setValorSeleccionado={setMarca}
+            setNuevoValor={setNuevaMarca}
+            placeholder={'Marca'}
+            disabled={bloquearCampos}
+            permitirNuevo={true}
+          />
+            <div className={`relative ${!marca ? "opacity-50 pointer-events-none" : ""}`}>
+              {/* Modelo */}
+              <InputModelo 
+                value={modelo}
+                onChange={setModelo}
+                disabled={!marca || bloquearCampos}
+              />
+            </div>
+
+            <div className={`relative ${!marca || !modelo ? "opacity-50 pointer-events-none" : ""}`}>
+              {/* Estado */}
+              <SelectDinamico 
+                opciones={[
+                  { id: "nueva", nombre: "Nueva" },
+                  { id: "usada", nombre: "Usada" }
+                ]}
+                valorSeleccionado={estado} 
+                setValorSeleccionado={setEstado} 
+                placeholder="Estado"
+                disabled={!marca || !modelo || bloquearCampos}
+                permitirNuevo={false}
+                className={!marca ? "opacity-50 cursor-not-allowed" : ""}
+              />
+            </div>
+
+            <div className={`relative ${!marca || !modelo || !estado ? "opacity-50 pointer-events-none" : ""}`}>
+              {/* Tipo */}
+              <SelectDinamico 
+                opciones={[
+                  {id: 'compra', nombre:'Compra'},
+                  {id: 'distribucion', nombre:'Distribución'}
+                ]}
+                valorSeleccionado={tipo}
+                setValorSeleccionado={setTipo}
+                placeholder='Tipo'
+                disabled={!marca || !modelo || !estado || bloquearCampos}
+                permitirNuevo={false}
+              />
+            </div>
+
+            <div className={`relative ${!marca || !modelo || !estado || !tipo ? "opacity-50 pointer-events-none" : ""}`}>
+              {/* Cliente */}
+              <SelectDinamico 
+                opciones={clientes}
+                valorSeleccionado={cliente}
+                setValorSeleccionado={setCliente}
+                setNuevoValor={setNuevoCliente} // Guardamos temporalmente el nuevo cliente
+                placeholder='Cliente'
+                disabled={!marca || !modelo || !estado || !tipo || bloquearCampos}
+                permitirNuevo={true} // Permite agregar nuevos clientes
+              />
+            </div>
             
-            {/* Modelo */}
-            <InputModelo 
-              value={modelo}
-              onChange={setModelo}
-              disabled={!marca || bloquearCampos}
-              className={!marca ? "opacity-50 cursor-not-allowed" : ""}
-            />
+            <div className={`relative ${!marca || !modelo || !estado || !tipo || tipo === 'compra' || !cliente ? "opacity-50 pointer-events-none" : ""}`}>
+              {/* Proyecto */}
+              <SelectDinamico
+                opciones={proyectos}
+                valorSeleccionado={proyecto}
+                setValorSeleccionado={setProyecto}
+                setNuevoValor={setNuevoProyecto}
+                placeholder={'Proyecto'}
+                disabled={!cliente || !marca || !modelo || !estado || !tipo || tipo === 'compra' || bloquearCampos}
+                permitirNuevo={true}
+              />
+            </div>
 
-            {/* Estado */}
-            <SelectDinamico 
-              opciones={[
-                { id: "nueva", nombre: "Nueva" },
-                { id: "usada", nombre: "Usada" }
-              ]}
-              valorSeleccionado={estado} 
-              setValorSeleccionado={setEstado} 
-              placeholder="Estado"
-              disabled={!marca || !modelo || bloquearCampos}
-              permitirNuevo={false}
-              className={!marca ? "opacity-50 cursor-not-allowed" : ""}
-            />
+            <div className={`relative ${!marca || !modelo || !estado || !tipo ? "opacity-50 pointer-events-none" : ""}`}>
+              {/* Proveedor */}
+              <SelectDinamico
+                opciones={proveedores}
+                valorSeleccionado={proveedor}
+                setValorSeleccionado={setProveedor}
+                setNuevoValor={setNuevoProveedor}
+                placeholder={'Proveedor'}
+                disabled={!marca || !modelo || !estado || !tipo || bloquearCampos}
+                permitirNuevo={true}
+              />
+            </div>
 
-            {/* Tipo */}
-            <SelectDinamico 
-              opciones={[
-                {id: 'compra', nombre:'Compra'},
-                {id: 'distribucion', nombre:'Distribución'}
-              ]}
-              valorSeleccionado={tipo}
-              setValorSeleccionado={setTipo}
-              placeholder='Tipo'
-              disabled={bloquearCampos}
-              permitirNuevo={false}
-            />
+            <div className={`relative ${tipo === 'compra' || !tipo ? "opacity-50 pointer-events-none" : ""}`}>
+              {/* Flujo */}
+              <SelectDinamico 
+                opciones={[
+                  {id: 'Recolección', nombre: 'Recolección'},
+                  {id: 'Distribución', nombre: 'Distribución'}
+                ]}
+                valorSeleccionado={flujo}
+                setValorSeleccionado={setFlujo}
+                placeholder='Flujo'
+                disabled={tipo === 'compra' || bloquearCampos}
+                permitirNuevo={false}
+              />
+            </div>
 
-            {/* Cliente */}
-            <SelectDinamico 
-              opciones={clientes}
-              valorSeleccionado={cliente}
-              setValorSeleccionado={setCliente}
-              setNuevoValor={setNuevoCliente} // Guardamos temporalmente el nuevo cliente
-              placeholder='Cliente'
-              disabled={bloquearCampos}
-              permitirNuevo={true} // Permite agregar nuevos clientes
-            />
-
-            {/* Proyecto */}
-            <SelectDinamico
-              opciones={proyectos}
-              valorSeleccionado={proyecto}
-              setValorSeleccionado={setProyecto}
-              setNuevoValor={setNuevoProyecto}
-              placeholder={'Proyecto'}
-              disabled={!cliente || bloquearCampos}
-              permitirNuevo={true}
-            />
-
-            {/* Proveedor */}
-            <SelectDinamico
-              opciones={proveedores}
-              valorSeleccionado={proveedor}
-              setValorSeleccionado={setProveedor}
-              setNuevoValor={setNuevoProveedor}
-              placeholder={'Proveedor'}
-              disabled={bloquearCampos}
-              permitirNuevo={true}
-            />
-
-            {/* Flujo */}
-            <SelectDinamico 
-              opciones={[
-                {id: 'Recolección', nombre: 'Recolección'},
-                {id: 'Distribución', nombre: 'Distribución'}
-              ]}
-              valorSeleccionado={flujo}
-              setValorSeleccionado={setFlujo}
-              placeholder='Flujo'
-              disabled={bloquearCampos}
-              permitirNuevo={false}
-            />
-
-            {/* Origen de Recoleccion */}
-            <input
-              type="text"
-              className="w-full p-3 border border-gray-300 rounded text-sm-bold focus:border-blue-700 focus:ring-0 focus:outline-none"
-              placeholder="Origen recolección"
-              value={origenRecoleccion}
-              onChange={(e) => setOrigenRecoleccion(e.target.value.toUpperCase())}
-              disabled={bloquearCampos}
-            />
+            <div className={`relative ${tipo === 'compra'  ? "opacity-50 " : ""}`}>
+              {/* Origen de Recoleccion */}
+              <input
+                type="text"
+                className="w-full p-3 border border-gray-300 rounded text-sm-bold focus:border-blue-700 focus:ring-0 focus:outline-none"
+                placeholder="Origen recolección"
+                value={origenRecoleccion}
+                onChange={(e) => setOrigenRecoleccion(e.target.value.toUpperCase())}
+                disabled={ tipo === 'compra' || bloquearCampos }
+              />
+            </div>
             
             {/* Tiene Accesorios - Checkbox estilo botón */}
             <div className="flex items-center gap-3">
@@ -389,14 +404,14 @@ function AgregarImpresora () {
 
             {/* Formulario para ingresar accesorios si el checkbox está activado */}
             {tieneAccesorios && (
-              <div className="mt-4">
-                <h3 className="text-gray-700 font-semibold">Ingrese los números de parte:</h3>
-                
+              <div className="mt-4 border p-3 rounded-md w-full">
+                <h3 className="text-gray-700 font-medium text-sm mb-2">Accesorios</h3>
+
                 {accesorios.map((numParte, index) => (
                   <div key={index} className="flex items-center gap-2 mt-2">
                     <input
                       type="text"
-                      className="border p-2 rounded w-full"
+                      className="border p-2 rounded-md w-full text-sm focus:ring-1 focus:ring-blue-400 focus:outline-none"
                       placeholder="Número de parte"
                       value={numParte}
                       onChange={(e) => {
@@ -407,25 +422,27 @@ function AgregarImpresora () {
                     />
                     <button 
                       type="button"
-                      className="bg-red-500 text-white px-3 py-1 rounded"
+                      className="text-red-500 px-2 py-1 text-xs rounded-md hover:bg-red-100 transition"
                       onClick={() => {
                         setAccesorios(accesorios.filter((_, i) => i !== index));
                       }}
                     >
-                      X
+                      ✖
                     </button>
                   </div>
                 ))}
 
                 <button
                   type="button"
-                  className="mt-3 bg-green-500 text-white px-4 py-2 rounded"
+                  className="mt-2 text-blue-600 text-xs flex items-center gap-1 hover:underline"
                   onClick={() => setAccesorios([...accesorios, ""])}
                 >
-                  + Agregar otro accesorio
+                  ➕ Agregar Accesorio
                 </button>
               </div>
             )}
+
+
 
 
             {/* Escaneo de Series */}
