@@ -15,6 +15,10 @@ function AgregarImpresora () {
   const [cliente, setCliente] = useState('')
   const [proyecto, setProyecto] = useState('')
   const [proveedor, setProveedor] = useState('')
+  const [flujo, setFlujo] = useState('')
+  const [origenRecoleccion, setOrigenRecoleccion] = useState('')
+  const [accesorios, setAccesorios] = useState([])
+
   // Estados para almacenar la lista de clientes, proyectos y marcas
   const [clientes, setClientes] = useState([])
   const [proyectos, setProyectos] = useState([])
@@ -31,7 +35,7 @@ function AgregarImpresora () {
   const [ bloquearCampos, setBloquearCampos] = useState(false)
   const [ tieneAccesorios, setTieneAccesorios] = useState(false)
 
-  const proyectosDisponibles = proyectos.filter(p => p.cliente_id === cliente)
+  
 
   useEffect(() => {
     fetch("http://localhost:3000/api/clientes")
@@ -39,10 +43,11 @@ function AgregarImpresora () {
       .then((data) => {
         setClientes(data)
       })
-
+    
     fetch("http://localhost:3000/api/proyectos")
       .then((res) => res.json())
       .then((data) => {
+        console.log("Proyectos obtenidos:", data); 
         setProyectos(data)
       })
     
@@ -102,15 +107,17 @@ function AgregarImpresora () {
     try {
       let marcaId = marca
       let clienteId = cliente
-      let proyectoId = proyecto === "nuevo" ? null : proyecto
-      let proveedorId = proveedor === "nuevo" ? null : proveedor
+      let proyectoId = proyecto 
+      let proveedorId = proveedor 
 
       // Crear marca si no existe 
       if (marca === 'nuevo' && nuevaMarca) {
+        const nuevaMarcaMayusculas = nuevaMarca.toUpperCase()
+
         const res = await fetch("http://localhost:3000/api/marcas", {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({nombre: nuevaMarca})
+          body: JSON.stringify({nombre: nuevaMarcaMayusculas})
         })
 
         if (!res.ok) {
@@ -124,10 +131,12 @@ function AgregarImpresora () {
 
       // Crear Cliente si no existe
       if (cliente === "nuevo" && nuevoCliente) {
+        const nuevoClienteMayusculas = nuevoCliente.toUpperCase()
+
         const res = await fetch("http://localhost:3000/api/clientes", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ nombre: nuevoCliente }),
+            body: JSON.stringify({ nombre: nuevoClienteMayusculas }),
         });
     
         if (!res.ok) {
@@ -141,6 +150,8 @@ function AgregarImpresora () {
         
       // Crear Proyecto si no existe (y asignar cliente_id si aplica)
       if (proyecto === "nuevo" && nuevoProyecto) {
+        const nuevoProyectoMayusculas = nuevoProyecto.toUpperCase()
+
         if (!cliente) {
           toast.error("Debes seleccionar un cliente antes de agregar un proyecto.");
           return;
@@ -150,8 +161,8 @@ function AgregarImpresora () {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ 
-            nombre: nuevoProyecto,
-            cliente_id: cliente // 🔥 Relacionamos el proyecto con el cliente seleccionado
+            nombre: nuevoProyectoMayusculas,
+            cliente_id: clienteId // Relacionamos el proyecto con el cliente seleccionado
           }),
         });
       
@@ -161,16 +172,18 @@ function AgregarImpresora () {
         }
       
         const data = await res.json(); 
-        setProyecto(data.id);
+        proyectoId = data.id
       }
       
 
          // Crear Proveedor si no existe
          if (proveedor === "nuevo" && nuevoProveedor) {
+          const nuevoProveedorMayusculas = nuevoProveedor
+
           const res = await fetch("http://localhost:3000/api/proveedores", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ nombre: nuevoProveedor })
+              body: JSON.stringify({ nombre: nuevoProveedorMayusculas })
           });
           if (!res.ok) throw new Error("Error al registrar el nuevo proveedor.");
           const data = await res.json();
@@ -187,8 +200,11 @@ function AgregarImpresora () {
           cliente_id: clienteId,
           proyecto_id: proyectoId,
           tiene_accesorios: tieneAccesorios,
+          accesorios,
           series,
-          proveedor_id: proveedorId
+          proveedor_id: proveedorId,
+          flujo,
+          origen_recoleccion: origenRecoleccion
         };
 
         console.log("Datos que se enviarán al backend:", {
@@ -200,8 +216,11 @@ function AgregarImpresora () {
           cliente_id: clienteId,
           proyecto_id: proyectoId,
           tiene_accesorios: tieneAccesorios,
+          accesorios,
           series,
-          proveedor_id: proveedorId
+          proveedorId,
+          flujo,
+          origen_recoleccion: origenRecoleccion
         });
 
         const response = await fetch("http://localhost:3000/api/impresoras/registrar-lote", {
@@ -233,6 +252,9 @@ function AgregarImpresora () {
         setBloquearCampos(false);
         setTieneAccesorios(false);
         setProveedor("")
+        setFlujo('')
+        setOrigenRecoleccion('')
+        setAccesorios([])
       
     } catch (error) {
       console.error("Error en el registro:", error);
@@ -264,7 +286,8 @@ function AgregarImpresora () {
             <InputModelo 
               value={modelo}
               onChange={setModelo}
-              disabled={bloquearCampos}
+              disabled={!marca || bloquearCampos}
+              className={!marca ? "opacity-50 cursor-not-allowed" : ""}
             />
 
             {/* Estado */}
@@ -276,15 +299,16 @@ function AgregarImpresora () {
               valorSeleccionado={estado} 
               setValorSeleccionado={setEstado} 
               placeholder="Estado"
-              disabled={bloquearCampos}
+              disabled={!marca || !modelo || bloquearCampos}
               permitirNuevo={false}
+              className={!marca ? "opacity-50 cursor-not-allowed" : ""}
             />
 
             {/* Tipo */}
             <SelectDinamico 
               opciones={[
                 {id: 'compra', nombre:'Compra'},
-                {id: 'distribucion', nombre:'Distribucion'}
+                {id: 'distribucion', nombre:'Distribución'}
               ]}
               valorSeleccionado={tipo}
               setValorSeleccionado={setTipo}
@@ -306,7 +330,7 @@ function AgregarImpresora () {
 
             {/* Proyecto */}
             <SelectDinamico
-              opciones={proyectosDisponibles}
+              opciones={proyectos}
               valorSeleccionado={proyecto}
               setValorSeleccionado={setProyecto}
               setNuevoValor={setNuevoProyecto}
@@ -325,7 +349,29 @@ function AgregarImpresora () {
               disabled={bloquearCampos}
               permitirNuevo={true}
             />
-            
+
+            {/* Flujo */}
+            <SelectDinamico 
+              opciones={[
+                {id: 'Recolección', nombre: 'Recolección'},
+                {id: 'Distribución', nombre: 'Distribución'}
+              ]}
+              valorSeleccionado={flujo}
+              setValorSeleccionado={setFlujo}
+              placeholder='Flujo'
+              disabled={bloquearCampos}
+              permitirNuevo={false}
+            />
+
+            {/* Origen de Recoleccion */}
+            <input
+              type="text"
+              className="w-full p-3 border border-gray-300 rounded text-sm-bold focus:border-blue-700 focus:ring-0 focus:outline-none"
+              placeholder="Origen recolección"
+              value={origenRecoleccion}
+              onChange={(e) => setOrigenRecoleccion(e.target.value.toUpperCase())}
+              disabled={bloquearCampos}
+            />
             
             {/* Tiene Accesorios - Checkbox estilo botón */}
             <div className="flex items-center gap-3">
@@ -340,6 +386,47 @@ function AgregarImpresora () {
                 {tieneAccesorios ? "Sí" : "No"}
               </button>
             </div>
+
+            {/* Formulario para ingresar accesorios si el checkbox está activado */}
+            {tieneAccesorios && (
+              <div className="mt-4">
+                <h3 className="text-gray-700 font-semibold">Ingrese los números de parte:</h3>
+                
+                {accesorios.map((numParte, index) => (
+                  <div key={index} className="flex items-center gap-2 mt-2">
+                    <input
+                      type="text"
+                      className="border p-2 rounded w-full"
+                      placeholder="Número de parte"
+                      value={numParte}
+                      onChange={(e) => {
+                        const nuevosAccesorios = [...accesorios];
+                        nuevosAccesorios[index] = e.target.value;
+                        setAccesorios(nuevosAccesorios);
+                      }}
+                    />
+                    <button 
+                      type="button"
+                      className="bg-red-500 text-white px-3 py-1 rounded"
+                      onClick={() => {
+                        setAccesorios(accesorios.filter((_, i) => i !== index));
+                      }}
+                    >
+                      X
+                    </button>
+                  </div>
+                ))}
+
+                <button
+                  type="button"
+                  className="mt-3 bg-green-500 text-white px-4 py-2 rounded"
+                  onClick={() => setAccesorios([...accesorios, ""])}
+                >
+                  + Agregar otro accesorio
+                </button>
+              </div>
+            )}
+
 
             {/* Escaneo de Series */}
               <InputSerie 
