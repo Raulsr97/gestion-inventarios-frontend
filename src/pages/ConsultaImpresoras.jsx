@@ -20,7 +20,9 @@ function ConsultaImpresoras() {
     tipo: '',
     cliente: '',
     proyecto: '',
+    proveedor: '',
     marca: '',
+    flujo: '',
     fechaEntradaInicio: '',
     fechaEntradaFin: '',
     fechaSalidaInicio: '',
@@ -41,14 +43,18 @@ function ConsultaImpresoras() {
   const modelosUnicos = [...new Set(impresoras.map((impresora) => impresora.modelo))]
   // Eliminamos los estados repetidos
   const estadosUnicos = [...new Set(impresoras.map((impresora) => impresora.estado))]
-  // Eliminamos los estados repetidos
+  // Eliminamos los tipos repetidos
   const tiposUnicos = [...new Set(impresoras.map((impresora) => impresora.tipo))]
   // Eliminamos los cliente repetidos
   const clientesUnicos = ['Sin cliente', ...new Set(impresoras.map((impresora) => impresora.cliente?.nombre).filter(Boolean))]
   // Eliminamos los proyectos repetidos
   const proyectosUnicos = ['Sin proyecto', ...new Set(impresoras.map((impresora) => impresora.proyecto?.nombre).filter(Boolean))]
+  // Eliminamos los proveedores respetidos
+  const proveedoresUnicos = ['Sin proveedor', ... new Set(impresoras.map(impresora => impresora.proveedor?.nombre).filter(Boolean))]
   // Eliminamos las marcas repetidas
   const marcasUnicas = ['Sin marca', ...new Set(impresoras.map((impresora) => impresora.marca?.nombre).filter(Boolean))]
+  // Eliminamos los flujos repetidos
+  const flujosUnicos = [...new Set(impresoras.map(impresora => impresora.flujo))]
 
   const exportarAExcel = (resultados) => {
     if (resultados.length === 0) {
@@ -58,7 +64,7 @@ function ConsultaImpresoras() {
   
     // Definir los encabezados de la tabla
     const encabezados = [
-      ["Serie", "Modelo", "Estado", "Tipo", "Ubicación", "Cliente", "Proyecto", "Marca", "Fecha de Entrada", "Fecha de Salida"]
+      ["Serie", "Modelo", "Estado", "Tipo", "Ubicación", "Cliente", "Proyecto", "Proveedor", "Marca", "Flujo", "Fecha de Entrada", "Fecha de Salida"]
     ];
   
     // Convertir los datos en formato adecuado para XLSX
@@ -70,7 +76,9 @@ function ConsultaImpresoras() {
       impresora.ubicacion,
       impresora.cliente?.nombre || "Sin cliente",
       impresora.proyecto?.nombre || "Sin proyecto",
+      impresora.proveedor?.nombre || 'Sin proveedor',
       impresora.marca?.nombre || "Sin marca",
+      impresora.flujo,
       impresora.fecha_entrada ? new Date(impresora.fecha_entrada).toLocaleDateString() : "No registrada",
       impresora.fecha_salida ? new Date(impresora.fecha_salida).toLocaleDateString() : "No registrada"
     ]);
@@ -134,7 +142,9 @@ function ConsultaImpresoras() {
                     (!filtrosAplicados.tipo || impresora.tipo === filtrosAplicados.tipo) && 
                     (!filtrosAplicados.cliente || (filtrosAplicados.cliente === 'Sin cliente' && !impresora.cliente) || impresora.cliente?.nombre === filtrosAplicados.cliente) &&
                     (!filtrosAplicados.proyecto || (filtrosAplicados.proyecto === 'Sin proyecto' && !impresora.proyecto) || impresora.proyecto?.nombre === filtrosAplicados.proyecto) && 
+                    (!filtrosAplicados.proveedor || (filtrosAplicados.proveedor === 'Sin proveedor' && !impresora.proveedor) || impresora.proveedor?.nombre === filtrosAplicados.proveedor) &&
                     (!filtrosAplicados.marca || (filtrosAplicados.marca === 'Sin marca' && !impresora.marca) || impresora.marca?.nombre === filtrosAplicados.marca) &&
+                    (!filtrosAplicados.flujo || impresora.flujo === filtrosAplicados.flujo) &&
                     (!filtrosAplicados.fechaEntradaInicio || fechaEntradaImpresora >= filtrosAplicados.fechaEntradaInicio) &&
                     (!filtrosAplicados.fechaEntradaFin || fechaEntradaImpresora <= filtrosAplicados.fechaEntradaFin) &&
                     (!filtrosAplicados.fechaSalidaInicio || fechaSalidaImpresora >= filtrosAplicados.fechaSalidaInicio) &&
@@ -159,7 +169,9 @@ function ConsultaImpresoras() {
                 tipo: '',
                 cliente: '',
                 proyecto: '',
+                proveedor: '',
                 marca: '',
+                flujo: '',
                 fechaEntradaInicio: '',
                 fechaEntradaFin: '',
                 fechaSalidaInicio: '',
@@ -249,6 +261,20 @@ function ConsultaImpresoras() {
               ))}
             </select>
 
+             {/* Proveedor */}
+             <select 
+              className="w-full p-3 border border-gray-300 rounded text-sm focus:border-blue-700 focus:ring-0 focus:outline-none" 
+              value={filtrosAplicados.proveedor || ''}
+              onChange={(e) => setFiltrosAplicados({...filtrosAplicados, proveedor: e.target.value})}
+            >
+              <option value="" disabled hidden>Proveedor</option>
+              {proveedoresUnicos.map((proveedor) => (
+                <option key={proveedor} value={proveedor}>
+                  {proveedor}
+                </option>
+              ))}
+            </select>
+
             {/* Marca */}
             <select 
               className="w-full p-3 border border-gray-300 rounded text-sm focus:border-blue-700 focus:ring-0 focus:outline-none" 
@@ -261,6 +287,20 @@ function ConsultaImpresoras() {
                   {marca}
                 </option>
               ))}
+            </select>
+
+            {/* Flujo */}
+            <select 
+              className="w-full p-3 border border-gray-300 rounded text-sm focus:border-blue-700 focus:ring-0 focus:outline-none" 
+              value={filtrosAplicados.flujo}
+              onChange={(e) => setFiltrosAplicados({...filtrosAplicados, flujo: e.target.value})}
+            >
+              <option value="" disabled hidden>Flujo</option>
+              {flujosUnicos.map((flujoUnico => (
+                <option key={flujoUnico} value={flujoUnico}>
+                  {flujoUnico}
+                </option>
+              )))}
             </select>
 
             {/* 📆 Grupo de Fecha de Entrada */}
@@ -351,7 +391,9 @@ function ConsultaImpresoras() {
                     <th className="border border-gray-300 p-2">Ubicación</th>
                     <th className="border border-gray-300 p-2">Cliente</th>
                     <th className="border border-gray-300 p-2">Proyecto</th>
+                    <th className="border border-gray-300 p-2">Proveedor</th>
                     <th className="border border-gray-300 p-2">Marca</th>
+                    <th className="border border-gray-300 p-2">Flujo</th>
                     <th className="border border-gray-300 p-2">Fecha de Entrada</th>
                     <th className="border border-gray-300 p-2">Fecha de Salida</th>
                   </tr>
@@ -366,7 +408,9 @@ function ConsultaImpresoras() {
                       <td className="border border-gray-300 p-2">{impresora.ubicacion}</td>
                       <td className="border border-gray-300 p-2">{impresora.cliente?.nombre || "Sin cliente"}</td>
                       <td className="border border-gray-300 p-2">{impresora.proyecto?.nombre || "Sin proyecto"}</td>
+                      <td className="border border-gray-300 p-2">{impresora.proveedor?.nombre || "Sin proveedor"}</td>
                       <td className="border border-gray-300 p-2">{impresora.marca?.nombre || "Sin marca"}</td>
+                      <td className="border border-gray-300 p-2">{impresora.flujo}</td>
                       <td className="border border-gray-300 p-2">
                         {impresora.fecha_entrada ? new Date(impresora.fecha_entrada).toLocaleDateString() : "No registrada"}
                       </td>

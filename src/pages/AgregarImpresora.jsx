@@ -389,7 +389,7 @@ function AgregarImpresora () {
             </div>
             
             {/* Tiene Accesorios - Checkbox estilo botón */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 ">
               <span className="text-gray-700">Tiene Accesorios</span>
               <button
                 type="button"
@@ -404,7 +404,7 @@ function AgregarImpresora () {
 
             {/* Formulario para ingresar accesorios si el checkbox está activado */}
             {tieneAccesorios && (
-              <div className="mt-4 border p-3 rounded-md w-full">
+              <div className="mt-4 border p-3 rounded-md col-span-2 relative w-full">
                 <h3 className="text-gray-700 font-medium text-sm mb-2">Accesorios</h3>
 
                 {accesorios.map((numParte, index) => (
@@ -416,7 +416,7 @@ function AgregarImpresora () {
                       value={numParte}
                       onChange={(e) => {
                         const nuevosAccesorios = [...accesorios];
-                        nuevosAccesorios[index] = e.target.value;
+                        nuevosAccesorios[index] = e.target.value.toUpperCase();
                         setAccesorios(nuevosAccesorios);
                       }}
                     />
@@ -441,10 +441,7 @@ function AgregarImpresora () {
                 </button>
               </div>
             )}
-
-
-
-
+            
             {/* Escaneo de Series */}
               <InputSerie 
                 onScan={agregarSerie}

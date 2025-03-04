@@ -12,7 +12,7 @@ function CardStockGeneral() {
       .then((res) => res.json())
       .then((data) => {
         const impresorasEnAlmacen = data.filter(
-          (impresora) => impresora.ubicacion === "Almacén"
+          (impresora) => impresora.ubicacion === "Almacen"
         );
 
         setStockTotal(impresorasEnAlmacen.length);
