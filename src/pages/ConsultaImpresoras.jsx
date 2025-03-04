@@ -11,6 +11,8 @@ function ConsultaImpresoras() {
   const [impresoras, setImpresoras] = useState([]);
   // Guarda las impresoras filtradas, las que coinciden con los filtros aplicados
   const [resultados, setResultados] = useState([]);
+  const [ accesoriosDisponibles, setAccesoriosDisponibles ] = useState([])
+  const [ accesorioSeleccionado, setAccesorioSeleccionado] = useState('')
   
   // Estados para los filtros. Guarda los valores actuales de los filtros, permite que el usuario aplique filtros sin modificar la lista original de impresoras
   const [filtrosAplicados, setFiltrosAplicados] = useState({
@@ -27,14 +29,20 @@ function ConsultaImpresoras() {
     fechaEntradaFin: '',
     fechaSalidaInicio: '',
     fechaSalidaFin: '',
-    enAlmacen: ''
+    enAlmacen: '',
+    origenRecoleccion: ''
   });
 
   useEffect(() => {
     fetch("http://localhost:3000/api/impresoras")
       .then((res) => res.json())
       .then((data) => setImpresoras(data))
-      .catch((error) => console.error("Error al obtener impresoras:", error));
+      .catch((error) => console.error("Error al obtener impresoras:", error))
+
+    fecth('http://localhost:3000/api/accesorios')
+      .then(res => res.json())
+      .then(data => setAccesoriosDisponibles(data))
+      .catch((error) => console.error("Error al obtener impresoras:", error))
   }, []);
 
   // Me devuelve la cantidad(total) de resultados filtrados
@@ -54,7 +62,9 @@ function ConsultaImpresoras() {
   // Eliminamos las marcas repetidas
   const marcasUnicas = ['Sin marca', ...new Set(impresoras.map((impresora) => impresora.marca?.nombre).filter(Boolean))]
   // Eliminamos los flujos repetidos
-  const flujosUnicos = [...new Set(impresoras.map(impresora => impresora.flujo))]
+  const flujosUnicos = [...new Set(impresoras.map(impresora => impresora.flujo).filter(Boolean))]
+  // Eliminamos los origenes de recoleccion repetidos
+  const origenesRecolecccionUnicos = [...new Set(impresoras.map(impresora => impresora.origen_recoleccion).filter(Boolean))]
 
   const exportarAExcel = (resultados) => {
     if (resultados.length === 0) {
@@ -64,7 +74,7 @@ function ConsultaImpresoras() {
   
     // Definir los encabezados de la tabla
     const encabezados = [
-      ["Serie", "Modelo", "Estado", "Tipo", "Ubicación", "Cliente", "Proyecto", "Proveedor", "Marca", "Flujo", "Fecha de Entrada", "Fecha de Salida"]
+      ["Serie", "Modelo", "Estado", "Tipo", "Ubicación", "Cliente", "Proyecto", "Proveedor", "Marca", "Flujo", "Origen Recoleccion", "Fecha de Entrada", "Fecha de Salida"]
     ];
   
     // Convertir los datos en formato adecuado para XLSX
@@ -79,6 +89,7 @@ function ConsultaImpresoras() {
       impresora.proveedor?.nombre || 'Sin proveedor',
       impresora.marca?.nombre || "Sin marca",
       impresora.flujo,
+      impresora.origen_recoleccion,
       impresora.fecha_entrada ? new Date(impresora.fecha_entrada).toLocaleDateString() : "No registrada",
       impresora.fecha_salida ? new Date(impresora.fecha_salida).toLocaleDateString() : "No registrada"
     ]);
@@ -145,6 +156,7 @@ function ConsultaImpresoras() {
                     (!filtrosAplicados.proveedor || (filtrosAplicados.proveedor === 'Sin proveedor' && !impresora.proveedor) || impresora.proveedor?.nombre === filtrosAplicados.proveedor) &&
                     (!filtrosAplicados.marca || (filtrosAplicados.marca === 'Sin marca' && !impresora.marca) || impresora.marca?.nombre === filtrosAplicados.marca) &&
                     (!filtrosAplicados.flujo || impresora.flujo === filtrosAplicados.flujo) &&
+                    (!filtrosAplicados.origenRecoleccion || impresora.origen_recoleccion === filtrosAplicados.origenRecoleccion) &&
                     (!filtrosAplicados.fechaEntradaInicio || fechaEntradaImpresora >= filtrosAplicados.fechaEntradaInicio) &&
                     (!filtrosAplicados.fechaEntradaFin || fechaEntradaImpresora <= filtrosAplicados.fechaEntradaFin) &&
                     (!filtrosAplicados.fechaSalidaInicio || fechaSalidaImpresora >= filtrosAplicados.fechaSalidaInicio) &&
@@ -176,7 +188,8 @@ function ConsultaImpresoras() {
                 fechaEntradaFin: '',
                 fechaSalidaInicio: '',
                 fechaSalidaFin: '',
-                enAlmacen: ''
+                enAlmacen: '',
+                origenRecoleccion: ''
               })
             }}
           >
@@ -233,8 +246,8 @@ function ConsultaImpresoras() {
               )))}
             </select>
 
-             {/* Cliente */}
-             <select 
+            {/* Cliente */}
+            <select 
               className="w-full p-3 border border-gray-300 rounded text-sm focus:border-blue-700 focus:ring-0 focus:outline-none" 
               value={filtrosAplicados.cliente || ''}
               onChange={(e) => setFiltrosAplicados({...filtrosAplicados, cliente: e.target.value})}
@@ -299,6 +312,20 @@ function ConsultaImpresoras() {
               {flujosUnicos.map((flujoUnico => (
                 <option key={flujoUnico} value={flujoUnico}>
                   {flujoUnico}
+                </option>
+              )))}
+            </select>
+
+            {/* Origen Recoleccion */}
+            <select 
+              className="w-full p-3 border border-gray-300 rounded text-sm focus:border-blue-700 focus:ring-0 focus:outline-none" 
+              value={filtrosAplicados.origenRecoleccion}
+              onChange={(e) => setFiltrosAplicados({...filtrosAplicados, origenRecoleccion: e.target.value})}
+            >
+              <option value="" disabled hidden>Origen Recolección</option>
+              {origenesRecolecccionUnicos.map((origenUnico => (
+                <option key={origenUnico} value={origenUnico}>
+                  {origenUnico}
                 </option>
               )))}
             </select>
@@ -394,6 +421,7 @@ function ConsultaImpresoras() {
                     <th className="border border-gray-300 p-2">Proveedor</th>
                     <th className="border border-gray-300 p-2">Marca</th>
                     <th className="border border-gray-300 p-2">Flujo</th>
+                    <th className="border border-gray-300 p-2">Origen Recolección</th>
                     <th className="border border-gray-300 p-2">Fecha de Entrada</th>
                     <th className="border border-gray-300 p-2">Fecha de Salida</th>
                   </tr>
@@ -410,7 +438,8 @@ function ConsultaImpresoras() {
                       <td className="border border-gray-300 p-2">{impresora.proyecto?.nombre || "Sin proyecto"}</td>
                       <td className="border border-gray-300 p-2">{impresora.proveedor?.nombre || "Sin proveedor"}</td>
                       <td className="border border-gray-300 p-2">{impresora.marca?.nombre || "Sin marca"}</td>
-                      <td className="border border-gray-300 p-2">{impresora.flujo}</td>
+                      <td className="border border-gray-300 p-2">{impresora.flujo ? impresora.flujo: 'No Aplica'}</td>
+                      <td className="border border-gray-300 p-2">{impresora.origen_recoleccion}</td>
                       <td className="border border-gray-300 p-2">
                         {impresora.fecha_entrada ? new Date(impresora.fecha_entrada).toLocaleDateString() : "No registrada"}
                       </td>
