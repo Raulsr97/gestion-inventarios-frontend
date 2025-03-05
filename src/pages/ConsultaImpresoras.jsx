@@ -12,7 +12,7 @@ function ConsultaImpresoras() {
   // Guarda las impresoras filtradas, las que coinciden con los filtros aplicados
   const [resultados, setResultados] = useState([]);
   const [ accesoriosDisponibles, setAccesoriosDisponibles ] = useState([])
-  const [ accesorioSeleccionado, setAccesorioSeleccionado] = useState('')
+  const [ accesorioSeleccionado, setAccesorioSeleccionado ] = useState('')
   
   // Estados para los filtros. Guarda los valores actuales de los filtros, permite que el usuario aplique filtros sin modificar la lista original de impresoras
   const [filtrosAplicados, setFiltrosAplicados] = useState({
@@ -36,12 +36,18 @@ function ConsultaImpresoras() {
   useEffect(() => {
     fetch("http://localhost:3000/api/impresoras")
       .then((res) => res.json())
-      .then((data) => setImpresoras(data))
+      .then((data) => {
+        console.log("📌 Impresoras obtenidas:", data);
+        setImpresoras(data);
+      })
       .catch((error) => console.error("Error al obtener impresoras:", error))
 
-    fecth('http://localhost:3000/api/accesorios')
+    fetch('http://localhost:3000/api/accesorios')
       .then(res => res.json())
-      .then(data => setAccesoriosDisponibles(data))
+      .then((data) => {
+        console.log("📌 Accesorios obtenidos:", data);
+        setAccesoriosDisponibles(data);
+      })
       .catch((error) => console.error("Error al obtener impresoras:", error))
   }, []);
 
@@ -68,57 +74,51 @@ function ConsultaImpresoras() {
 
   const exportarAExcel = (resultados) => {
     if (resultados.length === 0) {
-      toast.error("No hay datos para exportar.");
-      return;
+        toast.error("No hay datos para exportar.");
+        return;
     }
-  
+
     // Definir los encabezados de la tabla
     const encabezados = [
-      ["Serie", "Modelo", "Estado", "Tipo", "Ubicación", "Cliente", "Proyecto", "Proveedor", "Marca", "Flujo", "Origen Recoleccion", "Fecha de Entrada", "Fecha de Salida"]
+        ["Serie", "Modelo", "Estado", "Tipo", "Ubicación", "Cliente", "Proyecto", "Proveedor", "Marca", "Flujo", "Origen Recolección", "Accesorios", "Fecha de Entrada", "Fecha de Salida"]
     ];
-  
+
     // Convertir los datos en formato adecuado para XLSX
     const datos = resultados.map((impresora) => [
-      impresora.serie,
-      impresora.modelo,
-      impresora.estado,
-      impresora.tipo,
-      impresora.ubicacion,
-      impresora.cliente?.nombre || "Sin cliente",
-      impresora.proyecto?.nombre || "Sin proyecto",
-      impresora.proveedor?.nombre || 'Sin proveedor',
-      impresora.marca?.nombre || "Sin marca",
-      impresora.flujo,
-      impresora.origen_recoleccion,
-      impresora.fecha_entrada ? new Date(impresora.fecha_entrada).toLocaleDateString() : "No registrada",
-      impresora.fecha_salida ? new Date(impresora.fecha_salida).toLocaleDateString() : "No registrada"
+        impresora.serie,
+        impresora.modelo,
+        impresora.estado,
+        impresora.tipo,
+        impresora.ubicacion,
+        impresora.cliente?.nombre || "Sin cliente",
+        impresora.proyecto?.nombre || "Sin proyecto",
+        impresora.proveedor?.nombre || "Sin proveedor",
+        impresora.marca?.nombre || "Sin marca",
+        impresora.flujo || "No Aplica",
+        impresora.origen_recoleccion || "No Aplica",
+        impresora.accesorios?.map(a => a.numero_parte).join(", ") || "Sin accesorios",
+        impresora.fecha_entrada ? new Date(impresora.fecha_entrada).toLocaleDateString() : "No registrada",
+        impresora.fecha_salida ? new Date(impresora.fecha_salida).toLocaleDateString() : "No registrada"
     ]);
-  
-    // Crear la hoja de trabajo (worksheet)
+
+    // Crear la hoja de trabajo (worksheet) con los encabezados y datos
     const ws = XLSX.utils.aoa_to_sheet([...encabezados, ...datos]);
-  
-    // Aplicar estilos a los encabezados
-    const range = XLSX.utils.decode_range(ws["!ref"]);
-    for (let C = range.s.c; C <= range.e.c; C++) {
-      const cell_address = XLSX.utils.encode_cell({ r: 0, c: C });
-      if (!ws[cell_address]) continue;
-      ws[cell_address].s = {
-        font: { bold: true, color: { rgb: "FFFFFF" } }, // Texto blanco
-        fill: { fgColor: { rgb: "4472C4" } }, // Azul oscuro
-        alignment: { horizontal: "center" }
-      };
-    }
-  
+
+    // Definir el rango de datos como tabla
+    const range = XLSX.utils.decode_range(ws['!ref']);
+    ws['!autofilter'] = { ref: XLSX.utils.encode_range(range) };  // Aplica autofiltros
+
+    // Ajustar el ancho de las columnas automáticamente
+    ws['!cols'] = encabezados[0].map(() => ({ wch: 20 })); // Ajusta el ancho de todas las columnas a 20 caracteres aprox.
+
     // Crear el libro de Excel y agregar la hoja
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Reporte de Impresoras");
-  
+
     // Descargar el archivo
     XLSX.writeFile(wb, "reporte_impresoras.xlsx");
-  }
+  };
 
-  
-   
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-7xl mx-auto">
@@ -157,6 +157,7 @@ function ConsultaImpresoras() {
                     (!filtrosAplicados.marca || (filtrosAplicados.marca === 'Sin marca' && !impresora.marca) || impresora.marca?.nombre === filtrosAplicados.marca) &&
                     (!filtrosAplicados.flujo || impresora.flujo === filtrosAplicados.flujo) &&
                     (!filtrosAplicados.origenRecoleccion || impresora.origen_recoleccion === filtrosAplicados.origenRecoleccion) &&
+                    (!accesorioSeleccionado || (impresora.accesorios && impresora.accesorios.some(accesorio => accesorio.numero_parte === accesorioSeleccionado))) &&
                     (!filtrosAplicados.fechaEntradaInicio || fechaEntradaImpresora >= filtrosAplicados.fechaEntradaInicio) &&
                     (!filtrosAplicados.fechaEntradaFin || fechaEntradaImpresora <= filtrosAplicados.fechaEntradaFin) &&
                     (!filtrosAplicados.fechaSalidaInicio || fechaSalidaImpresora >= filtrosAplicados.fechaSalidaInicio) &&
@@ -184,6 +185,7 @@ function ConsultaImpresoras() {
                 proveedor: '',
                 marca: '',
                 flujo: '',
+                accesorios: '',
                 fechaEntradaInicio: '',
                 fechaEntradaFin: '',
                 fechaSalidaInicio: '',
@@ -191,6 +193,8 @@ function ConsultaImpresoras() {
                 enAlmacen: '',
                 origenRecoleccion: ''
               })
+
+              setAccesorioSeleccionado('')
             }}
           >
             {/* Número de Serie */}
@@ -330,6 +334,20 @@ function ConsultaImpresoras() {
               )))}
             </select>
 
+            {/* Accesorios seleccionados */}
+            <select 
+              className="w-full p-3 border border-gray-300 rounded text-sm focus:border-blue-700 focus:ring-0 focus:outline-none"  
+              value={accesorioSeleccionado}
+              onChange={e => setAccesorioSeleccionado(e.target.value)} 
+            >
+              <option value="" disabled hidden>Accesorios</option>
+              {accesoriosDisponibles.map((accesorio) => (
+                <option key={accesorio.numero_parte} value={accesorio.numero_parte}>
+                  {accesorio.numero_parte}
+                </option>
+              ))}
+            </select>
+
             {/* 📆 Grupo de Fecha de Entrada */}
             <div className="relative w-full md:w-auto flex flex-col">
               <span className="text-xs text-gray-600 text-center mb-1">Fecha de Entrada</span>
@@ -422,6 +440,7 @@ function ConsultaImpresoras() {
                     <th className="border border-gray-300 p-2">Marca</th>
                     <th className="border border-gray-300 p-2">Flujo</th>
                     <th className="border border-gray-300 p-2">Origen Recolección</th>
+                    <th className="border border-gray-300 p-2">Accesorios</th>
                     <th className="border border-gray-300 p-2">Fecha de Entrada</th>
                     <th className="border border-gray-300 p-2">Fecha de Salida</th>
                   </tr>
@@ -439,7 +458,12 @@ function ConsultaImpresoras() {
                       <td className="border border-gray-300 p-2">{impresora.proveedor?.nombre || "Sin proveedor"}</td>
                       <td className="border border-gray-300 p-2">{impresora.marca?.nombre || "Sin marca"}</td>
                       <td className="border border-gray-300 p-2">{impresora.flujo ? impresora.flujo: 'No Aplica'}</td>
-                      <td className="border border-gray-300 p-2">{impresora.origen_recoleccion}</td>
+                      <td className="border border-gray-300 p-2">{impresora.origen_recoleccion ? impresora.origen_recoleccion: 'No Aplica'}</td>
+                      <td className="border border-gray-300 p-2">
+                        {impresora.accesorios?.length > 0 
+                          ? impresora.accesorios.map(acc => acc.numero_parte).join(', ') 
+                          : "Sin accesorios"}
+                      </td>
                       <td className="border border-gray-300 p-2">
                         {impresora.fecha_entrada ? new Date(impresora.fecha_entrada).toLocaleDateString() : "No registrada"}
                       </td>
