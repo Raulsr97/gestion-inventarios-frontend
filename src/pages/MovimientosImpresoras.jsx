@@ -12,6 +12,14 @@ function MovimientosImpresoras() {
   })
   const [seriesDisponibles, setSeriesDisponibles] = useState([])
   const [busquedaSerie, setBusquedaSerie] = useState('') // Guarda el texto del buscador
+  const [empresas, setEmpresas] = useState([])
+  const [empresaSeleccionada, setEmpresaSeleccionada] = useState('')
+  const [formularioRemision, setFormularioRemision] = useState({
+    destinatario: '',
+    direccion_entrega: '',
+    notas: ''
+  })
+  const [mostrarFormularioRemision, setMostrarFormularioRemision] = useState(false)
   
 
 
@@ -38,7 +46,13 @@ function MovimientosImpresoras() {
         setSeriesDisponibles(seriesFiltradas)
       })
       .catch(error => console.error('Error al obtener los datos:', error))
-  }, [datosSalida.cliente, datosSalida.proyecto]) // Dependencias para actualizar cuando cambie cliente/proyecto
+    
+    fetch('http://localhost:3000/api/empresas')
+      .then(res => res.json())
+      .then(data => setEmpresas(data))
+      .catch((error) => console.error('Error al obtener las empresas:', error))
+  
+    }, [datosSalida.cliente, datosSalida.proyecto]) // Dependencias para actualizar cuando cambie cliente/proyecto
 
   const totalSeriesDisponibles = seriesDisponibles.length
   const totalSeriesSeleccionadas = datosSalida.series.length
