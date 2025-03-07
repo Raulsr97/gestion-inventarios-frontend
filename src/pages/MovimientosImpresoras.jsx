@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
 function MovimientosImpresoras() {
-  // 📌 Estados principales
   const [impresoras, setImpresoras] = useState([]);
   const [empresas, setEmpresas] = useState([]);
   const [seriesDisponibles, setSeriesDisponibles] = useState([]);
@@ -17,7 +16,6 @@ function MovimientosImpresoras() {
     notas: "",
   });
 
-  // 🟢 Cargar datos al iniciar
   useEffect(() => {
     fetch("http://localhost:3000/api/impresoras")
       .then((res) => res.json())
@@ -34,12 +32,10 @@ function MovimientosImpresoras() {
       .catch((error) => console.error("Error al obtener las empresas:", error));
   }, []);
 
-  // 📌 Filtrar búsqueda por número de serie
   const seriesFiltradas = seriesDisponibles.filter((impresora) =>
     impresora.serie.includes(busquedaSerie.toUpperCase())
   );
 
-  // 📌 Manejar selección de series
   const manejarSeleccionSerie = (serie) => {
     setSeriesSeleccionadas((prev) =>
       prev.includes(serie)
@@ -48,7 +44,6 @@ function MovimientosImpresoras() {
     );
   };
 
-  // 📌 Avanzar al formulario de remisión
   const abrirFormularioRemision = () => {
     if (seriesSeleccionadas.length === 0) {
       toast.warn("Debes seleccionar al menos una serie.");
@@ -61,7 +56,6 @@ function MovimientosImpresoras() {
     setMostrarFormularioRemision(true);
   };
 
-  // 📌 Generar vista previa de la remisión
   const generarVistaPrevia = () => {
     if (!formularioRemision.destinatario || !formularioRemision.direccion_entrega) {
       toast.warn("Por favor, completa todos los campos obligatorios.");
@@ -70,7 +64,6 @@ function MovimientosImpresoras() {
     setMostrarVistaPrevia(true);
   };
 
-  // 📌 Enviar remisión al backend
   const generarRemision = async () => {
     const payload = {
       numero_remision: `REM-${Date.now()}`,
@@ -192,12 +185,24 @@ function MovimientosImpresoras() {
                 <p><strong>Dirección de Entrega:</strong> {formularioRemision.direccion_entrega}</p>
                 <p><strong>Notas:</strong> {formularioRemision.notas || "Sin notas"}</p>
 
-                <button className="bg-green-600 text-white px-4 py-2 rounded mt-4" onClick={generarRemision}>
-                  Confirmar Remisión
-                </button>
+                <div className="flex justify-between mt-4">
+                  <button 
+                    className="bg-gray-500 text-white px-4 py-2 rounded"
+                    onClick={() => setMostrarVistaPrevia(false)}
+                  >
+                    Modificar Información
+                  </button>
+                  <button 
+                    className="bg-green-600 text-white px-4 py-2 rounded"
+                    onClick={generarRemision}
+                  >
+                    Confirmar Remisión
+                  </button>
+                </div>
               </div>
             </div>
           )}
+
         </div>
       </div>
     </div>
