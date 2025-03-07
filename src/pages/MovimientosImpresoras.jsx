@@ -1,199 +1,201 @@
 import { useEffect, useState } from "react";
+import { toast } from "react-toastify";
 
 function MovimientosImpresoras() {
-  const [impresoras, setImpresoras] = useState([])
-  const [clientesUnicos, setClientesUnicos] = useState([])
-  const [proyectosUnicos, setProyectosUnicos] = useState([])
-  const [mostrarSalida, setMostrarSalida] = useState(true)
-  const [datosSalida, setDatosSalida] = useState({
-    cliente: '',
-    proyecto: '',
-    series: []
-  })
-  const [seriesDisponibles, setSeriesDisponibles] = useState([])
-  const [busquedaSerie, setBusquedaSerie] = useState('') // Guarda el texto del buscador
-  const [empresas, setEmpresas] = useState([])
-  const [empresaSeleccionada, setEmpresaSeleccionada] = useState('')
+  // 📌 Estados principales
+  const [impresoras, setImpresoras] = useState([]);
+  const [empresas, setEmpresas] = useState([]);
+  const [seriesDisponibles, setSeriesDisponibles] = useState([]);
+  const [seriesSeleccionadas, setSeriesSeleccionadas] = useState([]);
+  const [empresaSeleccionada, setEmpresaSeleccionada] = useState("");
+  const [mostrarFormularioRemision, setMostrarFormularioRemision] = useState(false);
+  const [mostrarVistaPrevia, setMostrarVistaPrevia] = useState(false);
+  const [busquedaSerie, setBusquedaSerie] = useState("");
   const [formularioRemision, setFormularioRemision] = useState({
-    destinatario: '',
-    direccion_entrega: '',
-    notas: ''
-  })
-  const [mostrarFormularioRemision, setMostrarFormularioRemision] = useState(false)
-  
+    destinatario: "",
+    direccion_entrega: "",
+    notas: "",
+  });
 
-
+  // 🟢 Cargar datos al iniciar
   useEffect(() => {
-    fetch('http://localhost:3000/api/impresoras')
+    fetch("http://localhost:3000/api/impresoras")
       .then((res) => res.json())
       .then((data) => {
-        setImpresoras(data)
-
-        // Extraer clientes unicos sin duplicados
-        const clientes = [...new Set(data.map((impresora) => impresora.cliente?.nombre).filter(Boolean))]
-        const proyectos = [...new Set(data.map((impresora) => impresora.proyecto?.nombre).filter(Boolean))]
-
-        setClientesUnicos(clientes)
-        setProyectosUnicos(proyectos)
-
-        // Filtrar series segun cliente y proyecto seleccionados
-        let seriesFiltradas = data.filter(impresora =>
-          !impresora.fecha_salida && // Solo las que siguen en almacén
-          (!datosSalida.cliente || impresora.cliente?.nombre === datosSalida.cliente) &&
-          (!datosSalida.proyecto || impresora.proyecto?.nombre === datosSalida.proyecto)
-        )
-
-        setSeriesDisponibles(seriesFiltradas)
+        const disponibles = data.filter((impresora) => !impresora.fecha_salida);
+        setImpresoras(data);
+        setSeriesDisponibles(disponibles);
       })
-      .catch(error => console.error('Error al obtener los datos:', error))
-    
-    fetch('http://localhost:3000/api/empresas')
-      .then(res => res.json())
-      .then(data => setEmpresas(data))
-      .catch((error) => console.error('Error al obtener las empresas:', error))
-  
-    }, [datosSalida.cliente, datosSalida.proyecto]) // Dependencias para actualizar cuando cambie cliente/proyecto
+      .catch((error) => console.error("Error al obtener las impresoras:", error));
 
-  const totalSeriesDisponibles = seriesDisponibles.length
-  const totalSeriesSeleccionadas = datosSalida.series.length
+    fetch("http://localhost:3000/api/empresas")
+      .then((res) => res.json())
+      .then((data) => setEmpresas(data))
+      .catch((error) => console.error("Error al obtener las empresas:", error));
+  }, []);
 
- return (
+  // 📌 Filtrar búsqueda por número de serie
+  const seriesFiltradas = seriesDisponibles.filter((impresora) =>
+    impresora.serie.includes(busquedaSerie.toUpperCase())
+  );
+
+  // 📌 Manejar selección de series
+  const manejarSeleccionSerie = (serie) => {
+    setSeriesSeleccionadas((prev) =>
+      prev.includes(serie)
+        ? prev.filter((s) => s !== serie)
+        : [...prev, serie]
+    );
+  };
+
+  // 📌 Avanzar al formulario de remisión
+  const abrirFormularioRemision = () => {
+    if (seriesSeleccionadas.length === 0) {
+      toast.warn("Debes seleccionar al menos una serie.");
+      return;
+    }
+    if (!empresaSeleccionada) {
+      toast.warn("Debes seleccionar una empresa.");
+      return;
+    }
+    setMostrarFormularioRemision(true);
+  };
+
+  // 📌 Generar vista previa de la remisión
+  const generarVistaPrevia = () => {
+    if (!formularioRemision.destinatario || !formularioRemision.direccion_entrega) {
+      toast.warn("Por favor, completa todos los campos obligatorios.");
+      return;
+    }
+    setMostrarVistaPrevia(true);
+  };
+
+  // 📌 Enviar remisión al backend
+  const generarRemision = async () => {
+    const payload = {
+      numero_remision: `REM-${Date.now()}`,
+      empresa_id: empresaSeleccionada,
+      destinatario: formularioRemision.destinatario,
+      direccion_entrega: formularioRemision.direccion_entrega,
+      notas: formularioRemision.notas,
+      series: seriesSeleccionadas,
+    };
+
+    try {
+      const response = await fetch("http://localhost:3000/api/remisiones", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) throw new Error("Error al crear la remisión");
+
+      toast.success("✅ Remisión generada con éxito");
+      setMostrarVistaPrevia(false);
+      setSeriesSeleccionadas([]);
+      setEmpresaSeleccionada("");
+      setFormularioRemision({ destinatario: "", direccion_entrega: "", notas: "" });
+    } catch (error) {
+      console.error(error);
+      toast.error("❌ Error al generar la remisión");
+    }
+  };
+
+  return (
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-7xl mx-auto">
-        {/* 🔹 Encabezado */}
         <h2 className="text-2xl font-semibold text-gray-700 mb-6 text-center">
           Movimientos de Impresoras
         </h2>
 
-        {/* 🔹 Botones de Selección */}
-        <div className="flex justify-center gap-4 mb-6">
-          <button
-            className={`py-2 px-6 rounded-md transition text-white ${
-              mostrarSalida ? "bg-blue-700" : "bg-gray-500 hover:bg-blue-600"
-            }`}
-            onClick={() => setMostrarSalida(true)}
-          >
-            Registrar Salida
-          </button>
-          <button
-            className={`py-2 px-6 rounded-md transition text-white ${
-              !mostrarSalida ? "bg-blue-700" : "bg-gray-500 hover:bg-blue-600"
-            }`}
-            onClick={() => setMostrarSalida(false)}
-          >
-            Registrar Entrega
-          </button>
-        </div>
-
-        {/* 🔹 Contenedor Dinámico */}
         <div className="bg-white shadow-md rounded-lg p-6">
-          {mostrarSalida ? (
-            // 🔸 Formulario de Registrar Salida
-            <div>
-              <h3 className="text-lg font-semibold text-gray-700 mb-4">
-                Registrar Salida
-              </h3>
-              {/* Seleccion del Cliente */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700" >Cliente</label>
-                <select  
-                  className="w-full p-3 border border-gray-300 rounded text-sm focus:border-blue-700 focus:ring-0 focus:outline-none" 
-                  value={datosSalida.cliente || ''}
-                  onChange={(e) => setDatosSalida({
-                    cliente: e.target.value === 'Sin asignar' ? '' : e.target.value,
-                    proyecto: e.target.value !== 'Sin asignar' ? '' : datosSalida.proyecto,
-                    series: []
-                  })}
-                  disabled={!!datosSalida.proyecto}
-                >
-                  <option value="" disabled hidden>Selecciona un cliente</option>
-                  <option value="Sin asignar">Sin asignar</option>
-                  {clientesUnicos.map(cliente => (
-                    <option key={cliente} value={cliente}>{cliente}</option>
-                  ))}
-                </select>
-              </div>
-              {/* Seleccion del Proyecto */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700" >Proyecto</label>
-                <select  
-                  className="w-full p-3 border border-gray-300 rounded text-sm focus:border-blue-700 focus:ring-0 focus:outline-none" 
-                  value={datosSalida.proyecto || ''}
-                  onChange={(e) => setDatosSalida({
-                    cliente: e.target.value !== 'Sin asignar' ? '' : datosSalida.cliente,
-                    proyecto: e.target.value === 'Sin asignar' ? '' : e.target.value,
-                    series: []
-                  })}
-                  disabled={!!datosSalida.cliente}
-                >
-                  <option value="" disabled hidden>Selecciona un proyecto</option>
-                  <option value="Sin asignar">Sin asignar</option>
-                  {proyectosUnicos.map(proyecto => (
-                    <option key={proyecto} value={proyecto}>{proyecto}</option>
-                  ))}
-                </select>
-              </div>
-              
-              {/* Filtrador de Series */}
+          <input
+            type="text"
+            placeholder="Buscar serie..."
+            className="w-full p-2 border rounded mb-4"
+            value={busquedaSerie}
+            onChange={(e) => setBusquedaSerie(e.target.value)}
+          />
+
+          <ul className="max-h-40 overflow-y-auto">
+            {seriesFiltradas.map((impresora) => (
+              <li key={impresora.serie} className="flex justify-between items-center border-b p-2">
+                <label className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    checked={seriesSeleccionadas.includes(impresora.serie)}
+                    onChange={() => manejarSeleccionSerie(impresora.serie)}
+                  />
+                  <span>{impresora.serie}</span>
+                </label>
+              </li>
+            ))}
+          </ul>
+
+          <select
+            className="w-full p-2 border rounded mt-4"
+            value={empresaSeleccionada}
+            onChange={(e) => setEmpresaSeleccionada(e.target.value)}
+          >
+            <option value="" disabled>
+              Selecciona una empresa
+            </option>
+            {empresas.map((empresa) => (
+              <option key={empresa.id} value={empresa.id}>
+                {empresa.nombre}
+              </option>
+            ))}
+          </select>
+
+          <button className="bg-blue-600 text-white py-2 px-6 rounded mt-4" onClick={abrirFormularioRemision}>
+            Siguiente: Datos de Remisión
+          </button>
+
+          {mostrarFormularioRemision && (
+            <div className="bg-gray-100 p-4 mt-4 rounded-md">
+              <h3 className="text-lg font-semibold text-gray-700 mb-4">Detalles de la Remisión</h3>
+
               <input
                 type="text"
-                placeholder="Buscar serie..."
-                className="w-full p-2 border border-gray-300 rounded text-sm focus:border-blue-700 focus:ring-0 focus:outline-none" 
-                value={busquedaSerie}
-                onChange={(e) => setBusquedaSerie(e.target.value)}
-                />
-              
-              {/* Contador de Series */}
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-gray-600 text-sm">
-                  📦 Total disponibles: <strong>{totalSeriesDisponibles}</strong>
-                </span>
-                <span className="text-blue-600 text-sm">
-                  ✅ Seleccionadas: <strong>{totalSeriesSeleccionadas}</strong>
-                </span>
-              </div>
-        
-              {/* Lista de series disponibles */}
-              <div className="mb-4">
-                <h4 className="text-sm font-semibold text-gray-700 mb-2">Selecciona las series a dar salida:</h4>
+                placeholder="Destinatario"
+                className="w-full p-2 border rounded mb-2"
+                value={formularioRemision.destinatario}
+                onChange={(e) => setFormularioRemision({ ...formularioRemision, destinatario: e.target.value })}
+              />
 
-                <ul className="text-gray-600 text-sm space-y-1 max-h-40 overflow-y-auto border p-2 rounded">
-                  {seriesDisponibles
-                    .filter(impresora => !impresora.fecha_salida) // Solo las impresoras que no tienen salida
-                    .filter(impresora => 
-                      busquedaSerie === '' || impresora.serie.includes(busquedaSerie.toUpperCase())
-                    )
-                    .map(impresora => (
-                      <li key={impresora.serie} className="flex justify-between items-center border-b py-1">
-                        <label className="flex items-center space-x-2">
-                          <input
-                            type="checkbox"
-                            className="form-checkbox text-blue-600"
-                            checked={datosSalida.series.includes(impresora.serie)}
-                            onChange={() => {
-                              setDatosSalida((prev) => ({
-                                ...prev,
-                                series: prev.series.includes(impresora.serie)
-                                  ? prev.series.filter((serie) => serie !== impresora.serie)
-                                  : [...prev.series, impresora.serie]
-                              }))
-                            }}
-                          />
-                          <span>{impresora.serie}</span>
-                        </label>
-                      </li>
-                    ))
-                  }
-                </ul>
-              </div>
+              <input
+                type="text"
+                placeholder="Dirección de Entrega"
+                className="w-full p-2 border rounded mb-2"
+                value={formularioRemision.direccion_entrega}
+                onChange={(e) => setFormularioRemision({ ...formularioRemision, direccion_entrega: e.target.value })}
+              />
+
+              <textarea
+                placeholder="Notas (Opcional)"
+                className="w-full p-2 border rounded mb-2"
+                value={formularioRemision.notas}
+                onChange={(e) => setFormularioRemision({ ...formularioRemision, notas: e.target.value })}
+              />
+
+              <button className="bg-blue-600 text-white py-2 px-6 rounded mt-4" onClick={generarVistaPrevia}>
+                Vista Previa
+              </button>
             </div>
-          ) : (
-            // 🔸 Formulario de Registrar Entrega
-            <div>
-              <h3 className="text-lg font-semibold text-gray-700 mb-4">
-                Registrar Entrega
-              </h3>
-              {/* Aquí irá el formulario de entrega */}
+          )}
+
+          {mostrarVistaPrevia && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+              <div className="bg-white p-6 rounded-lg">
+                <h3 className="text-lg font-semibold">Vista Previa</h3>
+                <p><strong>Destinatario:</strong> {formularioRemision.destinatario}</p>
+                <p><strong>Dirección de Entrega:</strong> {formularioRemision.direccion_entrega}</p>
+                <p><strong>Notas:</strong> {formularioRemision.notas || "Sin notas"}</p>
+
+                <button className="bg-green-600 text-white px-4 py-2 rounded mt-4" onClick={generarRemision}>
+                  Confirmar Remisión
+                </button>
+              </div>
             </div>
           )}
         </div>
