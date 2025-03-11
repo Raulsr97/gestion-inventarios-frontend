@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 function MovimientosImpresoras() {
   const [impresoras, setImpresoras] = useState([]);
   const [empresas, setEmpresas] = useState([]);
-  const [numeroRemision, setNumeroRemision] = useState([])
+  const [remisiones, setRemisiones] = useState([])
   const [clienteProyecto, setClienteProyecto] = useState({ cliente: '', proyecto: ''})
   const [seriesDisponibles, setSeriesDisponibles] = useState([]);
   const [seriesSeleccionadas, setSeriesSeleccionadas] = useState([]);
@@ -51,6 +51,14 @@ function MovimientosImpresoras() {
       .then((res) => res.json())
       .then((data) => setEmpresas(data))
       .catch((error) => console.error("Error al obtener las empresas:", error));
+
+    // Obtener remisiones desde el backend
+    fetch("http://localhost:3000/api/remisiones/total")
+    .then((res) => res.json())
+    .then((data) => {
+      setRemisiones(data);
+    })
+  .catch((error) => console.error("Error al obtener las remisiones:", error));
   }, []);
 
   const seriesFiltradas = seriesDisponibles.filter((impresora) =>
@@ -255,6 +263,15 @@ function MovimientosImpresoras() {
       }
   
       toast.success(`✅ Remisión ${data.numero_remision} generada con éxito`);
+
+      // Actualizar la lista de remisiones despues de crear una nueva
+      fetch("http://localhost:3000/api/remisiones/total")
+        .then(res => res.json())
+        .then(data => setRemisiones(data))
+        .catch(error => console.error("Error al obtener las remisiones:", error)) 
+
+      setMostrarVistaPrevia(false);
+
   
     } catch (error) {
       console.error("❌ Error en generarRemision:", error.message);
@@ -299,6 +316,7 @@ function MovimientosImpresoras() {
         };
     }
   };
+
   const obtenerEstiloRemision = (empresa) => {
     switch (empresa) {
       case "1": // ID de IMME
@@ -311,6 +329,29 @@ function MovimientosImpresoras() {
         return "border-t-8 border-gray-500"; // Si no hay empresa seleccionada, usa gris
     }
   };
+
+  const generarPDF = async (numeroRemision) => {
+    try {
+        const response = await fetch(`http://localhost:3000/api/remisiones/pdf/${numeroRemision}`);
+        if (!response.ok) throw new Error("No se pudo generar el PDF");
+
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `${numeroRemision}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+
+        toast.success("✅ PDF generado con éxito");
+    } catch (error) {
+        console.error("❌ Error al descargar el PDF:", error);
+        toast.error("❌ No se pudo generar el PDF");
+    }
+};
+
+  
   
   return (
     <div className="min-h-screen bg-gray-100 p-6">
@@ -493,6 +534,47 @@ function MovimientosImpresoras() {
               </button>
             </div>
           )}
+
+          {/* 📌 Sección de remisiones generadas */}
+          <div className="bg-white shadow-md rounded-lg p-6 mt-6">
+            <h3 className="text-lg font-semibold text-gray-700 mb-4">Remisiones Generadas</h3>
+
+            {remisiones.length === 0 ? (
+              <p className="text-gray-600">No hay remisiones generadas aún.</p>
+            ) : (
+              <table className="w-full border-collapse border text-sm">
+                <thead className="bg-gray-200">
+                  <tr>
+                    <th className="border p-2">Número de Remisión</th>
+                    <th className="border p-2">Cliente</th>
+                    <th className="border p-2">Proyecto</th>
+                    <th className="border p-2">Fecha</th>
+                    <th className="border p-2">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {remisiones.map((remision) => (
+                    <tr key={remision.numero_remision}>
+                      <td className="border p-2">{remision.numero_remision}</td>
+                      <td className="border p-2">{remision.cliente?.nombre || "Sin cliente"}</td>
+                      <td className="border p-2">{remision.proyecto?.nombre || "Sin proyecto"}</td>
+                      <td className="border p-2">{new Date(remision.fecha_emision).toLocaleDateString()}</td>
+                      <td className="border p-2">
+                        <button
+                          className="bg-blue-600 text-white px-3 py-1 rounded"
+                          onClick={() => generarPDF(remision.numero_remision)}
+                        >
+                          Generar PDF
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+
+
 
           {mostrarVistaPrevia && datosRemision && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4">
