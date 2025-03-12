@@ -12,6 +12,15 @@ function VistaPreviaRemisionEntrega() {
     return null;
   }
 
+  console.log("📩 Datos recibidos en Vista Previa:", datosRemision);
+
+   // Verificar si la empresa es válida
+   if (!datosRemision.empresa) {
+    console.error("❌ ERROR: La empresa llegó como undefined en Vista Previa.");
+    toast.error("Hubo un problema con la empresa seleccionada.");
+    return null;
+  }
+
   // 🔍 Extraer datos de la remisión
   const empresaNombre = datosRemision.empresa;
   console.log("Empresa en VistaPreviaRemisionEntrega:", empresaNombre); // Verificar empresa en consola

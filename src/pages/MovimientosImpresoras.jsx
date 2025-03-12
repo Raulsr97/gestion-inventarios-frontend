@@ -143,9 +143,28 @@ function MovimientosImpresoras() {
     console.log("🔍 Vista previa - Cliente Nombre:", clienteNombre);
     console.log("🔍 Vista previa - Proyecto Nombre:", proyectoNombre);
 
+    const empresaObjeto = empresas.find(e => e.id === Number(empresaSeleccionada))
+
+    if (!empresaObjeto) {
+      console.error("❌ ERROR: No se encontró la empresa seleccionada", empresaSeleccionada);
+      toast.error("No se encontró la empresa seleccionada.");
+      return;
+    }
+   
+    console.log("✅ Datos enviados a Vista Previa:", {
+      empresa: empresaObjeto.nombre, 
+      cliente: clienteNombre,
+      proyecto: proyectoNombre,
+      destinatario: formularioRemision.destinatario,
+      direccion_entrega: formularioRemision.direccion_entrega,
+      notas: formularioRemision.notas || "Sin notas",
+      series: seriesSeleccionadas,
+    });
+
+
    // Generar el objeto de la remisión
     const nuevaRemision = {
-      empresa: empresas.find((e) => e.id === empresaSeleccionada)?.nombre,
+      empresa: empresaObjeto.nombre,
       cliente: clienteNombre,
       proyecto: proyectoNombre,
       destinatario: formularioRemision.destinatario,
