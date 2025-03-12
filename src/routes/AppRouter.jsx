@@ -11,6 +11,7 @@ import AgregarRefaccion from "../pages/AgregarRefaccion";
 import Consultas from "../pages/Consultas";
 import ConsultaImpresoras from "../pages/ConsultaImpresoras";
 import MovimientosImpresoras from "../pages/MovimientosImpresoras";
+import VistaPreviaRemisionEntrega from "../pages/VistaPreviaRemisionEntrega"; 
 
 function AppRouter() {
     return (
@@ -22,6 +23,7 @@ function AppRouter() {
             <Route path="/productos/consulta" element={<ConsultaProductos />} />
             <Route path="/movimientos" element={<Movimientos />} />
             <Route path="/movimientos/impresoras/agregar" element={<MovimientosImpresoras />} />
+            <Route path="/movimientos/impresoras/generar-remision" element={<VistaPreviaRemisionEntrega />} />
             <Route path="/productos/impresoras/agregar" element={<AgregarImpresora />} />
             <Route path="/productos/toner/agregar" element={<AgregarToner />} />
             <Route path="/productos/unidades-imagen/agregar" element={<AgregarUnidadImagen />} />

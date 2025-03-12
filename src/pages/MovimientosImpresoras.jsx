@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 function MovimientosImpresoras() {
   const [impresoras, setImpresoras] = useState([]);
   const [empresas, setEmpresas] = useState([]);
   const [remisiones, setRemisiones] = useState([])
+  const [numeroRemision, setNumeroRemision] = useState(null); 
   const [clienteProyecto, setClienteProyecto] = useState({ cliente: '', proyecto: ''})
   const [seriesDisponibles, setSeriesDisponibles] = useState([]);
   const [seriesSeleccionadas, setSeriesSeleccionadas] = useState([]);
@@ -34,6 +36,10 @@ function MovimientosImpresoras() {
   }
 
   const obtenerLogoEmpresa = (id) => logosEmpresas[id] || '/logos/default.png'
+
+  const esModoPDF = window.location.pathname.includes('/remisiones/')
+
+  const navigate = useNavigate()
 
 
 
@@ -148,18 +154,15 @@ function MovimientosImpresoras() {
       series: seriesSeleccionadas,
     };
   
-    // Guardar la remisión en el estado para la vista previa
-    setDatosRemision(nuevaRemision);
-  
-    // Mostrar la vista previa
-    setMostrarVistaPrevia(true);
+    // 🔹 Redirigir a la nueva ruta con los datos de la remisión
+    navigate("/movimientos/impresoras/generar-remision", { state: { remision: nuevaRemision } })
   };
   
   const generarRemision = async () => {
     try {
       // 🔹 Generamos el número de remisión único con milisegundos
       const fecha = new Date();
-      const numeroRemision = `REM-${fecha.getFullYear()}${(fecha.getMonth() + 1)
+      const numeroRemisionGenerado = `REM-${fecha.getFullYear()}${(fecha.getMonth() + 1)
         .toString()
         .padStart(2, "0")}${fecha.getDate().toString().padStart(2, "0")}-${fecha
         .getHours()
@@ -234,9 +237,11 @@ function MovimientosImpresoras() {
         toast.warn("Se requiere un cliente para la remisión. Verifica los datos.");
         return;
       }
+
+      setNumeroRemision(numeroRemisionGenerado)
   
       const payload = {
-        numero_remision: numeroRemision,
+        numero_remision: numeroRemisionGenerado,
         empresa_id: Number(empresaSeleccionada),
         cliente_id: clienteId ? Number(clienteId) : null,
         proyecto_id: proyectoId ? Number(proyectoId) : null,
@@ -270,6 +275,8 @@ function MovimientosImpresoras() {
         .then(data => setRemisiones(data))
         .catch(error => console.error("Error al obtener las remisiones:", error)) 
 
+      
+      generarPDF(data.numero_remision)
       setMostrarVistaPrevia(false);
 
   
@@ -331,6 +338,11 @@ function MovimientosImpresoras() {
   };
 
   const generarPDF = async (numeroRemision) => {
+    if (!numeroRemision) {
+      console.error("❌ No se puede generar el PDF: número de remisión indefinido.");
+      return
+    }
+
     try {
         const response = await fetch(`http://localhost:3000/api/remisiones/pdf/${numeroRemision}`);
         if (!response.ok) throw new Error("No se pudo generar el PDF");
@@ -342,7 +354,7 @@ function MovimientosImpresoras() {
         a.download = `${numeroRemision}.pdf`;
         document.body.appendChild(a);
         a.click();
-        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url)
 
         toast.success("✅ PDF generado con éxito");
     } catch (error) {
@@ -564,7 +576,7 @@ function MovimientosImpresoras() {
                           className="bg-blue-600 text-white px-3 py-1 rounded"
                           onClick={() => generarPDF(remision.numero_remision)}
                         >
-                          Generar PDF
+                          Descargar PDF
                         </button>
                       </td>
                     </tr>
@@ -573,8 +585,6 @@ function MovimientosImpresoras() {
               </table>
             )}
           </div>
-
-
 
           {mostrarVistaPrevia && datosRemision && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4">
@@ -762,20 +772,22 @@ function MovimientosImpresoras() {
                 </div>
 
                 {/* 🔹 Botones de acción */}
-                <div className="flex justify-between mt-4">
-                  <button 
-                    className="bg-gray-500 text-white px-4 py-2 rounded"
-                    onClick={() => setMostrarVistaPrevia(false)}
-                  >
-                    Modificar Información
-                  </button>
-                  <button 
-                    className="bg-blue-600 text-white px-4 py-2 rounded"
-                    onClick={generarRemision}
-                  >
-                    Confirmar Remisión
-                  </button>
-                </div>
+                {!esModoPDF && (
+                  <div className="flex justify-between mt-4">
+                    <button 
+                      className="bg-gray-500 text-white px-4 py-2 rounded"
+                      onClick={() => setMostrarVistaPrevia(false)}
+                    >
+                      Modificar Información
+                    </button>
+                    <button 
+                      className="bg-blue-600 text-white px-4 py-2 rounded"
+                      onClick={generarRemision(numeroRemision)}
+                    >
+                      Confirmar Remisión
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           )}
