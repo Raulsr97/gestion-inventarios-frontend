@@ -150,6 +150,19 @@ function MovimientosImpresoras() {
       toast.error("No se encontró la empresa seleccionada.");
       return;
     }
+
+    
+    const seriesConDetalles = seriesSeleccionadas.map(serie => {
+      const impresora = impresoras.find(imp => imp.serie === serie)
+      return {
+        marca: impresora?.marca?.nombre || 'Desconocida',
+        modelo: impresora?.modelo || 'Desconocido',
+        serie: serie
+      }
+    })
+
+    
+  console.log("📩 Datos de las series para Vista Previa:", seriesConDetalles);
    
     console.log("✅ Datos enviados a Vista Previa:", {
       empresa: empresaObjeto.nombre, 
@@ -158,7 +171,7 @@ function MovimientosImpresoras() {
       destinatario: formularioRemision.destinatario,
       direccion_entrega: formularioRemision.direccion_entrega,
       notas: formularioRemision.notas || "Sin notas",
-      series: seriesSeleccionadas,
+      series: seriesConDetalles,
     });
 
 
@@ -170,8 +183,11 @@ function MovimientosImpresoras() {
       destinatario: formularioRemision.destinatario,
       direccion_entrega: formularioRemision.direccion_entrega,
       notas: formularioRemision.notas || "Sin notas",
-      series: seriesSeleccionadas,
+      series: seriesConDetalles,
     };
+
+    
+
   
     // 🔹 Redirigir a la nueva ruta con los datos de la remisión
     navigate("/movimientos/impresoras/generar-remision", { state: { remision: nuevaRemision } })
