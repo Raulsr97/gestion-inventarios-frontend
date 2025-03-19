@@ -40,7 +40,7 @@ function ListaImpresoras ({impresoras, seleccionadas, manejarSeleccion, clientes
             <label
               key={impresora.serie}
               className={`flex items-center justify-between p-2 rounded-lg shadow-md cursor-pointer border transition ${
-                seleccionadas.includes(impresora.serie)
+                seleccionadas.some(i => i.serie === impresora.serie)
                   ? "bg-green-300 border-green-500"
                   : "bg-white border-gray-300"
               }`}
@@ -55,7 +55,7 @@ function ListaImpresoras ({impresoras, seleccionadas, manejarSeleccion, clientes
               </div>
               <input
                 type="checkbox"
-                checked={seleccionadas.includes(impresora.serie)}
+                checked={seleccionadas.some(i => i.serie === impresora.serie)}
                 onChange={() => manejarSeleccion(impresora.serie)}
                 className="w-5 h-5 rounded"
               />

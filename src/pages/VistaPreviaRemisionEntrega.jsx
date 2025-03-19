@@ -1,6 +1,7 @@
 import { useLocation, useNavigate} from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+
 
 function VistaPreviaRemisionEntrega() {
   const location = useLocation()
@@ -11,6 +12,16 @@ function VistaPreviaRemisionEntrega() {
   const [destinatario, setDestinatario] = useState(datosRemision?.destinatario || "");
   const [direccionEntrega, setDireccionEntrega] = useState(datosRemision?.direccionEntrega || "");
   const [notas, setNotas] = useState(datosRemision?.notas || ""); 
+
+  // Estado para almacenar las marcas
+  const [marcas, setMarcas] = useState([])
+
+  useEffect(() => {
+    fetch("http://localhost:3000/api/marcas")
+      .then(res => res.json())
+      .then(data => setMarcas(data))
+      .catch(error => console.error("Error al obtener las marcas", error));
+  }, [])
 
   // Logos de cada empresa
   const logosEmpresas = {
@@ -28,6 +39,13 @@ function VistaPreviaRemisionEntrega() {
     return  <p className="text-red-500">❌ No hay datos disponibles para la remisión.</p>
   }
 
+  // Verificar si alguna impresora tiene accesorios
+  const hayAccesorios = datosRemision.series.some(impresora => {
+    return impresora.accesorios && impresora.accesorios.length > 0;
+  })
+
+  console.log("📦 ¿Hay accesorios en las impresoras seleccionadas?:", hayAccesorios);
+
   return (
     <div className="p-6 max-w-3xl mx-auto bg-white shadow-md rounded-lg">
       {/* Encabezado */}
@@ -39,7 +57,9 @@ function VistaPreviaRemisionEntrega() {
       {/* 🔹 Datos Generales */}
       <div className="mb-4">
         <p><strong>Cliente:</strong> {datosRemision.cliente}</p>
-        {datosRemision.proyecto !== "Sin proyecto" && <p><strong>Proyecto:</strong> {datosRemision.proyecto}</p>}
+        {datosRemision.proyecto && datosRemision.proyecto !== 'Sin Proyecto' && (
+          <p><strong>Proyecto: </strong>{datosRemision.proyecto}</p>
+        )}
       </div>
 
       {/* 🔹 Campos Editables */}
@@ -78,16 +98,23 @@ function VistaPreviaRemisionEntrega() {
             <th className="border p-2">Marca</th>
             <th className="border p-2">Modelo</th>
             <th className="border p-2">Serie</th>
-            <th className="border p-2">Accesorios</th>
+            {hayAccesorios && <th className="border p-2">Accesorios</th>}
          </tr>
         </thead>
         <tbody>
-          {datosRemision.series.map((serie, index) => (
+          {datosRemision.series.map((impresora, index) => (
             <tr key={index} className="text-center border">
-              <td className="border p-2">Marca Ejemplo</td>
-              <td className="border p-2">Modelo {serie}</td>
-              <td className="border p-2">{serie}</td>
-              <td className="border p-2">-</td>
+              <td className="border p-2">{impresora.marca?.nombre || marcas.find(m => m.id === impresora.marca_id)?.nombre}</td>
+              <td className="border p-2">{impresora.modelo}</td>
+              <td className="border p-2">{impresora.serie}</td>
+              {hayAccesorios && (
+                <td className="border p-2">
+                {Array.isArray(impresora.accesorios) && impresora.accesorios.length > 0
+                  ? impresora.accesorios.map(a => a.numero_parte).join(', ')
+                  : ''
+                }
+                </td>
+              )}
             </tr>
           ))}
        </tbody>

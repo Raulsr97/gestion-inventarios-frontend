@@ -41,6 +41,9 @@ function GestionImpresoras() {
         // Filtrar solo las impresoras que no tienen fecha de salida
         const disponibles = data.filter(impresora => !impresora.fecha_salida)
         setImpresorasDisponibles(disponibles)
+
+        // 🔹 Imprimir datos en consola para ver si los accesorios llegan correctamente
+        console.log("📦 Impresoras recibidas:", JSON.stringify(disponibles, null, 2));
       })
       .catch(error => console.error('Error al obtener las impresoras', error))
     
@@ -82,22 +85,27 @@ function GestionImpresoras() {
     setImpresorasSeleccionadas(prevSeleccionadas => {
       let nuevaSeleccion
 
-      if (prevSeleccionadas.includes(serie)) {
+      // Buscar el objeto completo de la impresora seleccionada
+      const impresoraSeleccionada = impresorasDisponibles.find(i => i.serie === serie);
+
+      if (!impresoraSeleccionada) {
+        console.warn(`⚠️ No se encontró la impresora con serie: ${serie}`);
+        return prevSeleccionadas;
+    }
+
+      if (prevSeleccionadas.some(i => i.serie === serie)) {
         // Si ya esta seleccionada la quitamos
-        nuevaSeleccion = prevSeleccionadas.filter(s => s !== serie)
+        nuevaSeleccion = prevSeleccionadas.filter(i => i.serie !== serie)
         console.log(`❌ Eliminada: ${serie}`);
       } else {
         // Si no esta seleccionada la agregamos
-        nuevaSeleccion = [...prevSeleccionadas, serie]
-        console.log(`✅ Agregada: ${serie}`);
+        nuevaSeleccion = [...prevSeleccionadas, impresoraSeleccionada]
+        console.log(`✅ Agregada:`, impresoraSeleccionada);
       }
 
-      // Obtener los objetos de impresoras que corresponden a las series seleccionadas
-      const impresorasFiltradas = nuevaSeleccion.map(serie => impresorasDisponibles.find(i => i.serie === serie))
-
       // Extraer clientes y proyectos de las impresoras seleccionadas
-      const clientes = impresorasFiltradas.map(i => i?.cliente_id).filter(Boolean)
-      const proyectos = impresorasFiltradas.map(i => i?.proyecto_id).filter(Boolean)
+      const clientes = nuevaSeleccion.map(i => i?.cliente_id).filter(Boolean)
+      const proyectos = nuevaSeleccion.map(i => i?.proyecto_id).filter(Boolean)
 
       // Validaciones
       const clienteDiferente = new Set(clientes).size > 1 // Si hay mas de un cliente
@@ -142,6 +150,13 @@ function GestionImpresoras() {
 
   // Funcion para recopilar los datos que se enviaran a la pagina VistaPreviaRemisionEntrega.jsx
   const manejarGenerarRemision = ({ destinatario, direccionEntrega, notas}) => {
+    console.log("🚀 Impresoras Seleccionadas:", impresorasSeleccionadas);
+
+    // Verificar si las series seleeccionadas tienen cliente_id y proyecto_id
+    impresorasSeleccionadas.forEach(serie => {
+      console.log(`Serie:  ${serie.serie}, Cliente ID: ${serie.cliente_id}, Proyecto ID: ${serie.proyecto_id}`);
+    })
+
     // 🔹 Extraer clientes y proyectos desde las series seleccionadas
     const clientesUnicos = new Set(impresorasSeleccionadas.map(i => i.cliente_id).filter(Boolean));
     const proyectosUnicos = new Set(impresorasSeleccionadas.map(i => i.proyecto_id).filter(Boolean));
@@ -150,6 +165,7 @@ function GestionImpresoras() {
     let clienteFinal = "Sin Cliente";
     if (clientesUnicos.size === 1) {
         const clienteId = [...clientesUnicos][0];
+        console.log("Cliente Único ID:", clienteId);
         const clienteEncontrado = clientes.find(c => c.id === clienteId);
         clienteFinal = clienteEncontrado ? clienteEncontrado.nombre : "Cliente No Encontrado";
     } else if (clientesUnicos.size > 1) {
@@ -163,6 +179,7 @@ function GestionImpresoras() {
     let proyectoFinal = "Sin Proyecto";
     if (proyectosUnicos.size === 1) {
         const proyectoId = [...proyectosUnicos][0];
+        console.log("Proyecto Único ID:", proyectoId);
         const proyectoEncontrado = proyectos.find(p => p.id === proyectoId);
         proyectoFinal = proyectoEncontrado ? proyectoEncontrado.nombre : "Proyecto No Encontrado";
     } else if (proyectosUnicos.size > 1) {
@@ -172,6 +189,7 @@ function GestionImpresoras() {
     // 🔹 Si las series ya tienen cliente/proyecto asignado, usarlos
     if (clienteFinal === "Sin Cliente" && impresorasSeleccionadas.length > 0) {
         const primeraSerie = impresorasSeleccionadas[0];
+        console.log("Primera Serie Cliente ID:", primeraSerie.cliente_id);
         const clienteExistente = clientes.find(c => c.id === primeraSerie.cliente_id);
         if (clienteExistente) {
             clienteFinal = clienteExistente.nombre;
@@ -180,11 +198,16 @@ function GestionImpresoras() {
 
     if (proyectoFinal === "Sin Proyecto" && impresorasSeleccionadas.length > 0) {
         const primeraSerie = impresorasSeleccionadas[0];
+        console.log("Primera Serie Proyecto ID:", primeraSerie.proyecto_id);
+
         const proyectoExistente = proyectos.find(p => p.id === primeraSerie.proyecto_id);
         if (proyectoExistente) {
             proyectoFinal = proyectoExistente.nombre;
         }
     }
+
+    console.log("Cliente Final:", clienteFinal);
+    console.log("Proyecto Final:", proyectoFinal);
     
 
     // Recopilamos todam la informacion
