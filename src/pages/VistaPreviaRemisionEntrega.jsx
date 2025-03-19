@@ -25,9 +25,9 @@ function VistaPreviaRemisionEntrega() {
 
   // Logos de cada empresa
   const logosEmpresas = {
-    1: '../../public/logos/imme.png',
-    2: '../../public/logos/colour_klub.png',
-    3: '../../public/logos/coneltec.png'
+    1: '/logos/imme.png',
+    2: '/logos/colour_klub.png',
+    3: '/logos/coneltec.png'
   }
 
   // Obtener el logo correcto segun la empresa seleccionada
@@ -45,6 +45,37 @@ function VistaPreviaRemisionEntrega() {
   })
 
   console.log("📦 ¿Hay accesorios en las impresoras seleccionadas?:", hayAccesorios);
+
+  const crearRemision = async () => {
+    try {
+      console.log("📤 Enviando datos al backend...");
+
+      const remisionData = {
+        numero_remision: `REM-${Date.now()}`,
+        empresa_id: datosRemision.empresa,
+        cliente_id: datosRemision.cliente_id, 
+        proyecto_id: datosRemision.proyecto_id || null, 
+        destinatario,
+        direccion_entrega: direccionEntrega, 
+        notas, 
+        series: datosRemision.series.map(impresora => impresora.serie), // Solo enviamos los números de serie
+        usuario_creador: "admin"  // Temporal, se cambiará cuando haya autenticación
+      }
+
+      console.log("📦 Datos listos para enviar:", remisionData);
+
+      // Enviar solicitud 'POST' al backend
+      const response = await fetch("http://localhost:3000/api/remisiones", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json'},
+        body: JSON.stringify(remisionData)
+      })
+      
+    } catch (error) {
+      console.error("❌ Error al crear la remisión:", error);
+      toast.error("⚠️ No se pudo crear la remisión. Inténtalo de nuevo.");
+    }
+  }
 
   return (
     <div className="p-6 max-w-3xl mx-auto bg-white shadow-md rounded-lg">
