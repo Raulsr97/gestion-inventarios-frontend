@@ -57,7 +57,7 @@ function VistaPreviaRemisionEntrega() {
         proyecto_id: datosRemision.proyecto_id || null, 
         destinatario,
         direccion_entrega: direccionEntrega, 
-        notas, 
+        notas: notas.trim() === '' ? null : notas, 
         series: datosRemision.series.map(impresora => impresora.serie), // Solo enviamos los números de serie
         usuario_creador: "admin"  // Temporal, se cambiará cuando haya autenticación
       }
@@ -70,7 +70,41 @@ function VistaPreviaRemisionEntrega() {
         headers: { 'Content-Type': 'application/json'},
         body: JSON.stringify(remisionData)
       })
+
+      // Verificar si la respuesta fue exitosa
+      if (!response.ok) {
+        throw new Error("⚠️ Error al crear la remisión en el backend");
+      }
       
+      //Obtener la respuesta JSON del backend
+      const nuevaRemision = await response.json()
+      console.log("✅ Remisión creada con éxito:", nuevaRemision)
+      toast.success('✅ Remisión creada correctamente')
+      
+      // Generar y descargar el pdf
+      const pdfResponse = await fetch(`http://localhost:3000/api/remisiones/generar-pdf/${nuevaRemision.numero_remision}`)
+
+      if (!pdfResponse.ok) {
+        throw new Error("⚠️ Error al generar el PDF.");
+      }
+
+      const pdfBlob = await pdfResponse.blob()
+      const url = window.URL.createObjectURL(pdfBlob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `remision_${nuevaRemision.numero_remision}.pdf`;
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+
+      console.log("📄 PDF descargado correctamente");
+
+      // Redirigir al usuario despues de la descarga 
+      toast.info("🔄 Redirigiendo a Gestión de Impresoras...")
+      setTimeout(() => {
+        navigate("/gestion-productos/gestion-impresoras")
+      }, 2000)
+
     } catch (error) {
       console.error("❌ Error al crear la remisión:", error);
       toast.error("⚠️ No se pudo crear la remisión. Inténtalo de nuevo.");
@@ -172,16 +206,7 @@ function VistaPreviaRemisionEntrega() {
             🔄 Regresar
         </button>
         <button 
-            onClick={() => {
-              const datosActualizados = {
-                ...datosRemision,
-                destinatario,
-                direccionEntrega,
-                notas
-              }
-              sessionStorage.setItem('remisionData', JSON.stringify(datosActualizados))
-              toast.success("✅ Remisión actualizada correctamente")
-            }} 
+            onClick={crearRemision} 
             className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
         >
             ✅ Confirmar Remisión
