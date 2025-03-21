@@ -12,6 +12,7 @@ import ConsultaImpresoras from "../pages/ConsultaImpresoras";
 import VistaPreviaRemisionEntrega from "../pages/VistaPreviaRemisionEntrega"; 
 import Gestiones from "../pages/GestionProductos";
 import GestionImpresoras from "../pages/GestionImpresoras";
+import VistaRemisionPorNumero from "../pages/VistaRemisionPorNumero"
 
 function AppRouter() {
     return (
@@ -29,6 +30,7 @@ function AppRouter() {
             <Route path="/productos/unidades-imagen/agregar" element={<AgregarUnidadImagen />} />
             <Route path="/productos/refacciones/agregar" element={<AgregarRefaccion />} />
             <Route path="/consultas/impresoras" element={<ConsultaImpresoras />} />
+            <Route path="/vista-remision/:numero_remision" element={<VistaRemisionPorNumero />} />
         </Routes>        
     )
 }
