@@ -2,12 +2,22 @@ import { useEffect, useState } from "react"
 import { toast } from "react-toastify"
 
 function AgregarToner() {
+  const [marca, setMarca] = useState('')
+  const [cliente, setCliente] = useState('')
+  const [proyecto, setProyecto] = useState('')
+  const [proveedor, setProveedor] = useState('')
   const [clientes, setClientes] = useState([])
   const [proyectos, setProyectos] = useState([])
   const [marcas, setMarcas] = useState([])
   const [proveedores, setProveedores] = useState([])
   const [series, setSeries] = useState([])
   const [bloquearCampos, setBloquearCampos] = useState(false)
+
+  // Etados para manejar nuevos clientes, proyectos, marcas y proovedores
+  const [nuevoCliente, setNuevoCliente] = useState('')
+  const [nuevoProyecto, setNuevoProyecto] = useState('')
+  const [nuevaMarca, setNuevaMarca] = useState('')
+  const [nuevoProveedor, setNuevoProveedor] = useState('')
 
 
   useEffect(() => {
@@ -58,8 +68,40 @@ function AgregarToner() {
     }
   }
 
-  const eliminarSerie = () => {
-    
+  const eliminarSerie = (serie) => {
+    const nuevasSeries = series.filter(s => s !== serie)
+    setSeries(nuevasSeries)
+
+    if (nuevasSeries.length === 0) {
+      setBloquearCampos(false)
+    }
+
+
+  }
+
+  const handleSubmit = async (event) => {
+    event.preventDefault()
+
+    if (!modelo && series.length === 0) {
+      toast.error("Debes seleccionar un modelo y escanear al menos una serie.")
+      return 
+    }
+
+    try {
+      let marcaId = marca
+      let clienteId = cliente
+      let proyectoId = proyecto
+      let proveedorId = proveedor
+
+      if (cliente === 'nuevo' && nuevoCliente) {
+        
+      }
+
+
+      
+    } catch (error) {
+      
+    }
   }
 
     return (

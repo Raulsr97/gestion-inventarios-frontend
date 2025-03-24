@@ -24,7 +24,7 @@ function AgregarImpresora () {
   const [proyectos, setProyectos] = useState([])
   const [marcas, setMarcas] = useState([])
   const [proveedores, setProveedores] = useState([])
-  // Etados para manejar nuevos clientes, proyectos y marcas
+  // Etados para manejar nuevos clientes, proyectos, marcas y proovedores
   const [nuevoCliente, setNuevoCliente] = useState('')
   const [nuevoProyecto, setNuevoProyecto] = useState('')
   const [nuevaMarca, setNuevaMarca] = useState('')
