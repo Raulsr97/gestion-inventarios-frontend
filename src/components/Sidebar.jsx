@@ -7,7 +7,7 @@ function Sidebar() {
 
   return (
     <div
-      className={`h-screen bg-gray-900 text-white flex flex-col p-4 transition-all duration-300 ${
+      className={`h-screen bg-gray-900 text-white flex flex-col p-4 transition-all duration-300 print:hidden ${
         isCollapsed ? "w-16" : "w-1/6"
       }`}
       onMouseEnter={() => setIsCollapsed(false)}

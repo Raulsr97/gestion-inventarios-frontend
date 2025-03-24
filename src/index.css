@@ -1,11 +1,8 @@
 @import "tailwindcss";
 
-html, body {
+/* html, body {
     margin: 0;
     padding: 0;
-    width: 100vw;
-    height: 100vh;
-    overflow: hidden; /* Evita cualquier tipo de scroll */
     display: flex;
     flex-direction: column;
   }
@@ -15,6 +12,46 @@ html, body {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+  } */
+ 
+  @media print {
+    html, body, #root {
+      display: block !important;
+      overflow: visible !important;
+      width: auto;
+      height: auto;
+      margin: 0;
+      padding: 0;
+      background: white;
+    }
+  
+    #vista-remision-imme {
+      break-inside: avoid;
+      page-break-inside: avoid;
+      page-break-after: auto;
+    }
+  
+    table {
+      page-break-inside: auto;
+      width: 100%;
+    }
+  
+    tr {
+      page-break-inside: avoid;
+      break-inside: avoid;
+      page-break-after: auto;
+    }
+  
+    thead {
+      display: table-header-group;
+    }
+  
+    tfoot {
+      display: table-footer-group;
+    }
   }
+  
+  
+  
 
 

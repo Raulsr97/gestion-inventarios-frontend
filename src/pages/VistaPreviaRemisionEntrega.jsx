@@ -149,118 +149,40 @@ function VistaPreviaRemisionEntrega() {
   }
 
   return (
-    <div className="p-6 max-w-3xl mx-auto bg-white shadow-md rounded-lg">
-      {Number(datosRemision.empresa) === 1 ? (
-        <RemisionIMME datos={remisionParaVista} />
-      ) : (
-        <div className="p-6 max-w-3xl mx-auto bg-white shadow-md rounded-lg">
-          {/* Encabezado */}
-          <div className="flex justify-between items-center border-b pb-4 mb-4">
-            <img src={logoEmpresa} alt="Logo de la Empresa" className="h-16"/>
-            <h2 className="text-2xl font-bold">Remisión de Entrega</h2>
+    <>
+      {/* Contenedor de remisión: sin fondo blanco aquí */}
+      <div className="flex justify-center">
+        {Number(datosRemision.empresa) === 1 ? (
+          <RemisionIMME datos={remisionParaVista} />
+        ) : (
+          <div className="p-6 max-w-3xl mx-auto bg-white shadow-md rounded-lg">
+            {/* Aquí va el diseño base que aún vas a mejorar después */}
           </div>
+        )}
+      </div>
 
-          {/* 🔹 Datos Generales */}
-          <div className="mb-4">
-            <p><strong>Cliente:</strong> {datosRemision.cliente}</p>
-            {datosRemision.proyecto && datosRemision.proyecto !== 'Sin Proyecto' && (
-              <p><strong>Proyecto: </strong>{datosRemision.proyecto}</p>
-            )}
-          </div>
-
-          {/* 🔹 Campos Editables */}
-          <div className="mb-4">
-              {/* 🔹 Destinatario */}
-              <label className="text-sm font-medium text-gray-600">📌 Destinatario:</label>
-              <input
-                  type="text"
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                  value={destinatario}
-                  onChange={(e) => setDestinatario(e.target.value)}
-              />
-
-              {/* 🔹 Dirección de Entrega */}
-              <label className="text-sm font-medium text-gray-600 mt-2">📍 Dirección de Entrega:</label>
-              <input
-                  type="text"
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                  value={direccionEntrega}
-                  onChange={(e) => setDireccionEntrega(e.target.value)}
-              />
-
-              {/* 🔹 Notas */}
-              <label className="text-sm font-medium text-gray-600 mt-2">📝 Notas:</label>
-              <textarea
-                  className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                  value={notas}
-                  onChange={(e) => setNotas(e.target.value)}
-              />
-          </div>
-
-          {/* Tabla de impresoras */}
-          <table className="w-full border-collapse border border-gray-300 my-4">
-            <thead>
-              <tr className="bg-gray-200">
-                <th className="border p-2">Marca</th>
-                <th className="border p-2">Modelo</th>
-                <th className="border p-2">Serie</th>
-                {hayAccesorios && <th className="border p-2">Accesorios</th>}
-            </tr>
-            </thead>
-            <tbody>
-              {datosRemision.series.map((impresora, index) => (
-                <tr key={index} className="text-center border">
-                  <td className="border p-2">{impresora.marca?.nombre || marcas.find(m => m.id === impresora.marca_id)?.nombre}</td>
-                  <td className="border p-2">{impresora.modelo}</td>
-                  <td className="border p-2">{impresora.serie}</td>
-                  {hayAccesorios && (
-                    <td className="border p-2">
-                    {Array.isArray(impresora.accesorios) && impresora.accesorios.length > 0
-                      ? impresora.accesorios.map(a => a.numero_parte).join(', ')
-                      : ''
-                    }
-                    </td>
-                  )}
-                </tr>
-              ))}
-          </tbody>
-        </table>
-
-          {/* 🔹 Sección de Firmas */}
-          <div className="grid grid-cols-2 gap-4 mt-6">
-            <div className="border p-4 text-center">
-              <p className="font-semibold">✍ Entregado por:</p>
-              <p className="text-sm text-gray-500">(Nombre, Firma y Fecha)</p>
-            </div>
-            <div className="border p-4 text-center">
-              <p className="font-semibold">📝 Recibido por:</p>
-              <p className="text-sm text-gray-500">(Nombre, Firma y Fecha)</p>
-            </div>       
-          </div>
-            </div>
-          )}
-
-      
-
-      {/* Botones */}
-      <div className="flex justify-between mt-6">
+      {/* Botones: alineados a la derecha y fuera de la hoja */}
+      <div className="flex justify-end gap-2 mt-4 pr-6 pb-6">
         <button
-            id="modificar-remision" 
-            onClick={() => navigate("/gestion-productos/gestion-impresoras")} 
-            className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
+          id="modificar-remision"
+          onClick={() => navigate("/gestion-productos/gestion-impresoras")}
+          className="bg-gray-500 text-white px-3 py-1 text-sm rounded hover:bg-gray-600"
         >
-            🔄 Modificar Remisión
+          🔄 Modificar
         </button>
-        <button 
-            id="confirmar-remision"
-            onClick={crearRemision} 
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+        <button
+          id="confirmar-remision"
+          onClick={crearRemision}
+          className="bg-blue-600 text-white px-3 py-1 text-sm rounded hover:bg-blue-700"
         >
-            ✅ Confirmar Remisión
+          ✅ Confirmar
         </button>
       </div>
-    </div>
-  )
+    </>
+
+  );
+  
+  
 }
 
 export default VistaPreviaRemisionEntrega;

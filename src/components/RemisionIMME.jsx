@@ -1,8 +1,19 @@
 function RemisionIMME({ datos }) {
+    if (!datos || !Array.isArray(datos.series)) return <p>❌ Datos incompletos</p>
+
     const { numero_remision, fecha_emision, cliente, proyecto, destinatario, direccion_entrega, notas, series } = datos;
+
+    const hayAccesorios = series.some(
+      (impresora) => Array.isArray(impresora.accesorios) && impresora.accesorios.length 
+    )
+
+    const totalPiezas = series.reduce((total, impresora) => {
+      const accesorios = Array.isArray(impresora.accesorios) ? impresora.accesorios.length : 0
+      return total + 1 + accesorios
+    }, 0)
   
     return (
-      <div className="p-6 max-w-4xl mx-auto bg-white text-black text-sm">
+      <div className="bg-white text-black mx-auto p-6 w-[216mm] text-sm print:break-after-auto">
         {/* Encabezado */}
         <div className="flex justify-between items-center border-b pb-4 mb-4">
           <img src="/logos/imme.png" alt="Logo IMME" className="h-16" />
@@ -20,48 +31,66 @@ function RemisionIMME({ datos }) {
           <p><strong>Cliente:</strong> {cliente?.nombre || "---"}</p>
           {proyecto?.nombre && <p><strong>Proyecto:</strong> {proyecto.nombre}</p>}
         </div>
+
+        {/* Datos de entrega */}
+        <div className="mb-4 mt-4">
+          <p><strong>Destinatario:</strong> {destinatario || "---"}</p>
+          <p><strong>Dirección de entrega:</strong> {direccion_entrega || "---"}</p>
+          {notas && (
+            <p><strong>Notas:</strong> {notas}</p>
+          )}
+        </div>
   
         {/* Tabla de productos */}
-        <table className="w-full border-collapse border border-gray-500 text-sm">
+        <table className="w-full border-collapse border border-gray-500 text-sm break-inside-avoid-page">
           <thead>
             <tr className="bg-gray-200 text-center">
-              <th className="border border-gray-500 p-1">Cant.</th>
-              <th className="border border-gray-500 p-1">Modelo</th>
-              <th className="border border-gray-500 p-1">Marca</th>
-              <th className="border border-gray-500 p-1">N° de Serie</th>
-              <th className="border border-gray-500 p-1">Accesorios</th>
+              <th className="border border-[#14375A] bg-blue-400 p-1">Marca</th>
+              <th className="border border-[#14375A] bg-blue-400 p-1">Modelo</th>
+              <th className="border border-[#14375A] bg-blue-400 p-1">N° de Serie</th>
+              {hayAccesorios && <th className="border border-[#14375A]  bg-blue-400 p-1">Accesorios</th>}
+              <th className="border border-[#14375A] bg-blue-400 p-1">Cant.</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="print:table-row-group">
             {series.map((impresora, idx) => (
-              <tr key={idx} className="text-center">
-                <td className="border border-gray-500 p-1">1</td>
-                <td className="border border-gray-500 p-1">{impresora.modelo}</td>
+              <tr key={idx}  className="text-center break-inside-avoid-page page-break-inside-avoid print:break-inside-avoid">
                 <td className="border border-gray-500 p-1">{impresora.marca?.nombre || ""}</td>
+                <td className="border border-gray-500 p-1">{impresora.modelo}</td>
                 <td className="border border-gray-500 p-1">{impresora.serie}</td>
+                {hayAccesorios && (
+                  <td className="border border-gray-500 p-1">
+                   {Array.isArray(impresora.accesorios)
+                     ? impresora.accesorios.map(a => a.numero_parte).join(", ")
+                     : "---"}
+                  </td> 
+                )}
                 <td className="border border-gray-500 p-1">
-                  {Array.isArray(impresora.accesorios)
-                    ? impresora.accesorios.map(a => a.numero_parte).join(", ")
-                    : "---"}
+                  { 1 + (Array.isArray(impresora.accesorios) ? impresora.accesorios.length : 0)}
                 </td>
               </tr>
             ))}
+            <tr className="font-semibold bg-[#f3f6f9]">
+              <td colSpan={hayAccesorios ? 5 : 4} className="border border-[#14375A] p-1 pr-2 text-right">
+                 Total: {totalPiezas}
+              </td>
+            </tr>
           </tbody>
         </table>
   
         {/* Sección de firmas */}
         <div className="grid grid-cols-2 gap-4 mt-8">
-          <div className="border border-gray-500 p-4 text-center">
+          <div className="border border-gray-500 p-4 pt-0">
             <p className="font-bold">Entregado por:</p>
             <p className="text-gray-500">(Nombre, Firma y Fecha)</p>
           </div>
-          <div className="border border-gray-500 p-4 text-center">
+          <div className="border border-gray-500 p-4 pt-0">
             <p className="font-bold">Recibido por:</p>
-            <p className="text-gray-500">(Nombre, Firma y Fecha)</p>
+            <p className="text-gray-500 mb-14">(Nombre, Firma y Fecha)</p>
           </div>
         </div>
       </div>
-    );
+    )
   }
   
   export default RemisionIMME;

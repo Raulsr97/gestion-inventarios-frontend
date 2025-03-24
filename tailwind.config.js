@@ -3,11 +3,13 @@ export default {
     content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
     theme: {
       extend: {
-        colors: {
-          lila: "#6C5CE7"
-        }
+        display: ['group-hover', 'group-focus', 'print'],
       },
     },
     plugins: [],
+    corePlugins: {
+      // Puedes activar estas utilidades si no están por defecto
+      breakInside: true
+    }
   };
   
