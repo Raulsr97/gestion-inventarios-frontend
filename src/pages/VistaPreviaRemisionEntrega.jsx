@@ -84,7 +84,7 @@ function VistaPreviaRemisionEntrega() {
 
       const remisionData = {
         numero_remision: `REM-${Date.now()}`,
-        empresa_id: datosRemision.empresa,
+        empresa_id: Number(datosRemision.empresa),
         cliente_id: clienteId,
         proyecto_id: proyectoId || null, 
         destinatario,
