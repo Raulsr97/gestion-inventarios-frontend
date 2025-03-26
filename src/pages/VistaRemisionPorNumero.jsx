@@ -9,6 +9,8 @@ function VistaRemisionPorNumero() {
   const [error, setError] = useState(false)
   const [ready, setReady] = useState(false)
 
+  
+
   useEffect(() => {
     const style = document.createElement('style')
     style.innerHTML = `
@@ -86,7 +88,7 @@ function VistaRemisionPorNumero() {
       >
         <RemisionIMME datos={{
           numero_remision: remision.numero_remision,
-          fecha_emision: remision.fecha_emision,
+          fecha_emision: localStorage.getItem('fecha_programada') || remision.fecha_emision,
           cliente: remision.cliente,
           proyecto: remision.proyecto,
           destinatario: remision.destinatario,

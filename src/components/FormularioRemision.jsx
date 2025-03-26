@@ -25,7 +25,7 @@ function FormularioRemision ({ onGenerarRemision }) {
         <div className="flex flex-col gap-4">
             {/* 🔹 Campo: Destinatario */}
             <div>
-                <label className="text-sm font-medium text-gray-600">📌 Destinatario:</label>
+                <label className="text-sm font-medium text-gray-600">📌 Destino:</label>
                 <input
                     type="text"
                     className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"

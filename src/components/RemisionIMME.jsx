@@ -1,7 +1,7 @@
 function RemisionIMME({ datos }) {
     if (!datos || !Array.isArray(datos.series)) return <p>❌ Datos incompletos</p>
 
-    const { numero_remision, fecha_emision, cliente, proyecto, destinatario, direccion_entrega, notas, series } = datos;
+    const { numero_remision, fecha_emision, cliente, proyecto, destinatario, direccion_entrega, notas, series, setFechaVisual } = datos;
 
     const hayAccesorios = series.some(
       (impresora) => Array.isArray(impresora.accesorios) && impresora.accesorios.length 
@@ -24,7 +24,26 @@ function RemisionIMME({ datos }) {
             </div>
             <div className="text-right">
               <p><strong>No.:</strong> {numero_remision}</p>
-              <p><strong>Fecha:</strong> {new Date(fecha_emision).toLocaleDateString()}</p>
+              <p className="flex flex-col items-end">
+                <strong>Fecha:</strong>
+                {/* Solo muestra el input si estamos en modo Vista Previa */}
+                {typeof window !== "undefined" && window.location.pathname.includes("generar-remision") ? (
+                  <input
+                    type="date"
+                    value={fecha_emision}
+                    onChange={(e) => setFechaVisual(e.target.value)}
+                    className="border border-gray-300 rounded px-1 text-sm mt-1"
+                  />
+                ) : (
+                  <span>{
+                    typeof fecha_emision === "string"
+                      ? new Date(fecha_emision).toLocaleDateString()
+                      : fecha_emision instanceof Date
+                        ? fecha_emision.toLocaleDateString()
+                        : "---"
+                  }</span>
+                )}
+              </p>
             </div>
           </div>
           
@@ -34,7 +53,7 @@ function RemisionIMME({ datos }) {
           </div>
       
           <div className="mb-4 mt-4">
-            <p><strong>Destinatario:</strong> {destinatario || "---"}</p>
+            <p><strong>Destino:</strong> {destinatario || "---"}</p>
             <p><strong>Dirección de entrega:</strong> {direccion_entrega || "---"}</p>
             {notas && <p><strong>Notas:</strong> {notas}</p>}
           </div>

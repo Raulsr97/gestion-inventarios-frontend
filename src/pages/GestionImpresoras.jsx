@@ -208,6 +208,14 @@ function GestionImpresoras() {
 
     console.log("Cliente Final:", clienteFinal);
     console.log("Proyecto Final:", proyectoFinal);
+
+    // Asignar cliente_id a cada impresora si no la tienen
+    const clienteIdFinal = clienteUnico || clienteSeleccionado
+    impresorasSeleccionadas.forEach(i => {
+      if (!i.cliente_id && clienteFinal) {
+        i.cliente_id = Number(clienteIdFinal)
+      }
+    })
     
 
     // Recopilamos todam la informacion
@@ -215,7 +223,7 @@ function GestionImpresoras() {
       destinatario,
       direccionEntrega,
       notas,
-      cliente: clienteFinal,
+      cliente: clienteIdFinal ? Number(clienteIdFinal) : null,
       proyecto: proyectoFinal,
       series: impresorasSeleccionadas,
       empresa: empresaSeleccionada

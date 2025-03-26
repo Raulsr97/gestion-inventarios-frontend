@@ -17,23 +17,43 @@ function VistaPreviaRemisionEntrega() {
   // Estado para almacenar las marcas
   const [marcas, setMarcas] = useState([])
 
-  const remisionParaVista = {
-    numero_remision: `REM-${Date.now()}`,
-    fecha_emision: new Date(),
-    cliente: { nombre: datosRemision.cliente },
-    proyecto: datosRemision.proyecto !== 'Sin Proyecto' ? { nombre: datosRemision.proyecto } : null,
-    destinatario,
-    direccion_entrega: direccionEntrega,
-    notas,
-    series: datosRemision.series
-  }
+  // Estado para almacenar los clientes
+  const [clientes, setClientes] = useState([])
+
+  // Estado para la fecha de entrega
+  const [fechaVisual, setFechaVisual] = useState(new Date().toISOString().split('T')[0]) // formato YYYY-MM-DD
+
+  useEffect(() => {
+    localStorage.setItem('fecha_programada', fechaVisual)
+  }, [fechaVisual])
+
 
   useEffect(() => {
     fetch("http://localhost:3000/api/marcas")
       .then(res => res.json())
       .then(data => setMarcas(data))
-      .catch(error => console.error("Error al obtener las marcas", error));
+      .catch(error => console.error("Error al obtener las marcas", error))
+
+      fetch("http://localhost:3000/api/clientes")
+      .then(res => res.json())
+      .then(data => setClientes(data))
+      .catch(error => console.error("Error al obtener los clientes", error))
   }, [])
+
+
+  const clienteObjeto = clientes.find(c => c.id === Number(datosRemision.cliente))
+
+  const remisionParaVista = {
+    numero_remision: "REM-PREVIEW",
+    fecha_emision: fechaVisual,
+    cliente: clienteObjeto,
+    proyecto: datosRemision.proyecto !== 'Sin Proyecto' ? { nombre: datosRemision.proyecto } : null,
+    destinatario,
+    direccion_entrega: direccionEntrega,
+    notas,
+    series: datosRemision.series,
+    setFechaVisual
+  }
 
   // Logos de cada empresa
   const logosEmpresas = {
@@ -43,7 +63,7 @@ function VistaPreviaRemisionEntrega() {
   }
 
   // Obtener el logo correcto segun la empresa seleccionada
-  const logoEmpresa = logosEmpresas[datosRemision.empresa]
+  // const logoEmpresa = logosEmpresas[datosRemision.empresa]
 
   console.log("📄 Datos de la remisión recibidos:", datosRemision);
 
@@ -68,6 +88,8 @@ function VistaPreviaRemisionEntrega() {
       let clienteId = null
       if (clientesUnicos.size === 1) {
         clienteId = [...clientesUnicos][0]
+      } else if (datosRemision.cliente_id) {
+        clienteId = datosRemision.cliente_id
       } else if (clientesUnicos.size > 1) {
         console.warn("⚠️ Hay múltiples clientes en la selección.");
       }
@@ -112,6 +134,8 @@ function VistaPreviaRemisionEntrega() {
       const nuevaRemision = await response.json()
       console.log("✅ Remisión creada con éxito:", nuevaRemision)
       toast.success('✅ Remisión creada correctamente')
+
+      
       
       // Generar y descargar el pdf
       const pdfResponse = await fetch(`http://localhost:3000/api/remisiones/generar-pdf/${nuevaRemision.numero_remision}`)
@@ -135,6 +159,8 @@ function VistaPreviaRemisionEntrega() {
       document.body.removeChild(a)
 
       console.log("📄 PDF descargado correctamente");
+
+      localStorage.removeItem('fecha_programada')
 
       // Redirigir al usuario despues de la descarga 
       toast.info("🔄 Redirigiendo a Gestión de Impresoras...")
