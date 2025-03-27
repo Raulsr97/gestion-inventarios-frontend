@@ -24,7 +24,7 @@ function RemisionIMME({ datos }) {
             </div>
             <div className="text-right">
               <p><strong>No.:</strong> {numero_remision}</p>
-              <p className="flex flex-col items-end">
+              <p className="flex justify-end gap-1 items-end">
                 <strong>Fecha:</strong>
                 {/* Solo muestra el input si estamos en modo Vista Previa */}
                 {typeof window !== "undefined" && window.location.pathname.includes("generar-remision") ? (
@@ -37,10 +37,10 @@ function RemisionIMME({ datos }) {
                 ) : (
                   <span>{
                     typeof fecha_emision === "string"
-                      ? new Date(fecha_emision).toLocaleDateString()
-                      : fecha_emision instanceof Date
-                        ? fecha_emision.toLocaleDateString()
-                        : "---"
+                    ? new Date(fecha_emision + 'T00:00:00').toLocaleDateString('es-MX')
+                    : fecha_emision instanceof Date
+                      ? fecha_emision.toLocaleDateString('es-MX')
+                      : "---"
                   }</span>
                 )}
               </p>

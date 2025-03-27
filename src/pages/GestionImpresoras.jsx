@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import ListaImpresoras from "../components/ListaImpresoras";
 import SeleccionEmpresa from "../components/SeleccionEmpresa";
 import AsignarCliente from "../components/AsignarCliente";
@@ -29,9 +29,51 @@ function GestionImpresoras() {
   const [proyectos, setProyectos] = useState([])  
   // Estado para almacenar el cliente selecionado
   const [clienteSeleccionado, setClienteSeleccionado] = useState('')
-  
-  
+
+  const location = useLocation()
+  const datosDesdeVistaPrevia = location.state
+
+
   const navigate = useNavigate()
+
+  useEffect(() => {
+    if (!datosDesdeVistaPrevia) return; // ✅ No hacer nada si entras directo
+  
+    if (Array.isArray(datosDesdeVistaPrevia.series)) {
+      setImpresorasSeleccionadas(datosDesdeVistaPrevia.series)
+    }
+  
+    if (datosDesdeVistaPrevia.empresa) {
+      setEmpresaSeleccionada(datosDesdeVistaPrevia.empresa)
+    }
+  
+    if (datosDesdeVistaPrevia?.cliente) {
+      setClienteSeleccionado(datosDesdeVistaPrevia.cliente)
+      setClienteUnico(datosDesdeVistaPrevia.cliente)
+    
+      if (datosDesdeVistaPrevia.clienteAsignadoManual) {
+        setRequireCliente(true) // ✅ permitir cambiar cliente
+      } else {
+        setRequireCliente(false) // 🔒 bloquear porque ya viene de base de datos
+      }
+    }
+    
+  
+    // Establecer el paso correcto
+    if (
+      datosDesdeVistaPrevia.series?.length > 0 &&
+      datosDesdeVistaPrevia.empresa &&
+      (datosDesdeVistaPrevia.cliente || clienteUnico)
+    ) {
+      setPasoActivo(4)
+    } else if (datosDesdeVistaPrevia.series?.length > 0 && !datosDesdeVistaPrevia.cliente) {
+      setPasoActivo(2)
+    } else {
+      setPasoActivo(1)
+    }
+  
+  }, [datosDesdeVistaPrevia])
+   
   
 
   useEffect(() => {
@@ -211,9 +253,17 @@ function GestionImpresoras() {
 
     // Asignar cliente_id a cada impresora si no la tienen
     const clienteIdFinal = clienteUnico || clienteSeleccionado
-    impresorasSeleccionadas.forEach(i => {
-      if (!i.cliente_id && clienteFinal) {
-        i.cliente_id = Number(clienteIdFinal)
+    // impresorasSeleccionadas.forEach(i => {
+    //   if (!i.cliente_id && clienteFinal) {
+    //     i.cliente_id = Number(clienteIdFinal)
+    //   }
+    // })
+
+    // Creamos una copia profunda de las impresoras seleccionadas
+    const seriesConCliente = impresorasSeleccionadas.map(i => {
+      return {
+        ...i,
+        cliente_id: i.cliente_id || (clienteIdFinal ? Number(clienteIdFinal) : null)
       }
     })
     
@@ -225,8 +275,11 @@ function GestionImpresoras() {
       notas,
       cliente: clienteIdFinal ? Number(clienteIdFinal) : null,
       proyecto: proyectoFinal,
-      series: impresorasSeleccionadas,
-      empresa: empresaSeleccionada
+      series: seriesConCliente,
+      empresa: empresaSeleccionada,
+
+      // 🔹 Indicador: si fue el usuario quien asignó el cliente
+      clienteAsignadoManual: !clientesUnicos.size && !!clienteIdFinal
     }
 
     // Redirigir a VistaPreviaRemisionEntrega.jsx con los datos de la remisión
@@ -265,9 +318,8 @@ function GestionImpresoras() {
 
       {/* 🔹 Asignación de Cliente */}
       <div className={`bg-white shadow-lg rounded-lg p-4 max-h-[calc(100vh-100px)] overflow-auto 
-        ${pasoActivo >= 2 ? "opacity-100" : "opacity-50 pointer-events-none"} 
-        ${!requireCliente ? "opacity-50 pointer-events-none grayscale cursor-not-allowed" : ""} 
-        ${pasoActivo > 2 ? "opacity-50 pointer-events-none" : ""}`}>
+         ${pasoActivo >= 2 ? "opacity-100" : "opacity-50 pointer-events-none"} 
+         ${pasoActivo === 2 && !requireCliente ? "pointer-events-none opacity-50 grayscale cursor-not-allowed" : ""}`}>
 
         <div className="flex justify-between align-center">
           <h3 className="text-lg font-semibold mb-2">2️⃣ Asignación de Cliente</h3>
@@ -278,11 +330,12 @@ function GestionImpresoras() {
           )}
         </div>
 
-  <AsignarCliente 
-    clientes={clientes}
-    setClientes={setClientes}
-    setClienteSeleccionado={setClienteSeleccionado}
-  />
+        <AsignarCliente 
+          clientes={clientes}
+          setClientes={setClientes}
+          clienteSeleccionado={clienteSeleccionado}
+          setClienteSeleccionado={setClienteSeleccionado}
+        />
       </div>
 
       {/* 🔹 Selección de Empresa (Compacta) */}
@@ -309,6 +362,7 @@ function GestionImpresoras() {
         <h3 className="text-lg font-semibold mb-2">4️⃣ Datos de la Remisión</h3>
         <FormularioRemision 
           onGenerarRemision={manejarGenerarRemision}
+          datosIniciales= {datosDesdeVistaPrevia}
         />
       </div>
 

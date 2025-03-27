@@ -1,16 +1,15 @@
 import { useState } from "react"
 import { toast } from "react-toastify"
 
-function AsignarCliente ({ clientes, setClientes, setClienteSeleccionado}) {
+function AsignarCliente ({ clientes, setClientes, clienteSeleccionado, setClienteSeleccionado}) {
     // Estado para almacenar el nuevo cliente a registrar
     const [nuevoCliente, setNuevoCliente] = useState('')
     // Manejar la seleccion de cliente localmente
-    const [clienteSeleccionado, setCliente] = useState('')
+    // const [clienteSeleccionado, setCliente] = useState('')
 
     // Manejar seleccion de un cliente existente
     const manejarSeleccionCliente = e => {
         const clienteId = e.target.value
-        setCliente(clienteId)
         setClienteSeleccionado(clienteId)
     }
 
@@ -38,7 +37,6 @@ function AsignarCliente ({ clientes, setClientes, setClienteSeleccionado}) {
 
             // Seleccionar automaticamente el nuevo cliente
             setClienteSeleccionado(clienteCreado.id)
-            setCliente(clienteCreado.id)
             setNuevoCliente('') // Limpiar el input
         } catch (error) {
             toast.error("Hubo un error al registrar el cliente.");

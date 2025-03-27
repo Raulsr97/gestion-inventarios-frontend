@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import RemisionIMME from "../components/RemisionIMME";
 
@@ -9,7 +9,9 @@ function VistaRemisionPorNumero() {
   const [error, setError] = useState(false)
   const [ready, setReady] = useState(false)
 
-  
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const fechaVisual = queryParams.get("fecha");
 
   useEffect(() => {
     const style = document.createElement('style')
@@ -88,7 +90,7 @@ function VistaRemisionPorNumero() {
       >
         <RemisionIMME datos={{
           numero_remision: remision.numero_remision,
-          fecha_emision: localStorage.getItem('fecha_programada') || remision.fecha_emision,
+          fecha_emision: fechaVisual || remision.fecha_emision,
           cliente: remision.cliente,
           proyecto: remision.proyecto,
           destinatario: remision.destinatario,

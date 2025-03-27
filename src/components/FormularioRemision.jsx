@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { toast } from "react-toastify";
 
-function FormularioRemision ({ onGenerarRemision }) {
+function FormularioRemision ({ onGenerarRemision, datosIniciales }) {
     // Estados para los valores del fomulario
-    const [destinatario, setDestinatario] = useState("");
-    const [direccionEntrega, setDireccionEntrega] = useState("");
-    const [notas, setNotas] = useState("");
+    const [destinatario, setDestinatario] = useState(datosIniciales?.destinatario || "")
+    const [direccionEntrega, setDireccionEntrega] = useState(datosIniciales?.direccionEntrega || "")
+    const [notas, setNotas] = useState(datosIniciales?.notas || "")
+
 
     // Funcion para validar y generar la remision
     const manejarGenerarRemision = () => {

@@ -21,12 +21,13 @@ function VistaPreviaRemisionEntrega() {
   const [clientes, setClientes] = useState([])
 
   // Estado para la fecha de entrega
-  const [fechaVisual, setFechaVisual] = useState(new Date().toISOString().split('T')[0]) // formato YYYY-MM-DD
+  const getLocalDay = () => {
+    const hoy = new Date()
+    hoy.setMinutes(hoy.getMinutes() - hoy.getTimezoneOffset()) // Ajuste a la zona horaria
+    return hoy.toISOString().split('T')[0]
+  }
 
-  useEffect(() => {
-    localStorage.setItem('fecha_programada', fechaVisual)
-  }, [fechaVisual])
-
+  const [fechaVisual, setFechaVisual] = useState(getLocalDay()) 
 
   useEffect(() => {
     fetch("http://localhost:3000/api/marcas")
@@ -138,7 +139,7 @@ function VistaPreviaRemisionEntrega() {
       
       
       // Generar y descargar el pdf
-      const pdfResponse = await fetch(`http://localhost:3000/api/remisiones/generar-pdf/${nuevaRemision.numero_remision}`)
+      const pdfResponse = await fetch(`http://localhost:3000/api/remisiones/generar-pdf/${nuevaRemision.numero_remision}?fecha=${fechaVisual}`)
 
       const contentType = pdfResponse.headers.get("Content-Type")
       console.log("🧾 Headers de la respuesta PDF:", contentType)
@@ -160,12 +161,13 @@ function VistaPreviaRemisionEntrega() {
 
       console.log("📄 PDF descargado correctamente");
 
-      localStorage.removeItem('fecha_programada')
-
       // Redirigir al usuario despues de la descarga 
       toast.info("🔄 Redirigiendo a Gestión de Impresoras...")
       setTimeout(() => {
-        navigate("/gestion-productos/gestion-impresoras")
+        setTimeout(() => {
+          navigate("/gestion-productos/gestion-impresoras")
+        }, 2000)
+        
       }, 2000)
 
     } catch (error) {
@@ -191,7 +193,7 @@ function VistaPreviaRemisionEntrega() {
       <div className="flex justify-end gap-2 mt-4 pr-6 pb-6">
         <button
           id="modificar-remision"
-          onClick={() => navigate("/gestion-productos/gestion-impresoras")}
+          onClick={() => navigate("/gestion-productos/gestion-impresoras", { state: datosRemision })}
           className="bg-gray-500 text-white px-3 py-1 text-sm rounded hover:bg-gray-600"
         >
           🔄 Modificar
