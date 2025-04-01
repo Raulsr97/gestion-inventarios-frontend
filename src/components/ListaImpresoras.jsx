@@ -4,17 +4,20 @@ import { useState } from "react";
 function ListaImpresoras ({impresoras, seleccionadas, manejarSeleccion, clientes, proyectos}) {
   // Estado para almacenar lo que se va escribiendo en el input
   const [busquedaSerie, setBusquedaSerie] = useState('')
-  // Separar impresoras seleccionadas y no seleccionadas
-  const impresorasSeleccionadasLista = impresoras.filter(imp => seleccionadas.includes(imp.serie))
-  const impresorasNoSeleccionadasLista = impresoras.filter(imp => !seleccionadas.includes(imp.serie))
-
-  // Juntar ambas listas primero las seleccionadas luego las no seleccionadas
-  const impresorasOrdenadas = [...impresorasSeleccionadasLista, ...impresorasNoSeleccionadasLista]
+  
+  const impresorasOrdenadas = [...impresoras].sort((a, b) => {
+    const aSeleccionada = seleccionadas.some(sel => sel.serie === a.serie) ? 0 : 1;
+    const bSeleccionada = seleccionadas.some(sel => sel.serie === b.serie) ? 0 : 1; 
+    return aSeleccionada - bSeleccionada;
+  });
+  
 
   // Impresoras que coinciden con lo escrito en el input
   const impresorasFiltradas = impresorasOrdenadas.filter(impresora => impresora.serie.toLowerCase().includes(busquedaSerie.toLowerCase()))
 
-  
+  console.log("🆙 Lista FINAL de impresoras para mostrar:");
+  console.log(impresorasFiltradas.map(i => i.serie));
+
 
   return (
     <div className="w-full flex flex-col px-2 py-8 bg-white rounded-lg max-h-[calc(100vh-100px)]">

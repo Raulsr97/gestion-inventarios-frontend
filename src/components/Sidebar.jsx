@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { FaHome, FaBox, FaExchangeAlt, FaSearch, FaClipboardList} from "react-icons/fa";
+import { FaHome, FaBox, FaSearch, FaClipboardList, FaFileAlt} from "react-icons/fa";
 import { useState } from "react";
 
 function Sidebar() {
@@ -35,6 +35,10 @@ function Sidebar() {
         <Link to="/gestion-productos" className="flex items-center gap-4 p-2 rounded-md hover:bg-gray-700">
           <FaClipboardList className="text-xl" />
           <span className={`${isCollapsed ? "hidden" : "block"}`}>Gestión de productos</span>
+        </Link>
+        <Link to="/remisiones" className="flex items-center gap-4 p-2 rounded-md hover:bg-gray-700">
+          <FaFileAlt className="text-xl" />
+          <span className={`${isCollapsed ? "hidden" : "block"}`}>Remisiones</span>
         </Link>
       </nav>
     </div>

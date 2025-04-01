@@ -2,6 +2,8 @@ import { useLocation, useNavigate} from "react-router-dom";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import RemisionIMME from "../components/RemisionIMME";
+import RemisionColourKlub from "../components/RemisionColourKlub";
+import RemisionConeltec from "../components/RemisionConeltec";
 
 
 function VistaPreviaRemisionEntrega() {
@@ -42,13 +44,20 @@ function VistaPreviaRemisionEntrega() {
   }, [])
 
 
-  const clienteObjeto = clientes.find(c => c.id === Number(datosRemision.cliente))
+  const clienteObjeto = clientes.find(c => 
+    c.id === Number(datosRemision.cliente || datosRemision.series?.[0]?.cliente_id)
+  )
 
   const remisionParaVista = {
     numero_remision: "REM-PREVIEW",
     fecha_emision: fechaVisual,
     cliente: clienteObjeto,
-    proyecto: datosRemision.proyecto !== 'Sin Proyecto' ? { nombre: datosRemision.proyecto } : null,
+    proyecto: 
+      datosRemision.proyecto && typeof datosRemision.proyecto === 'object'
+        ? datosRemision.proyecto
+        : datosRemision.proyecto !== 'Sin proyecto'
+        ? { nombre: datosRemision.proyecto}
+        : null,
     destinatario,
     direccion_entrega: direccionEntrega,
     notas,
@@ -87,12 +96,10 @@ function VistaPreviaRemisionEntrega() {
 
       // Dterminar cliente_id
       let clienteId = null
-      if (clientesUnicos.size === 1) {
+      if (datosRemision.cliente) {
+        clienteId = Number(datosRemision.cliente)
+      } else if (clientesUnicos.size === 1) {
         clienteId = [...clientesUnicos][0]
-      } else if (datosRemision.cliente_id) {
-        clienteId = datosRemision.cliente_id
-      } else if (clientesUnicos.size > 1) {
-        console.warn("⚠️ Hay múltiples clientes en la selección.");
       }
 
       // Determinamos proyecto_id
@@ -108,8 +115,8 @@ function VistaPreviaRemisionEntrega() {
       const remisionData = {
         numero_remision: `REM-${Date.now()}`,
         empresa_id: Number(datosRemision.empresa),
-        cliente_id: clienteId,
-        proyecto_id: proyectoId || null, 
+        cliente_id: Number(clienteId),
+        proyecto_id: datosRemision.proyecto?.id,
         destinatario,
         direccion_entrega: direccionEntrega, 
         notas: notas.trim() === '' ? null : notas, 
@@ -180,28 +187,30 @@ function VistaPreviaRemisionEntrega() {
     <>
       {/* Contenedor de remisión: sin fondo blanco aquí */}
       <div className="flex justify-center">
-        {Number(datosRemision.empresa) === 1 ? (
-          <RemisionIMME datos={remisionParaVista} />
-        ) : (
-          <div className="p-6 max-w-3xl mx-auto bg-white shadow-md rounded-lg">
-            {/* Aquí va el diseño base que aún vas a mejorar después */}
-          </div>
-        )}
+      {Number(datosRemision.empresa) === 1 && (
+        <RemisionIMME datos={remisionParaVista} />
+      )}
+      {Number(datosRemision.empresa) === 2 && (
+        <RemisionColourKlub datos={remisionParaVista} />
+      )}
+      {Number(datosRemision.empresa) === 3 && (
+        <RemisionConeltec datos={remisionParaVista} />
+      )}
       </div>
 
       {/* Botones: alineados a la derecha y fuera de la hoja */}
-      <div className="flex justify-end gap-2 mt-4 pr-6 pb-6">
+      <div className="fixed bottom-4 right-4 flex gap-2 z-50">
         <button
           id="modificar-remision"
           onClick={() => navigate("/gestion-productos/gestion-impresoras", { state: datosRemision })}
-          className="bg-gray-500 text-white px-3 py-1 text-sm rounded hover:bg-gray-600"
+          className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-xl shadow-lg"
         >
           🔄 Modificar
         </button>
         <button
           id="confirmar-remision"
           onClick={crearRemision}
-          className="bg-blue-600 text-white px-3 py-1 text-sm rounded hover:bg-blue-700"
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl shadow-lg"
         >
           ✅ Confirmar
         </button>

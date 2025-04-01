@@ -1,6 +1,8 @@
 import { useParams, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import RemisionIMME from "../components/RemisionIMME";
+import RemisionColourKlub from "../components/RemisionColourKlub";
+import RemisionConeltec from "../components/RemisionConeltec";
 
 function VistaRemisionPorNumero() {
   const { numero_remision } = useParams() // Obtenemos el numero desde la URL
@@ -45,6 +47,12 @@ function VistaRemisionPorNumero() {
 
         tr {
           page-break-after: auto;
+        }
+
+        footer {
+          position: relative;
+          bottom: 0;
+          margin-top: auto;
         }
       }
     `
@@ -101,6 +109,51 @@ function VistaRemisionPorNumero() {
       </div>
     )
   }
+  
+    // Si es empresa Colour Klub (ID 2), renderizar su diseño personalizado
+    if (remision && remision.empresa?.id == 2 && Array.isArray(remision.impresoras) && remision.impresoras.length > 0) {
+      console.log("🧾 Remisión Colour Klub:", remision)
+      return (
+        <div 
+          id="vista-remision-imme"
+          className="w-[216mm] mx-auto"
+        >
+          <RemisionColourKlub datos={{
+            numero_remision: remision.numero_remision,
+            fecha_emision: fechaVisual || remision.fecha_emision,
+            cliente: remision.cliente,
+            proyecto: remision.proyecto,
+            destinatario: remision.destinatario,
+            direccion_entrega: remision.direccion_entrega,
+            notas: remision.notas,
+            series: remision.impresoras
+          }} />
+        </div>
+      )
+    }
+
+    // Si es empresa Coneletec (ID 3), renderizar su diseño personalizado
+    if (remision && remision.empresa?.id == 3 && Array.isArray(remision.impresoras) && remision.impresoras.length > 0) {
+      console.log("🧾 Remisión Coneltec:", remision)
+      return (
+        <div 
+          id="vista-remision-imme"
+          className="w-[216mm] mx-auto"
+        >
+          <RemisionConeltec datos={{
+            numero_remision: remision.numero_remision,
+            fecha_emision: fechaVisual || remision.fecha_emision,
+            cliente: remision.cliente,
+            proyecto: remision.proyecto,
+            destinatario: remision.destinatario,
+            direccion_entrega: remision.direccion_entrega,
+            notas: remision.notas,
+            series: remision.impresoras
+          }} />
+        </div>
+      )
+    }
+  
   
   return (
     <div className="p-6 max-w-4xl mx-auto bg-white shadow-md rounded-lg">

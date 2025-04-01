@@ -35,30 +35,51 @@ function GestionImpresoras() {
 
 
   const navigate = useNavigate()
+  console.log("👤 Cliente seleccionado ACTUAL:", clienteSeleccionado)
+
+  useEffect(() => {
+    if (clienteSeleccionado && clienteSeleccionado !== clienteUnico) {
+        setClienteUnico(clienteSeleccionado); // Actualiza clienteUnico solo si cambia el clienteSeleccionado
+    }
+  }, [clienteSeleccionado]);
 
   useEffect(() => {
     if (!datosDesdeVistaPrevia) return; // ✅ No hacer nada si entras directo
+
+    console.log("🚀 Datos recibidos desde vista previa:", datosDesdeVistaPrevia);
+    console.log("Cliente recibido desde vista previa:", datosDesdeVistaPrevia.cliente); // Verifica el cliente al regresar
   
     if (Array.isArray(datosDesdeVistaPrevia.series)) {
       setImpresorasSeleccionadas(datosDesdeVistaPrevia.series)
+      console.log("Impresoras seleccionadas:", datosDesdeVistaPrevia.series);
     }
   
     if (datosDesdeVistaPrevia.empresa) {
       setEmpresaSeleccionada(datosDesdeVistaPrevia.empresa)
+      console.log("Empresa seleccionada:", datosDesdeVistaPrevia.empresa);
     }
   
-    if (datosDesdeVistaPrevia?.cliente) {
+    if (datosDesdeVistaPrevia.cliente && clienteSeleccionado === '') {
+      // Siempre actaulizamos clienteSeleccionado, incluso si ya tiene un valor asignado
       setClienteSeleccionado(datosDesdeVistaPrevia.cliente)
       setClienteUnico(datosDesdeVistaPrevia.cliente)
-    
+      console.log("Cliente seleccionado:", datosDesdeVistaPrevia.cliente);
+
       if (datosDesdeVistaPrevia.clienteAsignadoManual) {
-        setRequireCliente(true) // ✅ permitir cambiar cliente
+        setRequireCliente(false); // ❌ No se permite modificar
+        console.log("🔒 Cliente fue asignado manualmente, no se permite modificar.");
       } else {
-        setRequireCliente(false) // 🔒 bloquear porque ya viene de base de datos
+        setRequireCliente(true); // ✅ Se permite modificar
+        console.log("✅ Cliente vino sin asignación, se permite modificar.");
       }
-    }
-    
-  
+      
+    } else {
+      setClienteSeleccionado(''); // Resetear clienteSeleccionado si no hay cliente
+      setClienteUnico(null); // Resetear clienteUnico
+      setRequireCliente(true); // Si no hay cliente, se tiene que elegir
+      console.log("🟡 No hay cliente asignado, requiere selección manual.");
+    } 
+
     // Establecer el paso correcto
     if (
       datosDesdeVistaPrevia.series?.length > 0 &&
@@ -66,13 +87,16 @@ function GestionImpresoras() {
       (datosDesdeVistaPrevia.cliente || clienteUnico)
     ) {
       setPasoActivo(4)
+      console.log("Paso 4: Listo para generar la remisión.");
     } else if (datosDesdeVistaPrevia.series?.length > 0 && !datosDesdeVistaPrevia.cliente) {
       setPasoActivo(2)
+      console.log("Paso 2: Necesita asignar cliente.");
     } else {
       setPasoActivo(1)
+      console.log("Paso 1: Selección de impresoras.");
     }
   
-  }, [datosDesdeVistaPrevia])
+  }, [])
    
   
 
@@ -141,8 +165,10 @@ function GestionImpresoras() {
         console.log(`❌ Eliminada: ${serie}`);
       } else {
         // Si no esta seleccionada la agregamos
-        nuevaSeleccion = [...prevSeleccionadas, impresoraSeleccionada]
+        nuevaSeleccion = [impresoraSeleccionada, ...prevSeleccionadas]
         console.log(`✅ Agregada:`, impresoraSeleccionada);
+        console.log("🔄 Nueva lista (ordenada):", nuevaSeleccion.map(i => i.serie));
+
       }
 
       // Extraer clientes y proyectos de las impresoras seleccionadas
@@ -171,7 +197,7 @@ function GestionImpresoras() {
       } else {
         setRequireCliente(false)
         setClienteUnico(clientes[0])
-      }
+      } 
 
       // ❌ Si hay diferentes proyectos, bloquear la selección
       if (proyectoDiferente) {
@@ -191,8 +217,9 @@ function GestionImpresoras() {
   }
 
   // Funcion para recopilar los datos que se enviaran a la pagina VistaPreviaRemisionEntrega.jsx
-  const manejarGenerarRemision = ({ destinatario, direccionEntrega, notas}) => {
+  const manejarGenerarRemision = ({ destinatario, direccionEntrega, notas }) => {
     console.log("🚀 Impresoras Seleccionadas:", impresorasSeleccionadas);
+    console.log("Cliente seleccionado para la remisión:", clienteSeleccionado);
 
     // Verificar si las series seleeccionadas tienen cliente_id y proyecto_id
     impresorasSeleccionadas.forEach(serie => {
@@ -252,18 +279,16 @@ function GestionImpresoras() {
     console.log("Proyecto Final:", proyectoFinal);
 
     // Asignar cliente_id a cada impresora si no la tienen
-    const clienteIdFinal = clienteUnico || clienteSeleccionado
-    // impresorasSeleccionadas.forEach(i => {
-    //   if (!i.cliente_id && clienteFinal) {
-    //     i.cliente_id = Number(clienteIdFinal)
-    //   }
-    // })
+    const clienteIdFinal = clienteSeleccionado || clienteUnico  
+
+    console.log("Cliente final que se enviará a la remisión:", clienteIdFinal);
+    
 
     // Creamos una copia profunda de las impresoras seleccionadas
     const seriesConCliente = impresorasSeleccionadas.map(i => {
       return {
         ...i,
-        cliente_id: i.cliente_id || (clienteIdFinal ? Number(clienteIdFinal) : null)
+        cliente_id: i.cliente_id || clienteIdFinal
       }
     })
     
@@ -273,13 +298,16 @@ function GestionImpresoras() {
       destinatario,
       direccionEntrega,
       notas,
-      cliente: clienteIdFinal ? Number(clienteIdFinal) : null,
-      proyecto: proyectoFinal,
+      cliente: clienteIdFinal,
+      proyecto: {
+        id: [...proyectosUnicos][0] || null,
+        nombre: proyectoFinal
+      }, 
       series: seriesConCliente,
       empresa: empresaSeleccionada,
 
       // 🔹 Indicador: si fue el usuario quien asignó el cliente
-      clienteAsignadoManual: !clientesUnicos.size && !!clienteIdFinal
+      clienteAsignadoManual: (clienteUnico === null || clienteUnico !== clienteSeleccionado) && !!clienteIdFinal
     }
 
     // Redirigir a VistaPreviaRemisionEntrega.jsx con los datos de la remisión
@@ -335,6 +363,8 @@ function GestionImpresoras() {
           setClientes={setClientes}
           clienteSeleccionado={clienteSeleccionado}
           setClienteSeleccionado={setClienteSeleccionado}
+          setImpresorasSeleccionadas={setImpresorasSeleccionadas}
+          requireCliente={requireCliente}
         />
       </div>
 

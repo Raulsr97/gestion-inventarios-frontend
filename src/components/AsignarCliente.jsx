@@ -1,16 +1,25 @@
 import { useState } from "react"
 import { toast } from "react-toastify"
 
-function AsignarCliente ({ clientes, setClientes, clienteSeleccionado, setClienteSeleccionado}) {
+function AsignarCliente ({ clientes, setClientes, clienteSeleccionado, setClienteSeleccionado, setImpresorasSeleccionadas, requireCliente}) {
     // Estado para almacenar el nuevo cliente a registrar
     const [nuevoCliente, setNuevoCliente] = useState('')
-    // Manejar la seleccion de cliente localmente
-    // const [clienteSeleccionado, setCliente] = useState('')
+    
 
     // Manejar seleccion de un cliente existente
-    const manejarSeleccionCliente = e => {
+    const manejarSeleccionCliente = (e) => {
         const clienteId = e.target.value
         setClienteSeleccionado(clienteId)
+        console.log('nuevo cliente seleccionado:', clienteId)
+
+        setImpresorasSeleccionadas(prevSeleccionadas => {
+            return prevSeleccionadas.map(i => {
+                if(!i.cliente_id) {
+                    return { ...i, cliente_id: clienteId}
+                }
+                return i
+            })
+        })
     }
 
     // Manejar creacion de un nuevo cliente 
@@ -49,9 +58,10 @@ function AsignarCliente ({ clientes, setClientes, clienteSeleccionado, setClient
             {/* Seleccionar Cliente Existente */}
             <div>
                 <select
-                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                className={`w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none ${!requireCliente ? 'opacity-50 cursor-not-allowed bg-gray-100 text-gray-400' : ''}`}
                 value={clienteSeleccionado}
                 onChange={manejarSeleccionCliente}
+                disabled={!requireCliente}
                 >
                 <option value="" disabled>Seleccione un cliente</option>
                 {clientes.map((cliente) => (
