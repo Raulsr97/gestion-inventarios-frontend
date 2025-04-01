@@ -93,9 +93,95 @@ function AgregarToner() {
       let proyectoId = proyecto
       let proveedorId = proveedor
 
-      if (cliente === 'nuevo' && nuevoCliente) {
+      if (marca === 'nuevo' && nuevaMarca) {
+        const nuevaMarcaMayusculas = nuevaMarca.toUpperCase()
+
+        const res = await fetch("http://localhost:3000/api/marcas", {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({nombre: nuevaMarcaMayusculas})
+        })
+
+        if (!res.ok) {
+          toast.error('Error al registrar la nueva marca')
+          return
+        } 
         
+        const data = await res.json()
+        marcaId = data.id
       }
+
+      if (cliente === 'nuevo' && nuevoCliente) {
+        const nuevoClienteMayusuculas = nuevoCliente.toUpperCase()
+
+        const res = await fetch("http://localhost:3000/api/clientes", {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ nombre: nuevoClienteMayusuculas})
+        })   
+        
+        if (!res.ok) {
+          toast.error("Error al registrar el nuevo cliente.")
+          return
+        }
+
+        const data = await res.json()
+        clienteId = data.id 
+      }
+
+      // Crear Proyecto si no existe (y asignar cliente_id si aplica)
+      if (proyecto === "nuevo" && nuevoProyecto) {
+        const nuevoProyectoMayusculas = nuevoProyecto.toUpperCase()
+
+        if (!cliente) {
+          toast.error("Debes seleccionar un cliente antes de agregar un proyecto.");
+          return;
+        }
+      
+        const res = await fetch("http://localhost:3000/api/proyectos", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ 
+            nombre: nuevoProyectoMayusculas,
+            cliente_id: clienteId // Relacionamos el proyecto con el cliente seleccionado
+          }),
+        });
+      
+        if (!res.ok) {
+          toast.error("Error al registrar el nuevo proyecto.");
+          return;
+        }
+      
+        const data = await res.json(); 
+        proyectoId = data.id
+      }
+
+      // Crear Proveedor si no existe
+      if (proveedor === "nuevo" && nuevoProveedor) {
+        const nuevoProveedorMayusculas = nuevoProveedor
+
+        const res = await fetch("http://localhost:3000/api/proveedores", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ nombre: nuevoProveedorMayusculas })
+        });
+        if (!res.ok) throw new Error("Error al registrar el nuevo proveedor.");
+        const data = await res.json();
+        proveedorId = data.id;
+      }
+
+      // Registramos los toners con los ids ya generados
+      const datosRegistro = {
+        modelo,
+        marca_id: marcaId,
+        tipo,
+        ubicacion,
+        cliente_id: clienteId,
+        proyecto_id: proyectoId,
+        series,
+        proveedor_id: proveedorId,
+      }
+            
 
 
       
