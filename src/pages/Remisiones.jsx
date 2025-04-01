@@ -12,7 +12,7 @@ function Remisiones() {
           <h2 className="text-xl font-semibold text-gray-700 mb-2">Consultar Remisiones</h2>
           <p className="text-gray-500 mb-4">Busca remisiones por número, revisa sus detalles y accede al PDF.</p>
           <Link
-            to="/remisiones/consultar"
+            to="/remisiones/buscar"
             className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700"
           >
             Ir a Consultar
