@@ -10,7 +10,8 @@ function RemisionColourKlub({ datos }) {
     direccion_entrega,
     notas,
     series,
-    setFechaVisual
+    setFechaVisual,
+    fechaVisual
   } = datos;
 
   const hayAccesorios = series.some(
@@ -21,16 +22,6 @@ function RemisionColourKlub({ datos }) {
     const accesorios = Array.isArray(impresora.accesorios) ? impresora.accesorios.length : 0;
     return total + 1 + accesorios;
   }, 0);
-
-  const formatearFechaLarga = (fecha) => {
-    try {
-      return new Date(fecha + 'T00:00:00').toLocaleDateString('es-MX', {
-        day: 'numeric', month: 'long', year: 'numeric'
-      });
-    } catch {
-      return '---';
-    }
-  }
 
   return (
     <div className="bg-white text-black mx-auto p-6 w-[216mm] text-sm print:break-after-auto print:break-inside-auto">
@@ -46,15 +37,26 @@ function RemisionColourKlub({ datos }) {
 
       {/* 📅 Fecha y Remisión */}
       <div className="text-right mb-2">
-        <p><strong>Fecha de entrega:</strong> {
+        <p> {
           typeof window !== "undefined" && window.location.pathname.includes("generar-remision") ? (
             <input
               type="date"
-              value={fecha_emision}
+              value={fechaVisual}
               onChange={(e) => setFechaVisual(e.target.value)}
               className="border border-gray-300 rounded px-1 text-sm"
             />
-          ) : formatearFechaLarga(fecha_emision)
+          ) : (
+            <span>{
+              fecha_emision
+              ? new Date(fecha_emision).toLocaleDateString("es-MX", {
+                  day: "2-digit",
+                  month: "long",
+                  year: "numeric",
+                  timeZone: "UTC"
+                })
+              : "---"
+            }</span>
+          )
         }</p>
         <p><strong>Remisión No.:</strong> {numero_remision}</p>
       </div>

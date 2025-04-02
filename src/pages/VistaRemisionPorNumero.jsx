@@ -98,7 +98,7 @@ function VistaRemisionPorNumero() {
       >
         <RemisionIMME datos={{
           numero_remision: remision.numero_remision,
-          fecha_emision: fechaVisual || remision.fecha_emision,
+          fecha_emision: remision.fecha_programada,
           cliente: remision.cliente,
           proyecto: remision.proyecto,
           destinatario: remision.destinatario,
@@ -120,7 +120,7 @@ function VistaRemisionPorNumero() {
         >
           <RemisionColourKlub datos={{
             numero_remision: remision.numero_remision,
-            fecha_emision: fechaVisual || remision.fecha_emision,
+            fecha_emision: remision.fecha_programada,
             cliente: remision.cliente,
             proyecto: remision.proyecto,
             destinatario: remision.destinatario,
@@ -142,7 +142,7 @@ function VistaRemisionPorNumero() {
         >
           <RemisionConeltec datos={{
             numero_remision: remision.numero_remision,
-            fecha_emision: fechaVisual || remision.fecha_emision,
+            fecha_emision: remision.fecha_programada,
             cliente: remision.cliente,
             proyecto: remision.proyecto,
             destinatario: remision.destinatario,

@@ -10,13 +10,9 @@ function RemisionConeltec({ datos }) {
       direccion_entrega,
       notas,
       series,
-      setFechaVisual
+      setFechaVisual,
+      fechaVisual
     } = datos;
-  
-    const formatearFechaLarga = (fecha) => {
-      const opciones = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-      return new Date(fecha + 'T00:00:00').toLocaleDateString('es-MX', opciones);
-    };
   
     const hayAccesorios = series.some(
       (impresora) => Array.isArray(impresora.accesorios) && impresora.accesorios.length
@@ -36,11 +32,22 @@ function RemisionConeltec({ datos }) {
               {typeof window !== "undefined" && window.location.pathname.includes("generar-remision") ? (
                 <input
                   type="date"
-                  value={fecha_emision}
+                  value={fechaVisual}
                   onChange={(e) => setFechaVisual(e.target.value)}
                   className="border border-gray-300 rounded px-1 text-sm"
                 />
-              ) : formatearFechaLarga(fecha_emision)}
+              ) : (
+                <span>{
+                  fecha_emision
+                  ? new Date(fecha_emision).toLocaleDateString("es-MX", {
+                      day: "2-digit",
+                      month: "long",
+                      year: "numeric",
+                      timeZone: "UTC"
+                    })
+                  : "---"
+                }</span>
+              )}
             </p>
             <p>{numero_remision}</p>
           </div>

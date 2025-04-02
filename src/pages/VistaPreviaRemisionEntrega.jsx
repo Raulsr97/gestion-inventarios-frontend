@@ -62,7 +62,8 @@ function VistaPreviaRemisionEntrega() {
     direccion_entrega: direccionEntrega,
     notas,
     series: datosRemision.series,
-    setFechaVisual
+    setFechaVisual,
+    fechaVisual
   }
 
   // Logos de cada empresa
@@ -121,6 +122,7 @@ function VistaPreviaRemisionEntrega() {
         direccion_entrega: direccionEntrega, 
         notas: notas.trim() === '' ? null : notas, 
         series: datosRemision.series.map(impresora => impresora.serie), // Solo enviamos los números de serie
+        fecha_programada: fechaVisual,
         usuario_creador: "admin"  // Temporal, se cambiará cuando haya autenticación
       }
 
@@ -146,7 +148,7 @@ function VistaPreviaRemisionEntrega() {
       
       
       // Generar y descargar el pdf
-      const pdfResponse = await fetch(`http://localhost:3000/api/remisiones/generar-pdf/${nuevaRemision.numero_remision}?fecha=${fechaVisual}`)
+      const pdfResponse = await fetch(`http://localhost:3000/api/remisiones/generar-pdf/${nuevaRemision.numero_remision}`)
 
       const contentType = pdfResponse.headers.get("Content-Type")
       console.log("🧾 Headers de la respuesta PDF:", contentType)

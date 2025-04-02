@@ -25,6 +25,38 @@ const BuscadorRemisiones = () => {
     }
   }
 
+  const descargarPDF = async () => {
+    try {
+      const fechaVisual = new Date().toLocaleDateString('es-MX', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric'
+      })
+
+      const response = await fetch(`http://localhost:3000/api/remisiones/generar-pdf/${remision.numero_remision}?fecha=${encodeURIComponent(fechaVisual)}`);
+
+      const contentType = response.headers.get("Content-Type");
+      if (!response.ok || !contentType.includes("application/pdf")) {
+        console.error("⚠️ El PDF no se generó correctamente");
+        toast.error("No se pudo generar el PDF.");
+        return;
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `remision_${remision.numero_remision}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      console.log("📄 PDF descargado correctamente");
+    } catch (error) {
+      console.error("❌ Error al descargar el PDF:", error.message);
+      toast.error("No se pudo generar el PDF.");
+    }
+  } 
+
   return (
     <div className="p-6 max-w-xl mx-auto bg-white shadow-md rounded-lg mt-10">
       <h1 className="text-2xl font-bold mb-4">Consultar Remisión</h1>
@@ -49,6 +81,65 @@ const BuscadorRemisiones = () => {
       >
         Buscar
       </button>
+
+      {remision && (
+        <div className="mt-6 p-4 border rounded-lg shadow bg-gray-50">
+          <h2 className="text-xl font-semibold mb-4 text-gray-700">Detalles de la Remisión</h2>
+
+          <div className="space-y-2 text-sm text-gray-800">
+            <p><strong>Número:</strong> {remision.numero_remision}</p>
+            <p><strong>Empresa:</strong> {remision.empresa?.nombre}</p>
+            <p><strong>Cliente:</strong> {remision.cliente?.nombre}</p>
+            <p><strong>Proyecto:</strong> {remision.proyecto?.nombre}</p>
+            <p><strong>Destinatario:</strong> {remision.destinatario}</p>
+            <p><strong>Dirección de Entrega:</strong> {remision.direccion_entrega}</p>
+            <p><strong>Estado:</strong> {remision.estado}</p>
+            <p><strong>Fecha de emisión:</strong> {new Date(remision.fecha_emision).toLocaleDateString()}</p>
+          </div>
+        </div>
+      )}
+
+      {remision && remision.impresoras && remision.impresoras.length > 0 && (
+        <div className="mt-6">
+          <h3 className="text-lg font-semibold mb-2 text-gray-700">Impresoras</h3>
+          <table className="w-full text-sm border border-gray-300 rounded">
+            <thead className="bg-gray-100 text-left">
+              <tr>
+                <th className="p-2 border-b">Serie</th>
+                <th className="p-2 border-b">Modelo</th>
+                <th className="p-2 border-b">Marca</th>
+                <th className="p-2 border-b">Accesorios</th>
+              </tr>
+            </thead>
+            <tbody>
+              {remision.impresoras.map((impresora, index) => (
+                <tr key={index} className="border-t">
+                  <td className="p-2">{impresora.serie}</td>
+                  <td className="p-2">{impresora.modelo}</td>
+                  <td className="p-2">{impresora.marca?.nombre}</td>
+                  <td className="p-2">
+                    {impresora.accesorios?.length > 0
+                      ? impresora.accesorios.map((a) => a.numero_parte).join(", ")
+                      : "Sin accesorios"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {remision && (
+        <div className="mt-6">
+          <button
+            onClick={descargarPDF}
+            className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition"
+          >
+            Descargar PDF
+          </button>
+        </div>
+      )}
+
 
       {error && <p className="text-red-500 mt-4">{error}</p>}
     </div>

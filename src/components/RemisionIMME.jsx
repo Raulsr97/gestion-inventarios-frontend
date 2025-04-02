@@ -1,7 +1,7 @@
 function RemisionIMME({ datos }) {
     if (!datos || !Array.isArray(datos.series)) return <p>❌ Datos incompletos</p>
 
-    const { numero_remision, fecha_emision, cliente, proyecto, destinatario, direccion_entrega, notas, series, setFechaVisual } = datos;
+    const { numero_remision, fecha_emision, cliente, proyecto, destinatario, direccion_entrega, notas, series, setFechaVisual, fechaVisual } = datos;
 
     const hayAccesorios = series.some(
       (impresora) => Array.isArray(impresora.accesorios) && impresora.accesorios.length 
@@ -25,22 +25,24 @@ function RemisionIMME({ datos }) {
             <div className="text-right">
               <p><strong>No.:</strong> {numero_remision}</p>
               <p className="flex justify-end gap-1 items-end">
-                <strong>Fecha:</strong>
                 {/* Solo muestra el input si estamos en modo Vista Previa */}
                 {typeof window !== "undefined" && window.location.pathname.includes("generar-remision") ? (
                   <input
                     type="date"
-                    value={fecha_emision}
+                    value={fechaVisual}
                     onChange={(e) => setFechaVisual(e.target.value)}
                     className="border border-gray-300 rounded px-1 text-sm mt-1"
                   />
                 ) : (
                   <span>{
-                    typeof fecha_emision === "string"
-                    ? new Date(fecha_emision + 'T00:00:00').toLocaleDateString('es-MX')
-                    : fecha_emision instanceof Date
-                      ? fecha_emision.toLocaleDateString('es-MX')
-                      : "---"
+                    fecha_emision
+                    ? new Date(fecha_emision).toLocaleDateString("es-MX", {
+                        day: "2-digit",
+                        month: "long",
+                        year: "numeric",
+                        timeZone: "UTC"
+                      })
+                    : "---"
                   }</span>
                 )}
               </p>
