@@ -468,13 +468,16 @@ function ConsultaImpresoras() {
                         {impresora.fecha_entrada ? new Date(impresora.fecha_entrada).toLocaleDateString() : "No registrada"}
                       </td>
                       <td className="border border-gray-300 p-2">
-                        {impresora.fecha_salida ? new Date(impresora.fecha_salida).toLocaleDateString() : "No registrada"}
+                        {impresora.fecha_salida ? new Date(impresora.fecha_salida).toLocaleDateString("es-MX", {
+                          timeZone: "UTC"
+                        }) : "No registrada"}
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
+            
             {/* Botón para exportar a Excel */}
             <div className="col-span-full flex justify-center mt-3">
               <button

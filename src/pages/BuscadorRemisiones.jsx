@@ -5,6 +5,7 @@ const BuscadorRemisiones = () => {
   const [numero, setNumero] = useState('')
   const [remision, setRemision] = useState(null)
   const [error, setError] = useState('')
+  const [archivo, setArchivo] = useState(null)
 
   const buscarRemision = async () => {
     try {
@@ -56,6 +57,69 @@ const BuscadorRemisiones = () => {
       toast.error("No se pudo generar el PDF.");
     }
   } 
+
+  const handleSubirEvidencia = async (e) => {
+    e.preventDefault()
+
+    if (!archivo) {
+      toast.error('Selecciona un archivo primero')
+      return
+    }
+
+    const formData = new FormData()
+    formData.append('archivo', archivo)
+
+    try {
+      const response = await fetch(`http://localhost:3000/api/remisiones/${remision.numero_remision}/evidencia`, {
+        method: 'POST',
+        body: formData
+      })
+
+      if (!response.ok) {
+        toast.error("Error al subir la evidencia")
+      }
+
+      const data = await response.json()
+      toast.success('Evidencia subida correctamente')
+
+      setRemision(data.remision)
+      setArchivo(null)
+    } catch (error) {
+      console.error(error);
+      toast.error("No se pudo subir la evidencia");
+    }
+  }
+
+  const handleCancelarRemision = async (e) => {
+    const confirmacion = window.confirm("¿Estás seguro de que deseas cancelar esta remisión?")
+    if (!confirmacion) return
+
+    try {
+      const response = await (fetch`http://localhost:3000/api/remisiones/${remision.numero_remision}/cancelar`, {
+        method: 'PATCH',
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          usuario_cancelacion: "admin" // 🛡️ Temporal
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error("No se pudo cancelar la remisión.");
+      }
+
+      const data = await response.json();
+      console.log("✅ Remisión cancelada:", data);
+      toast.success("Remisión cancelada con éxito");
+
+      // Recargar para reflejar los cambios
+      window.location.reload();
+    } catch (error) {
+      console.error("❌ Error al cancelar la remisión:", error);
+      alert("Hubo un problema al cancelar la remisión");
+    }
+  }
 
   return (
     <div className="p-6 max-w-xl mx-auto bg-white shadow-md rounded-lg mt-10">
@@ -140,6 +204,45 @@ const BuscadorRemisiones = () => {
         </div>
       )}
 
+      {remision && remision.estado === "Pendiente" && (
+        <button
+          onClick={handleCancelarRemision}
+          className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded mt-4"
+        >
+          🛑 Cancelar Remisión
+        </button>
+      )}
+
+      {remision && remision.estado === 'Pendiente' && (
+        <form onSubmit={handleSubirEvidencia} className="mt-4 flex gap-2 items-center">
+          <input 
+            type="file" 
+            accept=".pdf,.jpg,.jpeg,.png"
+            onChange={(e) => setArchivo(e.target.files[0])}
+            className="border rounded px-2 py-1"
+          />
+          <button 
+            type="submit" 
+            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
+          >
+            Subir Evidencia
+          </button>
+        </form>
+      )}
+
+      {remision && remision.remision_firmada && (
+        <div className="mt-4">
+          {console.log("🧾 Archivo de evidencia:", remision.remision_firmada)}
+          <a 
+            href={`http://localhost:3000/uploads/${remision.remision_firmada}`} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-blue-600 underline hover:text-blue-800"
+          >
+            📄 Ver Evidencia Subida
+          </a>
+        </div>
+      )}
 
       {error && <p className="text-red-500 mt-4">{error}</p>}
     </div>
