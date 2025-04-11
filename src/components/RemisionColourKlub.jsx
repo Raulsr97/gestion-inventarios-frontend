@@ -128,7 +128,7 @@ function RemisionColourKlub({ datos }) {
       </div>
 
     </div>
-  );
+  )
 }
 
 export default RemisionColourKlub;
