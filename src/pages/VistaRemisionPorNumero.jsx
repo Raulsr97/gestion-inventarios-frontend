@@ -3,6 +3,9 @@ import { useEffect, useState } from "react";
 import RemisionIMME from "../components/RemisionIMME";
 import RemisionColourKlub from "../components/RemisionColourKlub";
 import RemisionConeltec from "../components/RemisionConeltec";
+import RemisionRefaccionesIMME from "../components/RemisionRefaccionesIMME";
+import RemisionRefaccionesColourKlub from "../components/RemisionRefaccionesColourKlub";
+import RemisionRefaccionesConeltec from "../components/RemisionRefaccionesConeltec";
 
 function VistaRemisionPorNumero() {
   const { numero_remision } = useParams() // Obtenemos el numero desde la URL
@@ -63,103 +66,109 @@ function VistaRemisionPorNumero() {
   }, [])
 
   useEffect(() => {
-    fetch (`http://localhost:3000/api/remisiones/${numero_remision}`)
-      .then(res => {
-        if (!res.ok) throw new Error('No se encontró la remisión')
-        return res.json()
-      })
-      .then(data => {
-        setRemision(data)
+    const cargarRemision = async () => {
+      try {
+        const endpoints = [
+          { endpoint: "remisiones", tipo: "impresora", campo: "impresoras" },
+          { endpoint: "remisiones-toner", tipo: "toner", campo: "toners" },
+          { endpoint: "remisiones-unidad-imagen", tipo: "unidad_imagen", campo: "unidadesimg" },
+          { endpoint: "remisiones-refaccion", tipo: "refaccion", campo: "refacciones" }
+        ];
+  
+        let data = null;
+  
+        for (const { endpoint, tipo, campo } of endpoints) {
+          const res = await fetch(`http://localhost:3000/api/${endpoint}/${numero_remision}`);
+          if (!res.ok) continue;
+  
+          const respuesta = await res.json();
+          console.log("🧪 Verificando respuesta:", respuesta);
+  
+          // ✅ Confirmar que el campo de productos venga con información
+          if (Array.isArray(respuesta[campo]) && respuesta[campo].length > 0) {
+            respuesta.tipo = tipo;
+            respuesta.series = respuesta[campo];
+            data = respuesta;
+            break;
+          }
+        }
+  
+        if (!data) throw new Error("No se encontró la remisión con productos");
+  
+        setRemision(data);
         setTimeout(() => {
-          setReady(true)
-          setCargando(false)
-        }, 100)
-        setCargando(false)
-      })
-      .catch(err => {
-        console.error("❌ Error al cargar la remisión:", err)
-        setError(true)
-        setCargando(false)
-      })
-  }, [numero_remision])
+          setReady(true);
+          setCargando(false);
+        }, 100);
+      } catch (err) {
+        console.error("❌ Error al cargar la remisión:", err);
+        setError(true);
+        setCargando(false);
+      }
+    };
+  
+    cargarRemision();
+  }, [numero_remision]);
+  
+  
 
   if (cargando) return <p>⏳ Cargando remisión...</p>
   if (error) return <p className="text-red-500">❌ No se pudo cargar la remisión.</p>
 
   if (!ready || !remision) return <p>⏳ Preparando remisión...</p>
 
-  // Si es empresa IMME(ID 1) renderizar su diseño 
-  if (remision && remision.empresa?.id == 1 && Array.isArray(remision.impresoras) && remision.impresoras.length > 0) {
-    console.log("🧾 Remisión completa:", remision)
+  if (remision && remision.tipo && remision.empresa?.id) {
+    console.log("🧪 remision recibida:", remision)
+
+    const productos = remision.tipo === 'refaccion' ? remision.refacciones.map(ref => ({
+      numero_parte: ref.numero_parte,
+      marca: ref.marca,
+      cantidad: ref.RemisionRefaccion?.cantidad || 1
+    })) : remision.series || []
+
+    const datos = {
+      numero_remision: remision.numero_remision,
+      fecha_emision: fechaVisual || remision.fecha_programada,
+      cliente: remision.cliente,
+      proyecto: remision.proyecto,
+      destinatario: remision.destinatario,
+      direccion_entrega: remision.direccion_entrega,
+      notas: remision.notas,
+      series: productos
+    };
+  
     return (
       <div 
         id="vista-remision-imme"
         className="w-[216mm] mx-auto"
       >
-        <RemisionIMME datos={{
-          numero_remision: remision.numero_remision,
-          fecha_emision: remision.fecha_programada,
-          cliente: remision.cliente,
-          proyecto: remision.proyecto,
-          destinatario: remision.destinatario,
-          direccion_entrega: remision.direccion_entrega,
-          notas: remision.notas,
-          series: remision.impresoras
-        }} />
-      </div>
-    )
-  }
-  
-    // Si es empresa Colour Klub (ID 2), renderizar su diseño personalizado
-    if (remision && remision.empresa?.id == 2 && Array.isArray(remision.impresoras) && remision.impresoras.length > 0) {
-      console.log("🧾 Remisión Colour Klub:", remision)
-      return (
-        <div 
-          id="vista-remision-imme"
-          className="w-[216mm] mx-auto"
-        >
-          <RemisionColourKlub datos={{
-            numero_remision: remision.numero_remision,
-            fecha_emision: remision.fecha_programada,
-            cliente: remision.cliente,
-            proyecto: remision.proyecto,
-            destinatario: remision.destinatario,
-            direccion_entrega: remision.direccion_entrega,
-            notas: remision.notas,
-            series: remision.impresoras
-          }} />
-        </div>
-      )
-    }
+        {/* Remisiones de impresoras, toner o unidad_imagen */}
+        {remision.tipo !== "refaccion" && remision.empresa.id === 1 && (
+          <RemisionIMME datos={datos} />
+        )}
+        {remision.tipo !== "refaccion" && remision.empresa.id === 2 && (
+          <RemisionColourKlub datos={datos} />
+        )}
+        {remision.tipo !== "refaccion" && remision.empresa.id === 3 && (
+          <RemisionConeltec datos={datos} />
+        )}
 
-    // Si es empresa Coneletec (ID 3), renderizar su diseño personalizado
-    if (remision && remision.empresa?.id == 3 && Array.isArray(remision.impresoras) && remision.impresoras.length > 0) {
-      console.log("🧾 Remisión Coneltec:", remision)
-      return (
-        <div 
-          id="vista-remision-imme"
-          className="w-[216mm] mx-auto"
-        >
-          <RemisionConeltec datos={{
-            numero_remision: remision.numero_remision,
-            fecha_emision: remision.fecha_programada,
-            cliente: remision.cliente,
-            proyecto: remision.proyecto,
-            destinatario: remision.destinatario,
-            direccion_entrega: remision.direccion_entrega,
-            notas: remision.notas,
-            series: remision.impresoras
-          }} />
-        </div>
-      )
-    }
+        {/* Remisiones de refacciones */}
+        {remision.tipo === "refaccion" && remision.empresa.id === 1 && (
+          <RemisionRefaccionesIMME datos={datos} />
+        )}
+        {remision.tipo === "refaccion" && remision.empresa.id === 2 && (
+          <RemisionRefaccionesColourKlub datos={datos} />
+        )}
+        {remision.tipo === "refaccion" && remision.empresa.id === 3 && (
+          <RemisionRefaccionesConeltec datos={datos} />
+        )}
+      </div>
+    );
+  }
+
   
   
-  return (
-    <div className="p-6 max-w-4xl mx-auto bg-white shadow-md rounded-lg">
-      {/* Todo tu contenido original aquí... */}
-    </div>
-  );
 }
 
 export default VistaRemisionPorNumero

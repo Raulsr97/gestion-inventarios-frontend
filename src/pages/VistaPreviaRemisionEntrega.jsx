@@ -2,14 +2,24 @@ import { useLocation, useNavigate} from "react-router-dom";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import RemisionIMME from "../components/RemisionIMME";
+import RemisionRefaccionesIMME from "../components/RemisionRefaccionesIMME";
 import RemisionColourKlub from "../components/RemisionColourKlub";
+import RemisionRefaccionesColourKlub from "../components/RemisionRefaccionesColourKlub";
 import RemisionConeltec from "../components/RemisionConeltec";
+import RemisionRefaccionesConeltec from "../components/RemisionRefaccionesConeltec";
 
 
 function VistaPreviaRemisionEntrega() {
   const location = useLocation()
   const navigate = useNavigate()
   const datosRemision = location.state // Recibimos los datos de la navegacion
+
+
+  const tipoProducto = location.state?.tipoProducto || 'impresora'
+  console.log("📦 Tipo de producto:", tipoProducto);
+
+  const esRefacciones = Array.isArray(datosRemision.refacciones)
+
 
   // Estados para realizar la edicion solo en los campos del formulario
   const [destinatario, setDestinatario] = useState(datosRemision?.destinatario || "");
@@ -61,7 +71,7 @@ function VistaPreviaRemisionEntrega() {
     destinatario,
     direccion_entrega: direccionEntrega,
     notas,
-    series: datosRemision.series,
+    series: esRefacciones ? datosRemision.refacciones : datosRemision.series,
     setFechaVisual,
     fechaVisual
   }
@@ -83,17 +93,52 @@ function VistaPreviaRemisionEntrega() {
   }
 
   // Verificar si alguna impresora tiene accesorios
-  const hayAccesorios = datosRemision.series.some(impresora => {
+  const hayAccesorios = !esRefacciones && datosRemision.series.some(impresora => {
     return impresora.accesorios && impresora.accesorios.length > 0;
   })
 
   console.log("📦 ¿Hay accesorios en las impresoras seleccionadas?:", hayAccesorios);
 
   const crearRemision = async () => {
+    const tipo = datosRemision.tipoProducto || 'impresora'
+
+    const rutas = {
+      impresora: {
+        crear: "/api/remisiones",
+        pdf: "/api/remisiones/generar-pdf"
+      },
+      toner: {
+        crear: "/api/remisiones-toner",
+        pdf: "/api/remisiones-toner/generar-pdf"
+      },
+      unidad_imagen: {
+        crear: "/api/remisiones-unidad-imagen",
+        pdf: "/api/remisiones-unidad-imagen/generar-pdf"
+      },
+      refaccion: {
+        crear: "/api/remisiones-refaccion",
+        pdf: "/api/remisiones-refaccion/generar-pdf"
+      }
+    };
+    
+    const endpointCrear = rutas[tipo].crear;
+    const endpointPDF = rutas[tipo].pdf;
+    
+
     try {
       // Buscar cliente y proyecto desde las impresoras seleccionadas
-      const clientesUnicos = new Set(datosRemision.series.map(i => i.cliente_id).filter(Boolean))
-      const proyectosUnicos = new Set(datosRemision.series.map(i => i.proyecto_id).filter(Boolean))
+      const clientesUnicos = new Set(
+        (esRefacciones ? datosRemision.refacciones : datosRemision.series || [])
+          .map(i => i.cliente_id)
+          .filter(Boolean)
+      );
+      
+      const proyectosUnicos = new Set(
+        (esRefacciones ? datosRemision.refacciones : datosRemision.series || [])
+          .map(i => i.proyecto_id)
+          .filter(Boolean)
+      );
+      
 
       // Dterminar cliente_id
       let clienteId = null
@@ -106,7 +151,7 @@ function VistaPreviaRemisionEntrega() {
       // Determinamos proyecto_id
       let proyectoId = null
       if (proyectosUnicos.size === 1) {
-        proyectoId = [...clientesUnicos][0]
+        proyectoId = [...proyectosUnicos][0]
       } else if (proyectosUnicos > 1) {
         console.warn("⚠️ Hay múltiples proyectos en la selección.");
       }
@@ -115,21 +160,32 @@ function VistaPreviaRemisionEntrega() {
 
       const remisionData = {
         numero_remision: `REM-${Date.now()}`,
-        empresa_id: Number(datosRemision.empresa),
+        empresa_id: Number(datosRemision?.empresa),
         cliente_id: Number(clienteId),
-        proyecto_id: datosRemision.proyecto?.id,
+        proyecto_id: datosRemision?.proyecto?.id,
         destinatario,
-        direccion_entrega: direccionEntrega, 
-        notas: notas.trim() === '' ? null : notas, 
-        series: datosRemision.series.map(impresora => impresora.serie), // Solo enviamos los números de serie
+        direccion_entrega: direccionEntrega,
+        notas: notas.trim() === '' ? null : notas,
+        ...(esRefacciones
+          ? {
+              refacciones: (datosRemision?.refacciones || []).map(ref => ({
+                id: ref.numero_parte,
+                cantidad: ref.cantidad
+              }))
+            }
+          : {
+              series: (datosRemision?.series || []).map(impresora => impresora.serie)
+            }),
         fecha_programada: fechaVisual,
-        usuario_creador: "admin"  // Temporal, se cambiará cuando haya autenticación
-      }
+        usuario_creador: "admin"
+      };
+      
+      
 
       console.log("📦 Datos listos para enviar:", remisionData);
 
       // Enviar solicitud 'POST' al backend
-      const response = await fetch("http://localhost:3000/api/remisiones", {
+      const response = await fetch(`http://localhost:3000${endpointCrear}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json'},
         body: JSON.stringify(remisionData)
@@ -145,10 +201,8 @@ function VistaPreviaRemisionEntrega() {
       console.log("✅ Remisión creada con éxito:", nuevaRemision)
       toast.success('✅ Remisión creada correctamente')
 
-      
-      
       // Generar y descargar el pdf
-      const pdfResponse = await fetch(`http://localhost:3000/api/remisiones/generar-pdf/${nuevaRemision.numero_remision}`)
+      const pdfResponse = await fetch(`http://localhost:3000${endpointPDF}/${nuevaRemision.numero_remision}?fecha=${fechaVisual}`)
 
       const contentType = pdfResponse.headers.get("Content-Type")
       console.log("🧾 Headers de la respuesta PDF:", contentType)
@@ -170,13 +224,18 @@ function VistaPreviaRemisionEntrega() {
 
       console.log("📄 PDF descargado correctamente");
 
+      
       // Redirigir al usuario despues de la descarga 
-      toast.info("🔄 Redirigiendo a Gestión de Impresoras...")
+      toast.info("🔄 Redirigiendo...")
       setTimeout(() => {
-        setTimeout(() => {
-          navigate("/gestion-productos/gestion-impresoras")
-        }, 2000)
+        const rutasRetorno = {
+          impresora: "/gestion-productos/gestion-impresoras",
+          toner: "/gestion-productos/gestion-toners",
+          unidad_imagen: "/gestion-productos/gestion-unidades-img"
+        };
         
+        const rutaFinal = rutasRetorno[tipo] || rutasRetorno.impresora;
+        navigate(rutaFinal)
       }, 2000)
 
     } catch (error) {
@@ -189,26 +248,50 @@ function VistaPreviaRemisionEntrega() {
     <>
       {/* Contenedor de remisión: sin fondo blanco aquí */}
       <div className="flex justify-center">
-      {Number(datosRemision.empresa) === 1 && (
+      {esRefacciones && Number(datosRemision.empresa) === 1 && (
+        <RemisionRefaccionesIMME datos={remisionParaVista} />
+      )}
+      {esRefacciones && Number(datosRemision.empresa) === 2 && (
+        <RemisionRefaccionesColourKlub datos={remisionParaVista} />
+      )}
+      {esRefacciones && Number(datosRemision.empresa) === 3 && (
+        <RemisionRefaccionesConeltec datos={remisionParaVista} />
+      )}
+      {!esRefacciones && Number(datosRemision.empresa) === 1 && (
         <RemisionIMME datos={remisionParaVista} />
       )}
-      {Number(datosRemision.empresa) === 2 && (
+      {!esRefacciones && Number(datosRemision.empresa) === 2 && (
         <RemisionColourKlub datos={remisionParaVista} />
       )}
-      {Number(datosRemision.empresa) === 3 && (
+      {!esRefacciones && Number(datosRemision.empresa) === 3 && (
         <RemisionConeltec datos={remisionParaVista} />
       )}
       </div>
 
       {/* Botones: alineados a la derecha y fuera de la hoja */}
       <div className="fixed bottom-4 right-4 flex gap-2 z-50">
-        <button
-          id="modificar-remision"
-          onClick={() => navigate("/gestion-productos/gestion-impresoras", { state: datosRemision })}
-          className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-xl shadow-lg"
-        >
-          🔄 Modificar
-        </button>
+      <button
+        id="modificar-remision"
+        onClick={() => {
+          const tipo = datosRemision.tipoProducto || "impresora";
+        
+          const rutas = {
+            impresora: "/gestion-productos/gestion-impresoras",
+            toner: "/gestion-productos/gestion-toners",
+            unidad_imagen: "/gestion-productos/gestion-unidades-img",
+            refaccion: "/gestion-productos/gestion-refacciones"
+          };
+        
+          const rutaRetorno = rutas[tipo] || rutas.impresora;
+        
+          navigate(rutaRetorno, { state: datosRemision });
+        }}
+        
+        className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-xl shadow-lg"
+      >
+        🔄 Modificar
+      </button>
+
         <button
           id="confirmar-remision"
           onClick={crearRemision}

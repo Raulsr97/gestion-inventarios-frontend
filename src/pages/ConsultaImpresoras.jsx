@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import CardStockGeneral from "../components/CardStockGeneral";
 import CardMovimientosMes from "../components/CardMovimientos";
 import CardStockProyectos from "../components/CardStockProyectos";
-import CardStockClientes from "../components/CardStockClientes";
+import CardStockPorTipo from '../components/CardStockPorTipo';
 
 function ConsultaImpresoras() {
   // Guarda todas las impresoras obtenidas desde la API
@@ -29,8 +29,8 @@ function ConsultaImpresoras() {
     fechaEntradaFin: '',
     fechaSalidaInicio: '',
     fechaSalidaFin: '',
-    enAlmacen: '',
-    origenRecoleccion: ''
+    origenRecoleccion: '',
+    ubicacion: ''
   });
 
   useEffect(() => {
@@ -74,50 +74,65 @@ function ConsultaImpresoras() {
 
   const exportarAExcel = (resultados) => {
     if (resultados.length === 0) {
-        toast.error("No hay datos para exportar.");
-        return;
+      toast.error("No hay datos para exportar.");
+      return;
     }
-
-    // Definir los encabezados de la tabla
+  
     const encabezados = [
-        ["Serie", "Modelo", "Estado", "Tipo", "Ubicación", "Cliente", "Proyecto", "Proveedor", "Marca", "Flujo", "Origen Recolección", "Accesorios", "Fecha de Entrada", "Fecha de Salida"]
+      "SERIE", "MODELO", "ESTADO", "TIPO", "UBICACIÓN", "CLIENTE", "PROYECTO", "PROVEEDOR", "MARCA",
+      "FLUJO", "ORIGEN RECOLECCIÓN", "ACCESORIOS", "FECHA DE ENTRADA", "FECHA DE SALIDA", "FECHA DE ENTREGA"
     ];
-
-    // Convertir los datos en formato adecuado para XLSX
+  
     const datos = resultados.map((impresora) => [
-        impresora.serie,
-        impresora.modelo,
-        impresora.estado,
-        impresora.tipo,
-        impresora.ubicacion,
-        impresora.cliente?.nombre || "Sin cliente",
-        impresora.proyecto?.nombre || "Sin proyecto",
-        impresora.proveedor?.nombre || "Sin proveedor",
-        impresora.marca?.nombre || "Sin marca",
-        impresora.flujo || "No Aplica",
-        impresora.origen_recoleccion || "No Aplica",
-        impresora.accesorios?.map(a => a.numero_parte).join(", ") || "Sin accesorios",
-        impresora.fecha_entrada ? new Date(impresora.fecha_entrada).toLocaleDateString() : "No registrada",
-        impresora.fecha_salida ? new Date(impresora.fecha_salida).toLocaleDateString() : "No registrada"
+      impresora.serie,
+      impresora.modelo,
+      impresora.estado,
+      impresora.tipo,
+      impresora.ubicacion,
+      impresora.cliente?.nombre || "SIN CLIENTE",
+      impresora.proyecto?.nombre || "SIN PROYECTO",
+      impresora.proveedor?.nombre || "SIN PROVEEDOR",
+      impresora.marca?.nombre || "SIN MARCA",
+      impresora.flujo || "NO APLICA",
+      impresora.origen_recoleccion || "NO APLICA",
+      impresora.accesorios?.map(a => a.numero_parte).join(", ") || "SIN ACCESORIOS",
+      impresora.fecha_entrada ? new Date(impresora.fecha_entrada).toLocaleDateString() : "NO REGISTRADA",
+      impresora.fecha_salida ? new Date(impresora.fecha_salida).toLocaleDateString() : "NO REGISTRADA",
+      impresora.fecha_entrega_final ? new Date(impresora.fecha_entrega_final).toLocaleDateString() : "NO REGISTRADA"
     ]);
-
-    // Crear la hoja de trabajo (worksheet) con los encabezados y datos
-    const ws = XLSX.utils.aoa_to_sheet([...encabezados, ...datos]);
-
-    // Definir el rango de datos como tabla
-    const range = XLSX.utils.decode_range(ws['!ref']);
-    ws['!autofilter'] = { ref: XLSX.utils.encode_range(range) };  // Aplica autofiltros
-
-    // Ajustar el ancho de las columnas automáticamente
-    ws['!cols'] = encabezados[0].map(() => ({ wch: 20 })); // Ajusta el ancho de todas las columnas a 20 caracteres aprox.
-
-    // Crear el libro de Excel y agregar la hoja
+  
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Reporte de Impresoras");
-
-    // Descargar el archivo
+    const ws = XLSX.utils.aoa_to_sheet([]);
+  
+    // Agregamos encabezados con formato negritas
+    XLSX.utils.sheet_add_aoa(ws, [encabezados], { origin: "A1" });
+  
+    encabezados.forEach((_, index) => {
+      const cellRef = XLSX.utils.encode_cell({ r: 0, c: index });
+      if (!ws[cellRef]) return;
+      ws[cellRef].s = {
+        font: { bold: true }, // 🔥 Negrita
+      };
+    });
+  
+    // Agregamos los datos después de los encabezados
+    XLSX.utils.sheet_add_aoa(ws, datos, { origin: "A2" });
+  
+    // Ajustar el ancho de columnas
+    ws['!cols'] = encabezados.map(() => ({ wch: 20 }));
+  
+    // Activar autofiltro
+    const rango = XLSX.utils.encode_range({
+      s: { r: 0, c: 0 },
+      e: { r: datos.length, c: encabezados.length - 1 }
+    });
+    ws['!autofilter'] = { ref: rango };
+  
+    // Finalizar
+    XLSX.utils.book_append_sheet(wb, ws, "REPORTE DE IMPRESORAS");
     XLSX.writeFile(wb, "reporte_impresoras.xlsx");
   };
+
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
@@ -128,7 +143,7 @@ function ConsultaImpresoras() {
           <CardStockGeneral />
           <CardMovimientosMes />
           <CardStockProyectos />
-          <CardStockClientes />
+          <CardStockPorTipo />
         </div>
 
         {/* 🔹 Formulario de Filtros */}
@@ -162,10 +177,7 @@ function ConsultaImpresoras() {
                     (!filtrosAplicados.fechaEntradaFin || fechaEntradaImpresora <= filtrosAplicados.fechaEntradaFin) &&
                     (!filtrosAplicados.fechaSalidaInicio || fechaSalidaImpresora >= filtrosAplicados.fechaSalidaInicio) &&
                     (!filtrosAplicados.fechaSalidaFin || fechaSalidaImpresora <= filtrosAplicados.fechaSalidaFin) &&
-                    (filtrosAplicados.enAlmacen === '' || // Si el filtro esta vacio no aplica nada
-                      (filtrosAplicados.enAlmacen === 'true' && !fechaSalidaImpresora) ||
-                      (filtrosAplicados.enAlmacen === 'false' && fechaSalidaImpresora)
-                    )
+                    (!filtrosAplicados.ubicacion || impresora.ubicacion === filtrosAplicados.ubicacion)
                   );
                 })
               
@@ -191,7 +203,8 @@ function ConsultaImpresoras() {
                 fechaSalidaInicio: '',
                 fechaSalidaFin: '',
                 enAlmacen: '',
-                origenRecoleccion: ''
+                origenRecoleccion: '',
+                ubicacion: ''
               })
 
               setAccesorioSeleccionado('')
@@ -392,12 +405,13 @@ function ConsultaImpresoras() {
 
             <select
               className="w-full p-3 border border-gray-300 rounded text-sm focus:border-blue-700 focus:ring-0 focus:outline-none"
-              value={filtrosAplicados.enAlmacen}
-              onChange={(e) => setFiltrosAplicados({ ...filtrosAplicados, enAlmacen: e.target.value })}
+              value={filtrosAplicados.ubicacion}
+              onChange={(e) => setFiltrosAplicados({ ...filtrosAplicados, ubicacion: e.target.value })}
             >
-              <option value="" disabled hidden>Filtrar por ubicación</option>
-              <option value="true">En Almacén</option>
-              <option value="false">Fuera del Almacén</option>
+              <option value="" disabled hidden>Ubicación</option>
+              <option value="Almacen">Almacén</option>
+              <option value="Entregado">Entregado</option>
+              <option value="En Tránsito">En Tránsito</option>
             </select>
 
 
@@ -443,6 +457,9 @@ function ConsultaImpresoras() {
                     <th className="border border-gray-300 p-2">Accesorios</th>
                     <th className="border border-gray-300 p-2">Fecha de Entrada</th>
                     <th className="border border-gray-300 p-2">Fecha de Salida</th>
+                    <th className="border border-gray-300 p-2">Fecha de Entrega</th>
+                    <th className="border border-gray-300 p-2">Remisión</th>
+
                   </tr>
                 </thead>
                 <tbody>
@@ -472,6 +489,28 @@ function ConsultaImpresoras() {
                           timeZone: "UTC"
                         }) : "No registrada"}
                       </td>
+                      <td className="border border-gray-300 p-2">
+                        {impresora.fecha_entrega_final ? new Date(impresora.fecha_entrega_final).toLocaleDateString("es-MX", {
+                          timeZone: "UTC"
+                        }) : "No registrada"}
+                      </td>
+
+                      <td className="border border-gray-300 p-2 text-center">
+                        {['Entregado', 'En Tránsito'].includes(impresora.ubicacion) &&
+                        impresora.relacion_impresoras?.[0]?.remision?.numero_remision ? (
+                          <a
+                            href={`/remisiones/buscar?numero_remision=${impresora.relacion_impresoras[0].remision.numero_remision}`}
+                            className="text-blue-600 hover:underline"
+                          >
+                            {impresora.relacion_impresoras[0].remision.numero_remision}
+                          </a>
+                        ) : (
+                          "-"
+                        )}
+                      </td>
+
+
+
                     </tr>
                   ))}
                 </tbody>

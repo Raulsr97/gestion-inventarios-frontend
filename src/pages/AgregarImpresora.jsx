@@ -69,7 +69,11 @@ function AgregarImpresora () {
     if (e.key === 'Enter') {
       e.preventDefault() // Evita que el formulario se recargue
 
-      const serie = e.target.value.toUpperCase().trim()
+      let rawInput = e.target.value.toUpperCase().trim()
+
+      // Extraer los signos de pesos si los hay
+      const partes = rawInput.split('$')
+      const serie = partes.length === 3 ? partes[1] : rawInput
 
       if (serie === '') return // Evita agregar una serie vacía  
       if (series.includes(serie)) {
@@ -260,7 +264,7 @@ function AgregarImpresora () {
       console.error("Error en el registro:", error);
       toast.error(error.message);
     }
-  };
+  }
   
 
   return (

@@ -26,7 +26,7 @@ function Gestiones() {
           <h2 className="text-xl font-semibold text-gray-700 mb-2">Gestión Tóner</h2>
           <p className="text-gray-500 mb-4">Realiza movimientos en el sistema y genera remisiones.</p>
           <Link
-            to="/productos/toner/agregar"
+            to="/gestion-productos/gestion-toners"
             className="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700"
           >
             Ir a Agregar
@@ -39,7 +39,7 @@ function Gestiones() {
           <h2 className="text-xl font-semibold text-gray-700 mb-2">Gestion Unidades de Imagen</h2>
           <p className="text-gray-500 mb-4">Realiza movimientos en el sistema y genera remisiones.</p>
           <Link
-            to="/productos/unidades-imagen/agregar"
+            to="/gestion-productos/gestion-unidades-img"
             className="bg-purple-600 text-white px-6 py-2 rounded-md hover:bg-purple-700"
           >
             Ir a Agregar
@@ -52,7 +52,7 @@ function Gestiones() {
           <h2 className="text-xl font-semibold text-gray-700 mb-2">Gestion Refacciones</h2>
           <p className="text-gray-500 mb-4">Realiza movimientos en el sistema y genera remisiones.</p>
           <Link
-            to="/productos/refacciones/agregar"
+            to="/gestion-productos/gestion-refacciones"
             className="bg-orange-600 text-white px-6 py-2 rounded-md hover:bg-orange-700"
           >
             Ir a Agregar

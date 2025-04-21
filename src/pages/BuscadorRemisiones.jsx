@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { FiDownload } from 'react-icons/fi'
+import { useSearchParams } from "react-router-dom";
 
 
 const BuscadorRemisiones = () => {
@@ -9,42 +10,67 @@ const BuscadorRemisiones = () => {
   const [cargando, setCargando] = useState(true)
   const [archivos, setArchivos] = useState({})
   const [paginaActual, setPaginaActual] = useState(1)
+  const [nuevasFechas, setNuevasFechas] = useState({})
+  
+  const [searchParams] = useSearchParams()
+  const numeroRemisionUrl = searchParams.get('numero_remision')
+  
 
   const remisionesPorPagina = 15
   
 
   useEffect(() => {
-    const obtenerRemisiones = async () => {
-      try {
-        const response = await fetch("http://localhost:3000/api/remisiones-consulta")
-        if (!response.ok) throw new Error("No se pudo obtener la lista de remisiones")
-
-        const data = await response.json()
-        setRemisiones(data)
-        setCargando(false)
-      } catch (error) {
-        console.error("❌ Error al obtener remisiones:", error.message)
-        toast.error("Error al cargar remisiones")
-        setCargando(false)
-      }
-    }
-
     obtenerRemisiones()
+    
+
   }, [])
 
-  const buscarRemisionPorNumero = async () => {
+  const obtenerRemisiones = async () => {
     try {
-      const response = await fetch(`http://localhost:3000/api/remisiones-consulta?numero_remision=${busquedaNumero}`)
+      const response = await fetch("http://localhost:3000/api/remisiones-consulta")
+      if (!response.ok) throw new Error("No se pudo obtener la lista de remisiones")
+
+      const data = await response.json()
+      setRemisiones(data)
+      setCargando(false)
+    } catch (error) {
+      console.error("❌ Error al obtener remisiones:", error.message)
+      toast.error("Error al cargar remisiones")
+      setCargando(false)
+    }
+  }
+
+  const buscarRemisionPorNumero = async (numeroParam) => {
+    const numero = numeroParam || busquedaNumero
+
+    if (!numero) {
+      obtenerRemisiones()
+      return
+    } 
+
+    try {
+      const response = await fetch(`http://localhost:3000/api/remisiones-consulta?numero_remision=${numero}`)
       if (!response.ok) throw new Error('No se pudo buscar la remisión')
 
       const data = await response.json()
       setRemisiones(data)
+      console.log("🔍 Remisiones después de buscar:", data)
       setPaginaActual(1)
     } catch (error) {
       console.error("❌ Error al buscar por número:", error.message);
       toast.error("No se encontró la remisión.");
     }
   }
+
+  useEffect(() => {
+    if (numeroRemisionUrl) {
+      setBusquedaNumero(numeroRemisionUrl)
+      buscarRemisionPorNumero(numeroRemisionUrl)
+    }
+  }, [numeroRemisionUrl])
+  
+  
+  
 
   const descargarPDF = async (remision) => {
     const endpoint = remision.tipo === 'recoleccion'
@@ -84,9 +110,23 @@ const BuscadorRemisiones = () => {
 
     if (!confirmacion) return
 
-    const endpoint = remision.tipo === 'recoleccion'
-    ? `http://localhost:3000/api/remisiones-recoleccion/${remision.numero_remision}/cancelar`
-    : `http://localhost:3000/api/remisiones/${remision.numero_remision}/cancelar`
+    let endpoint = ''
+
+    if (remision.tipo === 'recoleccion') {
+      endpoint = `http://localhost:3000/api/remisiones-recoleccion/${remision.numero_remision}/cancelar`
+    } else {
+      // tipo entrega
+      switch (remision.categoria) {
+        case 'toner':
+          endpoint = `http://localhost:3000/api/remisiones-toner/${remision.numero_remision}/cancelar`;
+          break;
+        case 'unidad_imagen':
+          endpoint = `http://localhost:3000/api/remisiones-unidad-imagen/${remision.numero_remision}/cancelar`;
+          break;
+        default:
+          endpoint = `http://localhost:3000/api/remisiones/${remision.numero_remision}/cancelar`; // impresora
+      }
+    }
 
     try {
       const response = await fetch(endpoint, {
@@ -125,9 +165,23 @@ const BuscadorRemisiones = () => {
     const formData = new FormData()
     formData.append('archivo', archivo)
 
-    const endpoint = remision.tipo === 'recoleccion'
-    ? `http://localhost:3000/api/remisiones-recoleccion/${remision.numero_remision}/evidencia`
-    : `http://localhost:3000/api/remisiones/${remision.numero_remision}/evidencia`
+    let endpoint = ""
+
+    if (remision.tipo === "recoleccion") {
+      endpoint = `http://localhost:3000/api/remisiones-recoleccion/${remision.numero_remision}/evidencia`
+    } else {
+      switch (remision.categoria) {
+        case "toner":
+          endpoint = `http://localhost:3000/api/remisiones-toner/${remision.numero_remision}/evidencia`
+          break
+        case "unidad_imagen":
+          endpoint = `http://localhost:3000/api/remisiones-unidad-imagen/${remision.numero_remision}/evidencia`
+          break
+        default:
+          endpoint = `http://localhost:3000/api/remisiones/${remision.numero_remision}/evidencia` // impresora
+      }
+    }
+
 
     try {
       const response = await fetch(endpoint, {
@@ -150,6 +204,57 @@ const BuscadorRemisiones = () => {
     } catch (error) {
       console.error("❌ Error al subir evidencia:", error.message)
       toast.error("Error al subir evidencia")
+    }
+  }
+
+  const cambiarFechaProgramada = async (remision) => {
+    const nuevaFecha = nuevasFechas[remision.numero_remision]
+
+    if (!nuevaFecha) {
+      toast.error("Selecciona una fecha válida.");
+      return;
+    }
+
+    try {
+      let endpoint = ""
+
+      if (remision.tipo === "recoleccion") {
+        endpoint = `http://localhost:3000/api/remisiones-recoleccion/${remision.numero_remision}/fecha-programada`
+      } else {
+        switch (remision.categoria) {
+          case "toner":
+            endpoint = `http://localhost:3000/api/remisiones-toner/${remision.numero_remision}/fecha-programada`
+            break
+          case "unidad_imagen":
+            endpoint = `http://localhost:3000/api/remisiones-unidad-imagen/${remision.numero_remision}/fecha-programada`
+            break
+          default:
+            endpoint = `http://localhost:3000/api/remisiones/${remision.numero_remision}/fecha-programada` // impresora
+        }
+      }
+
+      const res = await fetch(endpoint, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nuevaFecha }),
+      })
+
+      if (!res.ok) throw new Error("No se pudo modificar la fecha.")
+
+      const data = await res.json();
+      toast.success("Fecha actualizada correctamente.")
+
+      // Refrescar la lista de remisiones con la fecha nueva:
+      setRemisiones((prev) =>
+        prev.map((r) =>
+          r.numero_remision === remision.numero_remision
+            ? { ...r, fecha_programada: nuevaFecha }
+            : r
+        )
+      )
+    } catch (error) {
+      console.error("❌ Error al actualizar fecha:", error.message);
+      toast.error("Error al actualizar la fecha.");
     }
   }
 
@@ -180,7 +285,7 @@ const BuscadorRemisiones = () => {
           className="border border-gray-300 rounded px-4 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
         />
         <button
-          onClick={buscarRemisionPorNumero}
+          onClick={() => buscarRemisionPorNumero()}
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm"
         >
           Buscar
@@ -188,98 +293,141 @@ const BuscadorRemisiones = () => {
       </div>
   
       {!cargando && remisiones && remisiones.length > 0 && (
-        <div className="mt-4">
-          <h3 className="font-semibold mb-4 text-gray-700 text-lg">Resultados:</h3>
-          <ul className="grid grid-cols-1 gap-4">
-            {remisionesActuales.map((remision, index) => {
-              const badgeColor = remision.estado === 'Pendiente'
-                ? 'bg-blue-100 text-blue-800'
-                : remision.estado === 'Confirmada'
-                ? 'bg-green-100 text-green-800'
-                : 'bg-red-100 text-red-800';
-  
-              return (
-                <div key={index} className="border border-gray-200 bg-white p-4 rounded-lg shadow-sm">
-                  <div className="flex justify-between items-center mb-2">
-                    <div className="space-y-1 text-sm text-gray-700">
-                      <p><strong>Número:</strong> {remision.numero_remision}</p>
-                      <p><strong>Tipo:</strong> <span className="capitalize">{remision.tipo}</span></p>
-                      <p><strong>Empresa:</strong> {remision.empresa?.nombre}</p>
-                      <p><strong>Fecha:</strong> {new Date(remision.fecha_emision).toLocaleDateString()}</p>
-                    </div>
-                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${badgeColor}`}>
-                      {remision.estado}
-                    </span>
+  <div className="mt-4">
+    <h3 className="font-semibold mb-4 text-gray-700 text-lg">Resultados:</h3>
+    <ul className="grid grid-cols-1 gap-4">
+      {remisionesActuales.map((remision, index) => {
+        const badgeColor = remision.estado === 'Pendiente'
+          ? 'bg-blue-100 text-blue-800'
+          : remision.estado === 'Confirmada'
+          ? 'bg-green-100 text-green-800'
+          : 'bg-red-100 text-red-800';
+
+        return (
+          <div key={index} className="border border-gray-200 bg-white p-4 rounded-lg shadow-sm">
+            <div className="flex justify-between items-start">
+              {/* Información de la remisión */}
+              <div className="space-y-1 text-sm text-gray-700">
+                <p><strong>Número:</strong> {remision.numero_remision}</p>
+                <p><strong>Tipo:</strong> <span className="capitalize">{remision.tipo}</span></p>
+                <p><strong>Empresa:</strong> {remision.empresa?.nombre}</p>
+                <p><strong>Fecha emisión:</strong> {new Date(remision.fecha_emision).toLocaleDateString()}</p>
+                <p><strong>Fecha programada:</strong> {
+                  remision.fecha_programada?.slice(0, 10).split('-').reverse().join('/')
+                }</p>
+              </div>
+
+              {/* Estado */}
+              <span className={`px-3 py-1 rounded-full text-xs font-medium ${badgeColor}`}>
+                {remision.estado}
+              </span>
+            </div>
+
+            {/* Sección de acciones para PENDIENTE */}
+            {remision.estado === 'Pendiente' && (
+              <div className="mt-4 flex flex-col md:flex-row md:justify-between gap-4">
+                {/* Botones de acción */}
+                <div className="flex flex-col gap-2 md:items-start">
+                  <button
+                    onClick={() => descargarPDF(remision)}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm flex items-center gap-1"
+                  >
+                    <FiDownload className="text-lg" />
+                    Descargar PDF
+                  </button>
+
+                  <div className="flex gap-2 items-left">
+                    <input
+                      type="date"
+                      value={nuevasFechas[remision.numero_remision] || ''}
+                      onChange={(e) =>
+                        setNuevasFechas(prev => ({
+                          ...prev,
+                          [remision.numero_remision]: e.target.value
+                        }))
+                      }
+                      className="border border-gray-300 px-3 py-1 rounded text-sm text-gray-700"
+                    />
+                    <button
+                      onClick={() => cambiarFechaProgramada(remision)}
+                      className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-sm"
+                    >
+                      Cambiar fecha
+                    </button>
                   </div>
-  
-                  {remision.estado === 'Pendiente' && (
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      <button
-                        onClick={() => descargarPDF(remision)}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm flex gap-1"
-                      >
-                        <FiDownload className="text-lg" />
-                        Descargar PDF
-                      </button>
-  
-                      <button
-                        onClick={() => cancelarRemision(remision)}
-                        className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm"
-                      >
-                        Cancelar
-                      </button>
+
+                  
+                </div>
+
+                {/* Archivo y fecha */}
+                <div className="flex flex-col gap-2 md:items-end">
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-end gap-3 w-full">
+                    {/* Botón elegir archivo y nombre del archivo */}
+                    <div className="flex items-center gap-2">
+                      <label className="bg-white text-gray-800 px-4 py-2 rounded border border-gray-300 shadow-sm cursor-pointer hover:bg-gray-50 text-sm font-medium transition whitespace-nowrap">
+                        📂 Elegir archivo
+                        <input
+                          type="file"
+                          accept=".pdf,.jpg,.jpeg,.png"
+                          onChange={(e) =>
+                            setArchivos(prev => ({
+                              ...prev,
+                              [remision.numero_remision]: e.target.files[0]
+                            }))
+                          }
+                          className="hidden"
+                        />
+                      </label>
+
+                      {archivos[remision.numero_remision] && (
+                        <span className="text-sm text-gray-600 truncate max-w-[180px]">
+                          {archivos[remision.numero_remision].name}
+                        </span>
+                      )}
                     </div>
-                  )}
-  
-  {remision.estado === 'Pendiente' && (
-  <div className="mt-3 flex flex-col md:flex-row md:items-center gap-3">
-    <label className="bg-white text-gray-800 px-4 py-2 rounded border border-gray-300 shadow-sm cursor-pointer hover:bg-gray-50 text-sm font-medium transition">
-      📂 Elegir archivo
-      <input
-        type="file"
-        accept=".pdf,.jpg,.jpeg,.png"
-        onChange={(e) =>
-          setArchivos(prev => ({
-            ...prev,
-            [remision.numero_remision]: e.target.files[0]
-          }))
-        }
-        className="hidden"
-      />
-    </label>
 
-    <span className="text-sm text-gray-600">
-      {archivos[remision.numero_remision]?.name || 'Ningún archivo seleccionado'}
-    </span>
+                  {/* Botón subir */}
+                  <button
+                    onClick={() => subirEvidencia(remision)}
+                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm"
+                  >
+                    Subir evidencia
+                  </button>
+                  </div>
 
-    <button
-      onClick={() => subirEvidencia(remision)}
-      className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm"
-    >
-       Subir evidencia
-    </button>
+
+                  <button
+                    onClick={() => cancelarRemision(remision)}
+                    className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm"
+                  >
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Confirmada */}
+            {remision.estado === 'Confirmada' && remision.remision_firmada && (
+              <div className="mt-3">
+                <a
+                  href={`http://localhost:3000/uploads/${remision.remision_firmada}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block bg-green-100 text-green-800 text-sm font-semibold px-3 py-1 rounded"
+                >
+                  Ver archivo firmado
+                </a>
+              </div>
+            )}
+          </div>
+        )
+      })}
+    </ul>
   </div>
 )}
 
-  
-                  {remision.estado === 'Confirmada' && remision.remision_firmada && (
-                    <div className="mt-3">
-                      <a
-                        href={`http://localhost:3000/uploads/${remision.remision_firmada}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-block bg-green-100 text-green-800 text-sm font-semibold px-3 py-1 rounded"
-                      >
-                        Ver archivo firmado
-                      </a>
-                    </div>
-                  )}
-                </div>
-              )
-            })}
-          </ul>
-        </div>
-      )}
+
+
   
       {!cargando && remisiones?.length === 0 && (
         <p className="text-gray-600 mt-4 text-center">No se encontraron remisiones.</p>
