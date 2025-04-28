@@ -25,7 +25,7 @@ function Remisiones() {
           <h2 className="text-xl font-semibold text-gray-700 mb-2">Remisión de Entrega</h2>
           <p className="text-gray-500 mb-4">Selecciona productos del inventario para crear una remisión de entrega.</p>
           <Link
-            to="/remisiones/entrega"
+            to="/gestion-productos"
             className="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700"
           >
             Crear Entrega

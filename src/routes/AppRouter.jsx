@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Dashboard from '../pages/Dashboard'
+import DashboardInicio from "../pages/DashboardInicio";
 import Productos from '../pages/Productos'
 import ConsultaProductos from '../pages/ConsultaProductos'
 import AgregarProductos from '../pages/AgregarProductos'
@@ -29,7 +29,7 @@ import VistaRemisionRecoleccionPorNumero from "../pages/VistaRemisionRecoleccion
 function AppRouter() {
     return (
         <Routes>
-            <Route path="/" element={<Dashboard />} />
+            <Route path="/" element={<DashboardInicio />} />
             <Route path="/productos" element={<Productos />} />
             <Route path="/consultas" element={<Consultas />} />
             <Route path="/productos/agregar" element={<AgregarProductos />} />

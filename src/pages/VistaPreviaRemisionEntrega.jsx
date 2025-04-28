@@ -231,7 +231,8 @@ function VistaPreviaRemisionEntrega() {
         const rutasRetorno = {
           impresora: "/gestion-productos/gestion-impresoras",
           toner: "/gestion-productos/gestion-toners",
-          unidad_imagen: "/gestion-productos/gestion-unidades-img"
+          unidad_imagen: "/gestion-productos/gestion-unidades-img",
+          refaccion: '/gestion-productos/gestion-refacciones'
         };
         
         const rutaFinal = rutasRetorno[tipo] || rutasRetorno.impresora;

@@ -69,10 +69,7 @@ const BuscadorRemisiones = () => {
     }
   }, [numeroRemisionUrl])
   
-  
-  
-
-  const descargarPDF = async (remision) => {
+   const descargarPDF = async (remision) => {
     const endpoint = remision.tipo === 'recoleccion'
       ? `http://localhost:3000/api/remisiones-recoleccion/generar-pdf/${remision.numero_remision}`
       : `http://localhost:3000/api/remisiones/generar-pdf/${remision.numero_remision}`
@@ -122,6 +119,9 @@ const BuscadorRemisiones = () => {
           break;
         case 'unidad_imagen':
           endpoint = `http://localhost:3000/api/remisiones-unidad-imagen/${remision.numero_remision}/cancelar`;
+          break;
+        case 'refaccion':
+          endpoint = `http://localhost:3000/api/remisiones-refaccion/${remision.numero_remision}/cancelar`;
           break;
         default:
           endpoint = `http://localhost:3000/api/remisiones/${remision.numero_remision}/cancelar`; // impresora
@@ -173,10 +173,13 @@ const BuscadorRemisiones = () => {
       switch (remision.categoria) {
         case "toner":
           endpoint = `http://localhost:3000/api/remisiones-toner/${remision.numero_remision}/evidencia`
-          break
+          break;
         case "unidad_imagen":
           endpoint = `http://localhost:3000/api/remisiones-unidad-imagen/${remision.numero_remision}/evidencia`
-          break
+          break;
+        case "refaccion":
+          endpoint = `http://localhost:3000/api/remisiones-refaccion/${remision.numero_remision}/evidencia`
+          break;
         default:
           endpoint = `http://localhost:3000/api/remisiones/${remision.numero_remision}/evidencia` // impresora
       }
@@ -224,10 +227,13 @@ const BuscadorRemisiones = () => {
         switch (remision.categoria) {
           case "toner":
             endpoint = `http://localhost:3000/api/remisiones-toner/${remision.numero_remision}/fecha-programada`
-            break
+            break;
           case "unidad_imagen":
             endpoint = `http://localhost:3000/api/remisiones-unidad-imagen/${remision.numero_remision}/fecha-programada`
-            break
+            break;
+          case "refaccion":
+            endpoint = `http://localhost:3000/api/remisiones-refaccion/${remision.numero_remision}/fecha-programada`
+            break;
           default:
             endpoint = `http://localhost:3000/api/remisiones/${remision.numero_remision}/fecha-programada` // impresora
         }

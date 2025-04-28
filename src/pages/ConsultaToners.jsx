@@ -245,7 +245,12 @@ function ConsultaToner() {
                       <td className="border border-gray-300 p-2">{t.proveedor?.nombre || "Sin proveedor"}</td>
                       <td className="border border-gray-300 p-2">{t.marca?.nombre || "Sin marca"}</td>
                       <td className="border border-gray-300 p-2">{t.fecha_entrada ? new Date(t.fecha_entrada).toLocaleDateString() : "No registrada"}</td>
-                      <td className="border border-gray-300 p-2">{t.fecha_salida ? new Date(t.fecha_salida).toLocaleDateString() : "No registrada"}</td>
+                      <td className="border border-gray-300 p-2">
+                        {t.fecha_salida
+                          ? new Date(new Date(t.fecha_salida).setDate(new Date(t.fecha_salida).getDate() + 1)).toLocaleDateString()
+                          : "No registrada"
+                        }
+                      </td>
                       <td className="border border-gray-300 p-2">{t.fecha_entrega_final ? new Date(t.fecha_entrega_final).toLocaleDateString() : "No registrada"}</td>
                       <td className="border border-gray-300 p-2 text-center">
                         {["Entregado", "En Tránsito"].includes(t.ubicacion) &&

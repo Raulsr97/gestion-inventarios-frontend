@@ -1,14 +1,14 @@
-import React from "react";
+import { useState } from "react";
+import { FaSearch } from "react-icons/fa";
 import { toast } from "react-toastify";
 
 function ListaRefacciones({ refacciones, seleccionadas, manejarCantidadSeleccionada }) {
+  const [busqueda, setBusqueda] = useState("");
+
   const tiposYaSeleccionados = new Set(seleccionadas.map(r => r.tipo));
 
   const manejarAgregar = (ref) => {
-    if (
-      tiposYaSeleccionados.size > 0 &&
-      !tiposYaSeleccionados.has(ref.tipo)
-    ) {
+    if (tiposYaSeleccionados.size > 0 && !tiposYaSeleccionados.has(ref.tipo)) {
       toast.warn("No puedes mezclar refacciones de tipo 'Compra' con 'Distribución'.");
       return;
     }
@@ -17,7 +17,7 @@ function ListaRefacciones({ refacciones, seleccionadas, manejarCantidadSeleccion
     if (cantidadTexto === null) return; // Cancelado
 
     const cantidad = parseInt(cantidadTexto);
-    if (isNaN(cantidad) || cantidad < 0) {
+    if (isNaN(cantidad) || cantidad <= 0) {
       toast.error("Por favor ingresa una cantidad válida.");
       return;
     }
@@ -28,85 +28,113 @@ function ListaRefacciones({ refacciones, seleccionadas, manejarCantidadSeleccion
     }
 
     manejarCantidadSeleccionada(ref.numero_parte, cantidad, ref);
+    toast.success(`Se agregaron ${cantidad} unidades de ${ref.numero_parte}.`);
   };
 
+  const refaccionesFiltradas = refacciones.filter(ref =>
+    ref.numero_parte.toLowerCase().includes(busqueda.toLowerCase())
+  );
+
   return (
-    <div className="overflow-y-auto max-h-[calc(100vh-150px)]">
-      <table className="w-full text-sm text-left text-gray-700">
-        <thead className="text-xs text-gray-600 uppercase bg-gray-100">
-          <tr>
-            <th className="px-4 py-2">Número de Parte</th>
-            <th className="px-4 py-2">Tipo</th>
-            <th className="px-4 py-2">Cliente</th>
-            <th className="px-4 py-2">Proyecto</th>
-            <th className="px-4 py-2">Disponible</th>
-            <th className="px-4 py-2">Acción</th>
-          </tr>
-        </thead>
-        <tbody>
-          {refacciones.map((ref, idx) => {
-            const seleccion = seleccionadas.find(s =>
-              s.numero_parte === ref.numero_parte &&
-              s.tipo === ref.tipo &&
-              s.cliente_id === ref.cliente_id &&
-              s.proyecto_id === ref.proyecto_id
-            );
+    <div className="flex flex-col gap-4 max-h-[calc(100vh-150px)] overflow-y-auto">
 
-            return (
-              <tr
-                key={idx}
-                className={`border-b hover:bg-gray-50 ${
-                  ref.tipo === "Distribucion" ? "bg-yellow-50" : ""
-                }`}
-              >
-                <td className="px-4 py-2 font-medium">{ref.numero_parte}</td>
-                <td className="px-4 py-2">{ref.tipo}</td>
-                <td className="px-4 py-2">{ref.cliente_nombre || "—"}</td>
-                <td className="px-4 py-2">{ref.proyecto_nombre || "—"}</td>
-                <td className="px-4 py-2">{ref.cantidad}</td>
-                <td className="px-4 py-2">
-                  <button
-                    onClick={() => manejarAgregar(ref)}
-                    className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs font-medium"
-                  >
-                    ➕ Agregar
-                  </button>
-                  {seleccion?.cantidad > 0 && (
-                    <p className="text-xs mt-1 text-gray-700">
-                      Seleccionadas: <strong>{seleccion.cantidad}</strong>
-                    </p>
-                  )}
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-      {seleccionadas.length > 0 && (
-      <div className="mt-6 bg-gray-50 p-4 border-t border-gray-300 rounded-md">
-        <h2 className="text-sm font-semibold text-gray-700 mb-2">🛒 Refacciones seleccionadas para remisión</h2>
-        <ul className="space-y-2 text-sm">
-          {seleccionadas.map((ref, idx) => (
-            <li key={idx} className="flex justify-between items-center bg-white border p-2 rounded shadow-sm">
-              <span className="text-gray-800">
-                <strong>{ref.numero_parte}</strong>
-                {ref.cliente_nombre && ` | Cliente: ${ref.cliente_nombre}`}
-                {ref.proyecto_nombre && ` | Proyecto: ${ref.proyecto_nombre}`}
-                | Cantidad: <strong>{ref.cantidad}</strong>
-              </span>
-
-              <button
-                onClick={() => manejarCantidadSeleccionada(ref.numero_parte, 0, ref)}
-                className="text-red-500 text-xs font-semibold hover:underline"
-              >
-                🗑️ Quitar
-              </button>
-            </li>
-          ))}
-        </ul>
+      {/* 🔍 Input de búsqueda */}
+      <div className="relative mb-2">
+        <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
+        <input
+          type="text"
+          placeholder="Buscar número de parte..."
+          className="w-full pl-12 pr-4 py-3 rounded-lg border border-gray-300 focus:ring-1 focus:ring-blue-700 focus:outline-none text-gray-700"
+          value={busqueda}
+          onChange={(e) => setBusqueda(e.target.value)}
+        />
       </div>
-    )}
 
+      {/* 🧩 Lista de refacciones */}
+      {refaccionesFiltradas.length > 0 ? (
+        refaccionesFiltradas.map((ref, idx) => {
+          const seleccion = seleccionadas.find(s =>
+            s.numero_parte === ref.numero_parte &&
+            s.tipo === ref.tipo &&
+            s.cliente_id === ref.cliente_id &&
+            s.proyecto_id === ref.proyecto_id
+          );
+
+          return (
+            <div
+              key={idx}
+              className="flex flex-col p-4 rounded-lg border border-gray-300 shadow-sm bg-white hover:bg-gray-50 transition"
+            >
+              <div className="flex justify-between items-center mb-2">
+                <p className="text-md font-semibold text-gray-700">{ref.numero_parte}</p>
+                <button
+                  onClick={() => manejarAgregar(ref)}
+                  className="flex items-center gap-1 bg-blue-100 text-blue-700 hover:bg-blue-200 px-3 py-1 rounded-full text-xs font-semibold transition"
+                >
+                  ➕ Agregar
+                </button>
+              </div>
+
+              <div className="text-sm text-gray-600 space-y-1">
+                <p>Tipo: <span className="font-semibold">{ref.tipo}</span></p>
+
+                {/* Solo renderizar cliente si existe */}
+                {ref.cliente_nombre && (
+                  <p>Cliente: <span className="font-semibold">{ref.cliente_nombre}</span></p>
+                )}
+
+                {/* Solo renderizar proyecto si existe */}
+                {ref.proyecto_nombre && (
+                  <p>Proyecto: <span className="font-semibold">{ref.proyecto_nombre}</span></p>
+                )}
+
+                <p>Disponible: <span className="font-semibold">{ref.cantidad}</span></p>
+              </div>
+
+              {seleccion?.cantidad > 0 && (
+                <p className="text-xs mt-2 text-green-600 font-semibold">
+                  Seleccionadas: {seleccion.cantidad}
+                </p>
+              )}
+            </div>
+          );
+        })
+      ) : (
+        <p className="text-gray-500 text-center mt-4">No se encontraron refacciones.</p>
+      )}
+
+      {/* 🛒 Refacciones seleccionadas */}
+      {seleccionadas.length > 0 && (
+        <div className="mt-6">
+          <h2 className="text-sm font-semibold text-gray-700 mb-2">🛒 Refacciones seleccionadas para remisión</h2>
+          <div className="flex flex-col gap-2">
+            {seleccionadas.map((ref, idx) => (
+              <div
+                key={idx}
+                className="flex justify-between items-center bg-white border border-gray-300 rounded-lg p-3 shadow-sm hover:bg-gray-50 transition"
+              >
+                <div className="flex flex-col text-gray-700 text-sm">
+                  <span className="font-semibold">{ref.numero_parte}</span>
+                  {ref.cliente_nombre && (
+                    <span className="text-xs">Cliente: {ref.cliente_nombre}</span>
+                  )}
+                  {ref.proyecto_nombre && (
+                    <span className="text-xs">Proyecto: {ref.proyecto_nombre}</span>
+                  )}
+                  <span className="text-xs">Cantidad: {ref.cantidad}</span>
+                </div>
+
+                <button
+                  onClick={() => manejarCantidadSeleccionada(ref.numero_parte, 0, ref)}
+                  className="text-red-500 text-xs font-semibold hover:underline"
+                >
+                  🗑️ Quitar
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
