@@ -6,7 +6,9 @@ import InputSerie from "../components/InputSerie"
 import BotonAgregar from "../components/BotonAgregar"
 import ListaSeries from "../components/ListaSeries"
 
+// Componente principal para agregar impresoras
 function AgregarImpresora () {
+  // Estados principales del formulario
   const [modelo, setModelo ] = useState('')
   const [estado, setEstado] = useState('')
   const [tipo, setTipo] = useState('')
@@ -19,24 +21,24 @@ function AgregarImpresora () {
   const [origenRecoleccion, setOrigenRecoleccion] = useState('')
   const [accesorios, setAccesorios] = useState([])
 
-  // Estados para almacenar la lista de clientes, proyectos y marcas
+  // Estados para almacenar la lista de clientes, proyectos, marcas y proveedores
   const [clientes, setClientes] = useState([])
   const [proyectos, setProyectos] = useState([])
   const [marcas, setMarcas] = useState([])
   const [proveedores, setProveedores] = useState([])
+  
   // Etados para manejar nuevos clientes, proyectos, marcas y proovedores
   const [nuevoCliente, setNuevoCliente] = useState('')
   const [nuevoProyecto, setNuevoProyecto] = useState('')
   const [nuevaMarca, setNuevaMarca] = useState('')
   const [nuevoProveedor, setNuevoProveedor] = useState('')
-  // lista de series escaneadas
+  
+  // Estado para las series escaneadas y control de campos
   const [ series, setSeries] = useState([])
-  // Bloquea los selects al escanear
   const [ bloquearCampos, setBloquearCampos] = useState(false)
   const [ tieneAccesorios, setTieneAccesorios] = useState(false)
 
-  
-
+  // Cargar datos iniciales (clientes, proyectos, marcas y proveedores)
   useEffect(() => {
     fetch("http://localhost:3000/api/clientes")
       .then((res) => res.json())
@@ -69,10 +71,12 @@ function AgregarImpresora () {
     if (e.key === 'Enter') {
       e.preventDefault() // Evita que el formulario se recargue
 
+      // Entrada sin procesar
       let rawInput = e.target.value.toUpperCase().trim()
 
       // Extraer los signos de pesos si los hay
       const partes = rawInput.split('$')
+      // Toma la serie que viene en medio de los signos de de $
       const serie = partes.length === 3 ? partes[1] : rawInput
 
       if (serie === '') return // Evita agregar una serie vacía  
@@ -180,19 +184,19 @@ function AgregarImpresora () {
       }
       
 
-         // Crear Proveedor si no existe
-         if (proveedor === "nuevo" && nuevoProveedor) {
-          const nuevoProveedorMayusculas = nuevoProveedor
+      // Crear Proveedor si no existe
+      if (proveedor === "nuevo" && nuevoProveedor) {
+      const nuevoProveedorMayusculas = nuevoProveedor
 
-          const res = await fetch("http://localhost:3000/api/proveedores", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ nombre: nuevoProveedorMayusculas })
-          });
-          if (!res.ok) throw new Error("Error al registrar el nuevo proveedor.");
-          const data = await res.json();
-          proveedorId = data.id;
-        }
+      const res = await fetch("http://localhost:3000/api/proveedores", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ nombre: nuevoProveedorMayusculas })
+      });
+      if (!res.ok) throw new Error("Error al registrar el nuevo proveedor.");
+      const data = await res.json();
+      proveedorId = data.id;
+      }
 
         // registramos las impresoras con los IDs ya generados
         const datosRegistro = {
@@ -286,175 +290,176 @@ function AgregarImpresora () {
             disabled={bloquearCampos}
             permitirNuevo={true}
           />
-            <div className={`relative ${!marca ? "opacity-50 pointer-events-none" : ""}`}>
-              {/* Modelo */}
-              <InputModelo 
-                value={modelo}
-                onChange={setModelo}
-                disabled={!marca || bloquearCampos}
-              />
-            </div>
+          
+          <div className={`relative ${!marca ? "opacity-50 pointer-events-none" : ""}`}>
+            {/* Modelo */}
+            <InputModelo 
+              value={modelo}
+              onChange={setModelo}
+              disabled={!marca || bloquearCampos}
+            />
+          </div>
 
-            <div className={`relative ${!marca || !modelo ? "opacity-50 pointer-events-none" : ""}`}>
-              {/* Estado */}
-              <SelectDinamico 
-                opciones={[
-                  { id: "nueva", nombre: "Nueva" },
-                  { id: "usada", nombre: "Usada" }
-                ]}
-                valorSeleccionado={estado} 
-                setValorSeleccionado={setEstado} 
-                placeholder="Estado"
-                disabled={!marca || !modelo || bloquearCampos}
-                permitirNuevo={false}
-                className={!marca ? "opacity-50 cursor-not-allowed" : ""}
-              />
-            </div>
+          <div className={`relative ${!marca || !modelo ? "opacity-50 pointer-events-none" : ""}`}>
+            {/* Estado */}
+            <SelectDinamico 
+              opciones={[
+                { id: "nueva", nombre: "Nueva" },
+                { id: "usada", nombre: "Usada" }
+              ]}
+              valorSeleccionado={estado} 
+              setValorSeleccionado={setEstado} 
+              placeholder="Estado"
+              disabled={!marca || !modelo || bloquearCampos}
+              permitirNuevo={false}
+              className={!marca ? "opacity-50 cursor-not-allowed" : ""}
+            />
+          </div>
 
-            <div className={`relative ${!marca || !modelo || !estado ? "opacity-50 pointer-events-none" : ""}`}>
-              {/* Tipo */}
-              <SelectDinamico 
-                opciones={[
-                  {id: 'compra', nombre:'Compra'},
-                  {id: 'distribucion', nombre:'Distribución'}
-                ]}
-                valorSeleccionado={tipo}
-                setValorSeleccionado={setTipo}
-                placeholder='Tipo'
-                disabled={!marca || !modelo || !estado || bloquearCampos}
-                permitirNuevo={false}
-              />
-            </div>
+          <div className={`relative ${!marca || !modelo || !estado ? "opacity-50 pointer-events-none" : ""}`}>
+            {/* Tipo */}
+            <SelectDinamico 
+              opciones={[
+                {id: 'compra', nombre:'Compra'},
+                {id: 'distribucion', nombre:'Distribución'}
+              ]}
+              valorSeleccionado={tipo}
+              setValorSeleccionado={setTipo}
+              placeholder='Tipo'
+              disabled={!marca || !modelo || !estado || bloquearCampos}
+              permitirNuevo={false}
+            />
+          </div>
 
-            <div className={`relative ${!marca || !modelo || !estado || !tipo ? "opacity-50 pointer-events-none" : ""}`}>
-              {/* Cliente */}
-              <SelectDinamico 
-                opciones={clientes}
-                valorSeleccionado={cliente}
-                setValorSeleccionado={setCliente}
-                setNuevoValor={setNuevoCliente} // Guardamos temporalmente el nuevo cliente
-                placeholder='Cliente'
-                disabled={!marca || !modelo || !estado || !tipo || bloquearCampos}
-                permitirNuevo={true} // Permite agregar nuevos clientes
-              />
-            </div>
+          <div className={`relative ${!marca || !modelo || !estado || !tipo ? "opacity-50 pointer-events-none" : ""}`}>
+            {/* Cliente */}
+            <SelectDinamico 
+              opciones={clientes}
+              valorSeleccionado={cliente}
+              setValorSeleccionado={setCliente}
+              setNuevoValor={setNuevoCliente} // Guardamos temporalmente el nuevo cliente
+              placeholder='Cliente'
+              disabled={!marca || !modelo || !estado || !tipo || bloquearCampos}
+              permitirNuevo={true} // Permite agregar nuevos clientes
+            />
+          </div>
             
-            <div className={`relative ${!marca || !modelo || !estado || !tipo || tipo === 'compra' || !cliente ? "opacity-50 pointer-events-none" : ""}`}>
-              {/* Proyecto */}
-              <SelectDinamico
-                opciones={proyectos}
-                valorSeleccionado={proyecto}
-                setValorSeleccionado={setProyecto}
-                setNuevoValor={setNuevoProyecto}
-                placeholder={'Proyecto'}
-                disabled={!cliente || !marca || !modelo || !estado || !tipo || tipo === 'compra' || bloquearCampos}
-                permitirNuevo={true}
-              />
-            </div>
+          <div className={`relative ${!marca || !modelo || !estado || !tipo || tipo === 'compra' || !cliente ? "opacity-50 pointer-events-none" : ""}`}>
+            {/* Proyecto */}
+            <SelectDinamico
+              opciones={proyectos}
+              valorSeleccionado={proyecto}
+              setValorSeleccionado={setProyecto}
+              setNuevoValor={setNuevoProyecto}
+              placeholder={'Proyecto'}
+              disabled={!cliente || !marca || !modelo || !estado || !tipo || tipo === 'compra' || bloquearCampos}
+              permitirNuevo={true}
+            />
+          </div>
 
-            <div className={`relative ${!marca || !modelo || !estado || !tipo ? "opacity-50 pointer-events-none" : ""}`}>
-              {/* Proveedor */}
-              <SelectDinamico
-                opciones={proveedores}
-                valorSeleccionado={proveedor}
-                setValorSeleccionado={setProveedor}
-                setNuevoValor={setNuevoProveedor}
-                placeholder={'Proveedor'}
-                disabled={!marca || !modelo || !estado || !tipo || bloquearCampos}
-                permitirNuevo={true}
-              />
-            </div>
+          <div className={`relative ${!marca || !modelo || !estado || !tipo ? "opacity-50 pointer-events-none" : ""}`}>
+            {/* Proveedor */}
+            <SelectDinamico
+              opciones={proveedores}
+              valorSeleccionado={proveedor}
+              setValorSeleccionado={setProveedor}
+              setNuevoValor={setNuevoProveedor}
+              placeholder={'Proveedor'}
+              disabled={!marca || !modelo || !estado || !tipo || bloquearCampos}
+              permitirNuevo={true}
+            />
+          </div>
 
-            <div className={`relative ${tipo === 'compra' || !tipo ? "opacity-50 pointer-events-none" : ""}`}>
-              {/* Flujo */}
-              <SelectDinamico 
-                opciones={[
-                  {id: 'Recolección', nombre: 'Recolección'},
-                  {id: 'Distribución', nombre: 'Distribución'}
-                ]}
-                valorSeleccionado={flujo}
-                setValorSeleccionado={setFlujo}
-                placeholder='Flujo'
-                disabled={tipo === 'compra' || bloquearCampos}
-                permitirNuevo={false}
-              />
-            </div>
+          <div className={`relative ${tipo === 'compra' || !tipo ? "opacity-50 pointer-events-none" : ""}`}>
+            {/* Flujo */}
+            <SelectDinamico 
+              opciones={[
+                {id: 'Recolección', nombre: 'Recolección'},
+                {id: 'Distribución', nombre: 'Distribución'}
+              ]}
+              valorSeleccionado={flujo}
+              setValorSeleccionado={setFlujo}
+              placeholder='Flujo'
+              disabled={tipo === 'compra' || bloquearCampos}
+              permitirNuevo={false}
+            />
+          </div>
 
-            <div className={`relative ${tipo === 'compra'  ? "opacity-50 " : ""}`}>
-              {/* Origen de Recoleccion */}
-              <input
-                type="text"
-                className="w-full p-3 border border-gray-300 rounded text-sm-bold focus:border-blue-700 focus:ring-0 focus:outline-none"
-                placeholder="Origen recolección"
-                value={origenRecoleccion}
-                onChange={(e) => setOrigenRecoleccion(e.target.value.toUpperCase())}
-                disabled={ tipo === 'compra' || bloquearCampos }
-              />
-            </div>
+          <div className={`relative ${tipo === 'compra'  ? "opacity-50 " : ""}`}>
+            {/* Origen de Recoleccion */}
+            <input
+              type="text"
+              className="w-full p-3 border border-gray-300 rounded text-sm-bold focus:border-blue-700 focus:ring-0 focus:outline-none"
+              placeholder="Origen recolección"
+              value={origenRecoleccion}
+              onChange={(e) => setOrigenRecoleccion(e.target.value.toUpperCase())}
+              disabled={ tipo === 'compra' || bloquearCampos }
+            />
+          </div>
             
-            {/* Tiene Accesorios - Checkbox estilo botón */}
-            <div className="flex items-center gap-3 ">
-              <span className="text-gray-700">Tiene Accesorios</span>
+          {/* Tiene Accesorios - Checkbox estilo botón */}
+          <div className="flex items-center gap-3 ">
+            <span className="text-gray-700">Tiene Accesorios</span>
+            <button
+              type="button"
+              onClick={() => setTieneAccesorios(!tieneAccesorios)}
+              className={`px-4 py-2 rounded-md cursor-pointer transition-all duration-300 ${
+                tieneAccesorios ? "bg-blue-600 text-white" : "bg-gray-300 text-gray-700"
+              }`}
+            >
+              {tieneAccesorios ? "Sí" : "No"}
+            </button>
+          </div>
+
+          {/* Formulario para ingresar accesorios si el checkbox está activado */}
+          {tieneAccesorios && (
+            <div className="mt-4 border p-3 rounded-md col-span-2 relative w-full">
+              <h3 className="text-gray-700 font-medium text-sm mb-2">Accesorios</h3>
+
+              {accesorios.map((numParte, index) => (
+                <div key={index} className="flex items-center gap-2 mt-2">
+                  <input
+                    type="text"
+                    className="border p-2 rounded-md w-full text-sm focus:ring-1 focus:ring-blue-400 focus:outline-none"
+                    placeholder="Número de parte"
+                    value={numParte}
+                    onChange={(e) => {
+                      const nuevosAccesorios = [...accesorios];
+                      nuevosAccesorios[index] = e.target.value.toUpperCase();
+                      setAccesorios(nuevosAccesorios);
+                    }}
+                  />
+                  <button 
+                    type="button"
+                    className="text-red-500 px-2 py-1 text-xs rounded-md hover:bg-red-100 transition"
+                    onClick={() => {
+                      setAccesorios(accesorios.filter((_, i) => i !== index));
+                    }}
+                  >
+                    ✖
+                  </button>
+                </div>
+              ))}
+              
+
               <button
                 type="button"
-                onClick={() => setTieneAccesorios(!tieneAccesorios)}
-                className={`px-4 py-2 rounded-md cursor-pointer transition-all duration-300 ${
-                  tieneAccesorios ? "bg-blue-600 text-white" : "bg-gray-300 text-gray-700"
-                }`}
+                className="mt-2 text-blue-600 text-xs flex items-center gap-1 hover:underline"
+                onClick={() => setAccesorios([...accesorios, ""])}
               >
-                {tieneAccesorios ? "Sí" : "No"}
+                ➕ Agregar Accesorio
               </button>
             </div>
-
-            {/* Formulario para ingresar accesorios si el checkbox está activado */}
-            {tieneAccesorios && (
-              <div className="mt-4 border p-3 rounded-md col-span-2 relative w-full">
-                <h3 className="text-gray-700 font-medium text-sm mb-2">Accesorios</h3>
-
-                {accesorios.map((numParte, index) => (
-                  <div key={index} className="flex items-center gap-2 mt-2">
-                    <input
-                      type="text"
-                      className="border p-2 rounded-md w-full text-sm focus:ring-1 focus:ring-blue-400 focus:outline-none"
-                      placeholder="Número de parte"
-                      value={numParte}
-                      onChange={(e) => {
-                        const nuevosAccesorios = [...accesorios];
-                        nuevosAccesorios[index] = e.target.value.toUpperCase();
-                        setAccesorios(nuevosAccesorios);
-                      }}
-                    />
-                    <button 
-                      type="button"
-                      className="text-red-500 px-2 py-1 text-xs rounded-md hover:bg-red-100 transition"
-                      onClick={() => {
-                        setAccesorios(accesorios.filter((_, i) => i !== index));
-                      }}
-                    >
-                      ✖
-                    </button>
-                  </div>
-                ))}
-                
-
-                <button
-                  type="button"
-                  className="mt-2 text-blue-600 text-xs flex items-center gap-1 hover:underline"
-                  onClick={() => setAccesorios([...accesorios, ""])}
-                >
-                  ➕ Agregar Accesorio
-                </button>
-              </div>
-            )}
+          )}
             
-            {/* Escaneo de Series */}
-              <InputSerie 
-                onScan={agregarSerie}
-                disabled={modelo === ''}
-              />
+          {/* Escaneo de Series */}
+          <InputSerie 
+            onScan={agregarSerie}
+            disabled={modelo === ''}
+          />
   
-            {/* Botón de agregar */}
-            <BotonAgregar onClick={handleSubmit}/>
+          {/* Botón de agregar */}
+          <BotonAgregar onClick={handleSubmit}/>
           </form>
         </div>
           

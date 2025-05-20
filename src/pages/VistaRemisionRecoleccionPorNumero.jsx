@@ -1,8 +1,8 @@
 import { useParams } from "react-router-dom"
 import { useEffect, useState } from "react"
-import RemisionImmeRecoleccion from "../components/RemisionImmeRecoleccion"
-import RemisionColourKlubRecoleccion from "../components/RemisionColourKlubRecoleccion"
-import RemisionConeltecRecoleccion from "../components/RemisionConeltecRecoleccion"
+import RemisionEmpresaARecoleccion from "../components/RemisionEmpresaARecoleccion"
+import RemisionEmpresaBRecoleccion from "../components/RemisionEmpresaBRecoleccion"
+import RemisionEmpresaCRecoleccion from "../components/RemisionEmpresaCRecoleccion"
 
 function VistaRemisionRecoleccionPorNumero() {
   const { numero_remision } = useParams()
@@ -86,7 +86,7 @@ function VistaRemisionRecoleccionPorNumero() {
   if (remision.empresa?.id === 1 && Array.isArray(remision.productos)) {
     return (
       <div id="vista-remision-imme" className="w-[216mm] mx-auto">
-        <RemisionImmeRecoleccion datos={{
+        <RemisionEmpresaARecoleccion datos={{
           numero_remision: remision.numero_remision,
           fecha_emision: remision.fecha_programada,
           cliente: remision.cliente,
@@ -104,7 +104,7 @@ function VistaRemisionRecoleccionPorNumero() {
   if (remision.empresa?.id === 2 && Array.isArray(remision.productos)) {
     return (
       <div id="vista-remision-imme" className="w-[216mm] mx-auto">
-        <RemisionColourKlubRecoleccion datos={{
+        <RemisionEmpresaBRecoleccion datos={{
           numero_remision: remision.numero_remision,
           fecha_emision: remision.fecha_programada,
           cliente: remision.cliente,
@@ -122,7 +122,7 @@ function VistaRemisionRecoleccionPorNumero() {
   if (remision.empresa?.id === 3 && Array.isArray(remision.productos)) {
     return (
       <div id="vista-remision-imme" className="w-[216mm] mx-auto">
-        <RemisionConeltecRecoleccion datos={{
+        <RemisionEmpresaCRecoleccion datos={{
           numero_remision: remision.numero_remision,
           fecha_emision: remision.fecha_programada,
           cliente: remision.cliente,

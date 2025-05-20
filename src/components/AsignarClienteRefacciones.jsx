@@ -1,35 +1,42 @@
+// Importamos React y las dependencias necesarias
 import { useState } from "react";
 import { toast } from "react-toastify";
 
+// Componente AsignarClienteRefacciones: Permite seleccionar o registrar un cliente para refacciones
 function AsignarClienteRefacciones({
-  clientes,
-  setClientes,
-  clienteSeleccionado,
-  setClienteSeleccionado,
-  setRefaccionesSeleccionadas,
-  requireCliente
+  clientes, 
+  setClientes, 
+  clienteSeleccionado, 
+  setClienteSeleccionado, 
+  setRefaccionesSeleccionadas, 
+  requireCliente 
 }) {
+  // Estado para almacenar el nombre del nuevo cliente a registrar
   const [nuevoCliente, setNuevoCliente] = useState("");
 
+  //  Manejar selección de un cliente existente
   const manejarSeleccionCliente = (e) => {
     if (!requireCliente) return;
   
     const clienteId = e.target.value;
     setClienteSeleccionado(clienteId);
   
+    // Asignar el cliente seleccionado a las refacciones que no tienen cliente
     setRefaccionesSeleccionadas((prev) =>
       prev.map((r) => (!r.cliente_id ? { ...r, cliente_id: clienteId } : r))
     );
   };
   
-
+  // Manejar registro de un nuevo cliente
   const manejarNuevoCliente = async () => {
+    // Validar que el nombre del cliente no esté vacío
     if (!nuevoCliente.trim()) {
       toast.warn("Ingresa un cliente válido");
       return;
     }
 
     try {
+      // Enviar solicitud para registrar el nuevo cliente en el backend
       const respuesta = await fetch("http://localhost:3000/api/clientes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -41,29 +48,25 @@ function AsignarClienteRefacciones({
       const clienteCreado = await respuesta.json();
       toast.success("Cliente registrado exitosamente");
 
+      // Actualizar la lista de clientes en el frontend
       setClientes(prev => [...prev, clienteCreado]);
       setClienteSeleccionado(clienteCreado.id);
       setNuevoCliente("");
 
-      // 🔹 También asignar ese cliente a las refacciones sin cliente
+      // Asignar el cliente nuevo a las refacciones sin cliente
       setRefaccionesSeleccionadas(prev => {
-        return prev.map(r => {
-          if (!r.cliente_id) {
-            return { ...r, cliente_id: clienteCreado.id };
-          }
-          return r;
-        });
+        return prev.map(r => (!r.cliente_id ? { ...r, cliente_id: clienteCreado.id } : r));
       });
 
     } catch (error) {
       toast.error("Hubo un error al registrar el cliente.");
-      console.error(error);
+      console.error("Error al registrar cliente:", error);
     }
   };
 
   return (
     <div className="flex flex-col gap-4">
-      {/* 🔸 Selección de cliente existente */}
+      {/* Selección de cliente existente */}
       <div>
         <select
           className={`w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none ${
@@ -80,7 +83,7 @@ function AsignarClienteRefacciones({
         </select>
       </div>
 
-      {/* 🔸 Registro de cliente nuevo */}
+      {/* Registro de cliente nuevo */}
       <div className="flex gap-2">
         <input
           type="text"
@@ -95,13 +98,15 @@ function AsignarClienteRefacciones({
         <button
           onClick={manejarNuevoCliente}
           disabled={!requireCliente}
-          className={`${!requireCliente ? "opacity-50 cursor-not-allowed" : ""}`}
+          className={`p-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition ${
+            !requireCliente ? "opacity-50 cursor-not-allowed" : ""
+          }`}
         >
-          <p className="text-3xl">✅</p>
+          ✅
         </button>
       </div>
 
-      {/* 🔸 Visualización del cliente actual */}
+      {/* Visualización del cliente seleccionado */}
       <div className="flex items-center justify-center">
         {clienteSeleccionado ? (
           <div className="p-2 border-l-4 border-blue-600 bg-blue-50 text-blue-800 rounded-lg text-center w-full">

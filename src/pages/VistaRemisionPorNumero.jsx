@@ -1,11 +1,11 @@
 import { useParams, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
-import RemisionIMME from "../components/RemisionIMME";
-import RemisionColourKlub from "../components/RemisionColourKlub";
-import RemisionConeltec from "../components/RemisionConeltec";
-import RemisionRefaccionesIMME from "../components/RemisionRefaccionesIMME";
-import RemisionRefaccionesColourKlub from "../components/RemisionRefaccionesColourKlub";
-import RemisionRefaccionesConeltec from "../components/RemisionRefaccionesConeltec";
+import RemisionEmpresaA from "../components/RemisionEmpresaA";
+import RemisionEmpresaB from "../components/RemisionEmpresaB";
+import RemisionEmpresaC from "../components/RemisionEmpresaC";
+import RemisionRefaccionesEmpresaA from "../components/RemisionRefaccionesEmpresaA";
+import RemisionRefaccionesEmpresaB from "../components/RemisionRefaccionesEmpresaB";
+import RemisionRefaccionesEmpresaC from "../components/RemisionRefaccionesEmpresaC";
 
 function VistaRemisionPorNumero() {
   const { numero_remision } = useParams() // Obtenemos el numero desde la URL
@@ -144,24 +144,24 @@ function VistaRemisionPorNumero() {
       >
         {/* Remisiones de impresoras, toner o unidad_imagen */}
         {remision.tipo !== "refaccion" && remision.empresa.id === 1 && (
-          <RemisionIMME datos={datos} />
+          <RemisionEmpresaA datos={datos} />
         )}
         {remision.tipo !== "refaccion" && remision.empresa.id === 2 && (
-          <RemisionColourKlub datos={datos} />
+          <RemisionEmpresaB datos={datos} />
         )}
         {remision.tipo !== "refaccion" && remision.empresa.id === 3 && (
-          <RemisionConeltec datos={datos} />
+          <RemisionEmpresaC datos={datos} />
         )}
 
         {/* Remisiones de refacciones */}
         {remision.tipo === "refaccion" && remision.empresa.id === 1 && (
-          <RemisionRefaccionesIMME datos={datos} />
+          <RemisionRefaccionesEmpresaA datos={datos} />
         )}
         {remision.tipo === "refaccion" && remision.empresa.id === 2 && (
-          <RemisionRefaccionesColourKlub datos={datos} />
+          <RemisionRefaccionesEmpresaB datos={datos} />
         )}
         {remision.tipo === "refaccion" && remision.empresa.id === 3 && (
-          <RemisionRefaccionesConeltec datos={datos} />
+          <RemisionRefaccionesEmpresaC datos={datos} />
         )}
       </div>
     );

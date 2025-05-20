@@ -1,53 +1,71 @@
-import { useState } from "react"
-import { toast } from "react-toastify"
+// Importamos React y las dependencias necesarias
+import { useState } from "react";
+import { toast } from "react-toastify";
 
-function AsignarClienteUnidadesImg({ clientes, setClientes, clienteSeleccionado, setClienteSeleccionado, setUnidadesImgSeleccionadas, requireCliente }) {
-  const [nuevoCliente, setNuevoCliente] = useState('')
+// Componente AsignarClienteUnidadesImg: Permite seleccionar o registrar un cliente para unidades de imagen
+function AsignarClienteUnidadesImg({
+  clientes, 
+  setClientes, 
+  clienteSeleccionado, 
+  setClienteSeleccionado, 
+  setUnidadesImgSeleccionadas, 
+  requireCliente 
+}) {
+  // Estado para almacenar el nombre del nuevo cliente a registrar
+  const [nuevoCliente, setNuevoCliente] = useState('');
 
+  // Manejar selección de un cliente existente
   const manejarSeleccionCliente = (e) => {
-    const clienteId = e.target.value
-    setClienteSeleccionado(clienteId)
-    console.log('nuevo cliente seleccionado:', clienteId)
+    const clienteId = e.target.value;
+    setClienteSeleccionado(clienteId);
 
+    // Asignar cliente a las unidades de imagen seleccionadas que no tienen cliente
     setUnidadesImgSeleccionadas(prevSeleccionadas => {
       return prevSeleccionadas.map(u => {
         if (!u.cliente_id) {
-          return { ...u, cliente_id: clienteId }
+          return { ...u, cliente_id: clienteId };
         }
-        return u
-      })
-    })
-  }
+        return u;
+      });
+    });
+  };
 
+  // Manejar registro de un nuevo cliente
   const manejarNuevoCliente = async () => {
+    // Verificar que el nombre del cliente no esté vacío
     if (!nuevoCliente.trim()) {
-      toast.warn('Ingresa un cliente válido')
-      return
+      toast.warn('Ingresa un cliente válido');
+      return;
     }
 
     try {
+      // Enviar solicitud para registrar el nuevo cliente en el backend
       const respuesta = await fetch("http://localhost:3000/api/clientes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nombre: nuevoCliente }),
-      })
+      });
 
-      if (!respuesta.ok) throw new Error('Error al registrar cliente')
+      if (!respuesta.ok) throw new Error('Error al registrar cliente');
 
-      const clienteCreado = await respuesta.json()
-      toast.success('Cliente registrado exitosamente')
+      const clienteCreado = await respuesta.json();
+      toast.success('Cliente registrado exitosamente');
 
-      setClientes(prev => [...prev, clienteCreado])
-      setClienteSeleccionado(clienteCreado.id)
-      setNuevoCliente('')
+      // Actualizar la lista de clientes en el frontend
+      setClientes(prev => [...prev, clienteCreado]);
+
+      // Seleccionar automáticamente el nuevo cliente
+      setClienteSeleccionado(clienteCreado.id);
+      setNuevoCliente('');
     } catch (error) {
-      toast.error("Hubo un error al registrar el cliente.")
-      console.error(error)
+      toast.error("Hubo un error al registrar el cliente.");
+      console.error("Error al registrar cliente:", error);
     }
-  }
+  };
 
   return (
     <div className="flex flex-col gap-4">
+      {/* Selección de cliente existente */}
       <div>
         <select
           className={`w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:outline-none ${!requireCliente ? 'opacity-50 cursor-not-allowed bg-gray-100 text-gray-400' : ''}`}
@@ -62,6 +80,7 @@ function AsignarClienteUnidadesImg({ clientes, setClientes, clienteSeleccionado,
         </select>
       </div>
 
+      {/* Registro de cliente nuevo */}
       <div className="flex gap-2">
         <input
           type="text"
@@ -75,6 +94,7 @@ function AsignarClienteUnidadesImg({ clientes, setClientes, clienteSeleccionado,
         </button>
       </div>
 
+      {/* Visualización del cliente seleccionado */}
       <div className="flex items-center justify-center">
         {clienteSeleccionado ? (
           <div className="p-2 border-l-4 border-blue-600 bg-blue-50 text-blue-800 rounded-lg text-center w-full">
@@ -85,12 +105,12 @@ function AsignarClienteUnidadesImg({ clientes, setClientes, clienteSeleccionado,
           </div>
         ) : (
           <p className="text-gray-400 text-sm min-h-[50px] flex items-center justify-center">
-            Ninguna empresa seleccionada
+            Ningún cliente seleccionado
           </p>
         )}
       </div>
     </div>
-  )
+  );
 }
 
-export default AsignarClienteUnidadesImg
+export default AsignarClienteUnidadesImg;

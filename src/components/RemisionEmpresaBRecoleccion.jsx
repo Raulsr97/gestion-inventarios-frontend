@@ -1,4 +1,4 @@
-function RemisionColourKlubRecoleccion({ datos }) {
+function RemisionEmpresaBRecoleccion({ datos }) {
     if (!datos || !Array.isArray(datos.productos)) {
       return <p>❌ Datos incompletos</p>
     }
@@ -27,7 +27,10 @@ function RemisionColourKlubRecoleccion({ datos }) {
     
           {/* 🟦 Encabezado */}
           <div className="flex items-start mb-4">
-            <img src="/logos/colour_klub.png" alt="Logo Colour Klub" className="h-16 mr-4" />
+            {/* Logo Genérico con Letra B */}
+            <div className="flex items-center justify-center w-16 h-16 bg-[#38659e] text-white font-bold text-3xl rounded">
+              B
+            </div>
             <div className="flex-1">
               <div className="h-2 w-full bg-[#324973] mb-1"></div>
               <div className="h-2 w-full bg-[#38659e]"></div>
@@ -135,5 +138,5 @@ function RemisionColourKlubRecoleccion({ datos }) {
       )
   }
   
-  export default RemisionColourKlubRecoleccion;
+  export default RemisionEmpresaBRecoleccion;
   

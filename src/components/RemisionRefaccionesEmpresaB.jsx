@@ -1,4 +1,4 @@
-function RemisionRefaccionesColourKlub({ datos }) {
+function RemisionRefaccionesEmpresaB({ datos }) {
     if (!datos || !Array.isArray(datos.series)) return <p>❌ Datos incompletos</p>;
   
     const {
@@ -21,7 +21,10 @@ function RemisionRefaccionesColourKlub({ datos }) {
   
         {/* Encabezado visual con barras y logo */}
         <div className="flex items-start mb-4">
-          <img src="/logos/colour_klub.png" alt="Logo Colour Klub" className="h-16 mr-4" />
+          {/* Logo Genérico con Letra B */}
+          <div className="flex items-center justify-center w-16 h-16 bg-[#38659e] text-white font-bold text-3xl rounded">
+            B
+          </div>
           <div className="flex-1">
             <div className="h-2 w-full bg-[#324973] mb-1"></div>
             <div className="h-2 w-full bg-[#38659e]"></div>
@@ -111,5 +114,5 @@ function RemisionRefaccionesColourKlub({ datos }) {
     );
   }
   
-  export default RemisionRefaccionesColourKlub;
+  export default RemisionRefaccionesEmpresaB;
   

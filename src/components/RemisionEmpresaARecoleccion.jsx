@@ -1,4 +1,4 @@
-function RemisionIMMERecoleccion({ datos }) {
+function RemisionEmpresaARecoleccion({ datos }) {
   if (!datos || !Array.isArray(datos.productos)) {
     return <p>❌ Datos incompletos</p>
   }
@@ -28,7 +28,10 @@ function RemisionIMMERecoleccion({ datos }) {
       {/* ✅ Encabezado */}
       <div className="mb-4">
         <div className="flex justify-between items-center border-b pb-4 mb-4">
-          <img src="/logos/imme.png" alt="Logo IMME" className="h-16" />
+          {/* Logo Genérico con Letra A */}
+          <div className="flex items-center justify-center w-16 h-16 bg-[#14375A] text-white font-bold text-3xl rounded">
+            A
+          </div>
           <div className="text-center flex-1">
             <h1 className="text-xl font-bold uppercase">Remisión de Recolección</h1>
           </div>
@@ -131,4 +134,4 @@ function RemisionIMMERecoleccion({ datos }) {
   )
 }
 
-export default RemisionIMMERecoleccion;
+export default RemisionEmpresaARecoleccion;

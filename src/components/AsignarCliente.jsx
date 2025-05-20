@@ -1,7 +1,16 @@
+// Importamos React y las dependencias necesarias
 import { useState } from "react"
 import { toast } from "react-toastify"
 
-function AsignarCliente ({ clientes, setClientes, clienteSeleccionado, setClienteSeleccionado, setImpresorasSeleccionadas, requireCliente}) {
+// Componente AsignarCliente: Permite seleccionar o crear un cliente nuevo
+function AsignarCliente ({ 
+    clientes, 
+    setClientes, 
+    clienteSeleccionado, 
+    setClienteSeleccionado, 
+    setImpresorasSeleccionadas, 
+    requireCliente
+}) {
     // Estado para almacenar el nuevo cliente a registrar
     const [nuevoCliente, setNuevoCliente] = useState('')
     
@@ -12,6 +21,7 @@ function AsignarCliente ({ clientes, setClientes, clienteSeleccionado, setClient
         setClienteSeleccionado(clienteId)
         console.log('nuevo cliente seleccionado:', clienteId)
 
+         // Asignar cliente a las impresoras seleccionadas (si no tienen cliente)
         setImpresorasSeleccionadas(prevSeleccionadas => {
             return prevSeleccionadas.map(i => {
                 if(!i.cliente_id) {
@@ -24,18 +34,21 @@ function AsignarCliente ({ clientes, setClientes, clienteSeleccionado, setClient
 
     // Manejar creacion de un nuevo cliente 
     const manejarNuevoCliente = async () => {
+        // Validar que el nombre del cliente no esté vacío
         if (!nuevoCliente.trim()) {
             toast.warn('Ingresa un cliente válido')
             return
         }
 
         try {
+             // Enviar solicitud para registrar nuevo cliente en el backend
             const respuesta = await fetch("http://localhost:3000/api/clientes", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ nombre: nuevoCliente }),
             })
 
+             // Verificar que la respuesta sea exitosa
             if (!respuesta.ok) throw new Error('Error al registrar cliente')
             
             const clienteCreado = await respuesta.json()
@@ -69,7 +82,7 @@ function AsignarCliente ({ clientes, setClientes, clienteSeleccionado, setClient
                 ))}
                 </select>
             </div>
-            {/* 🔹 Agregar Cliente Nuevo */}
+            {/* Agregar Cliente Nuevo */}
             <div className="flex gap-2">
                 <input
                     type="text"
@@ -84,7 +97,7 @@ function AsignarCliente ({ clientes, setClientes, clienteSeleccionado, setClient
                     <p className="text-3xl">✅</p>
                 </button>
             </div>
-            {/* 🔹 Contenedor con altura fija para mantener el espacio reservado */}
+            {/* Contenedor con altura fija para mantener el espacio reservado */}
             <div className="flex items-center justify-center">
                 {clienteSeleccionado ? (
                 <div className="p-2 border-l-4 border-blue-600 bg-blue-50 text-blue-800 rounded-lg text-center w-full">

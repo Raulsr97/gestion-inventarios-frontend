@@ -1,4 +1,4 @@
-function RemisionConeltecRecoleccion ({ datos }) {
+function RemisionEmpresaCRecoleccion ({ datos }) {
   if (!datos || !Array.isArray(datos.productos)) {
       return <p>❌ Datos incompletos</p>
     }
@@ -49,7 +49,10 @@ function RemisionConeltecRecoleccion ({ datos }) {
             </p>
             <p>{numero_remision}</p>
           </div>
-          <img src="/logos/coneltec.png" alt="Logo Coneltec" className="h-20" />
+          {/* Logo Genérico con Letra C */}
+          <div className="flex items-center justify-center w-16 h-16 bg-[#ef4d31] text-white font-bold text-3xl rounded">
+            C
+          </div>
         </div>
   
         {/* 🧾 Información del Cliente */}
@@ -126,5 +129,5 @@ function RemisionConeltecRecoleccion ({ datos }) {
     )
 }
 
-export default RemisionConeltecRecoleccion
+export default RemisionEmpresaCRecoleccion
 

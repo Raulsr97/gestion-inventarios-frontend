@@ -1,12 +1,12 @@
 import { useLocation, useNavigate} from "react-router-dom";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import RemisionIMME from "../components/RemisionIMME";
-import RemisionRefaccionesIMME from "../components/RemisionRefaccionesIMME";
-import RemisionColourKlub from "../components/RemisionColourKlub";
-import RemisionRefaccionesColourKlub from "../components/RemisionRefaccionesColourKlub";
-import RemisionConeltec from "../components/RemisionConeltec";
-import RemisionRefaccionesConeltec from "../components/RemisionRefaccionesConeltec";
+import RemisionEmpresaA from "../components/RemisionEmpresaA";
+import RemisionRefaccionesEmpresaA from "../components/RemisionRefaccionesEmpresaA";
+import RemisionEmpresaB from "../components/RemisionEmpresaB";
+import RemisionRefaccionesEmpresaB from "../components/RemisionRefaccionesEmpresaB";
+import RemisionEmpresaC from "../components/RemisionEmpresaC";
+import RemisionRefaccionesEmpresaC from "../components/RemisionRefaccionesEmpresaC";
 
 
 function VistaPreviaRemisionEntrega() {
@@ -53,7 +53,6 @@ function VistaPreviaRemisionEntrega() {
       .catch(error => console.error("Error al obtener los clientes", error))
   }, [])
 
-
   const clienteObjeto = clientes.find(c => 
     c.id === Number(datosRemision.cliente || datosRemision.series?.[0]?.cliente_id)
   )
@@ -75,16 +74,6 @@ function VistaPreviaRemisionEntrega() {
     setFechaVisual,
     fechaVisual
   }
-
-  // Logos de cada empresa
-  const logosEmpresas = {
-    1: '/logos/imme.png',
-    2: '/logos/colour_klub.png',
-    3: '/logos/coneltec.png'
-  }
-
-  // Obtener el logo correcto segun la empresa seleccionada
-  // const logoEmpresa = logosEmpresas[datosRemision.empresa]
 
   console.log("📄 Datos de la remisión recibidos:", datosRemision);
 
@@ -250,22 +239,22 @@ function VistaPreviaRemisionEntrega() {
       {/* Contenedor de remisión: sin fondo blanco aquí */}
       <div className="flex justify-center">
       {esRefacciones && Number(datosRemision.empresa) === 1 && (
-        <RemisionRefaccionesIMME datos={remisionParaVista} />
+        <RemisionRefaccionesEmpresaA datos={remisionParaVista} />
       )}
       {esRefacciones && Number(datosRemision.empresa) === 2 && (
-        <RemisionRefaccionesColourKlub datos={remisionParaVista} />
+        <RemisionRefaccionesEmpresaB datos={remisionParaVista} />
       )}
       {esRefacciones && Number(datosRemision.empresa) === 3 && (
-        <RemisionRefaccionesConeltec datos={remisionParaVista} />
+        <RemisionRefaccionesEmpresaC datos={remisionParaVista} />
       )}
       {!esRefacciones && Number(datosRemision.empresa) === 1 && (
-        <RemisionIMME datos={remisionParaVista} />
+        <RemisionEmpresaA datos={remisionParaVista} />
       )}
       {!esRefacciones && Number(datosRemision.empresa) === 2 && (
-        <RemisionColourKlub datos={remisionParaVista} />
+        <RemisionEmpresaB datos={remisionParaVista} />
       )}
       {!esRefacciones && Number(datosRemision.empresa) === 3 && (
-        <RemisionConeltec datos={remisionParaVista} />
+        <RemisionEmpresaC datos={remisionParaVista} />
       )}
       </div>
 

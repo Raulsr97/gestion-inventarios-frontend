@@ -5,6 +5,7 @@ import { useSearchParams } from "react-router-dom";
 
 
 const BuscadorRemisiones = () => {
+  // Estado para manejar la búsqueda y las remisiones cargadas
   const [busquedaNumero, setBusquedaNumero] = useState('')
   const [remisiones, setRemisiones] = useState(null)
   const [cargando, setCargando] = useState(true)
@@ -12,19 +13,19 @@ const BuscadorRemisiones = () => {
   const [paginaActual, setPaginaActual] = useState(1)
   const [nuevasFechas, setNuevasFechas] = useState({})
   
+  // Parámetro de búsqueda desde la URL (si se proporciona)
   const [searchParams] = useSearchParams()
   const numeroRemisionUrl = searchParams.get('numero_remision')
   
-
+  // Configuración de paginación
   const remisionesPorPagina = 15
   
-
+  // Cargar las remisiones al iniciar
   useEffect(() => {
     obtenerRemisiones()
-    
-
   }, [])
 
+  // Función para obtener todas las remisiones del backend
   const obtenerRemisiones = async () => {
     try {
       const response = await fetch("http://localhost:3000/api/remisiones-consulta")
@@ -40,6 +41,7 @@ const BuscadorRemisiones = () => {
     }
   }
 
+   // Buscar una remisión específica por número
   const buscarRemisionPorNumero = async (numeroParam) => {
     const numero = numeroParam || busquedaNumero
 
@@ -62,6 +64,7 @@ const BuscadorRemisiones = () => {
     }
   }
 
+  // Detectar búsqueda desde la URL y ejecutar automáticamente
   useEffect(() => {
     if (numeroRemisionUrl) {
       setBusquedaNumero(numeroRemisionUrl)
@@ -69,7 +72,7 @@ const BuscadorRemisiones = () => {
     }
   }, [numeroRemisionUrl])
   
-   const descargarPDF = async (remision) => {
+  const descargarPDF = async (remision) => {
     const endpoint = remision.tipo === 'recoleccion'
       ? `http://localhost:3000/api/remisiones-recoleccion/generar-pdf/${remision.numero_remision}`
       : `http://localhost:3000/api/remisiones/generar-pdf/${remision.numero_remision}`

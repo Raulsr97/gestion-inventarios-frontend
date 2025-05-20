@@ -1,9 +1,9 @@
 import { useLocation, useNavigate} from "react-router-dom";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import RemisionIMMERecoleccion from "../components/RemisionImmeRecoleccion";
-import RemisionColourKlubRecoleccion from '../components/RemisionColourKlubRecoleccion'
-import RemisionConeltecRecoleccion from "../components/RemisionConeltecRecoleccion";
+import RemisionEmpresaARecoleccion from "../components/RemisionEmpresaARecoleccion";
+import RemisionEmpresaBRecoleccion from '../components/RemisionEmpresaBRecoleccion'
+import RemisionEmpresaCRecoleccion from "../components/RemisionEmpresaCRecoleccion";
 
 
 
@@ -129,13 +129,13 @@ function VistaPreviaRemisionRecoleccion () {
       {/* Contenedor de remisión: sin fondo blanco aquí */}
       <div className="flex justify-center">
       {Number(datosRemision.empresa?.id) === 1 && (
-       <RemisionIMMERecoleccion datos={remisionParaVista} />
+       <RemisionEmpresaARecoleccion datos={remisionParaVista} />
       )}
       {Number(datosRemision.empresa?.id) === 2 && (
-        <RemisionColourKlubRecoleccion datos={remisionParaVista} />
+        <RemisionEmpresaBRecoleccion datos={remisionParaVista} />
       )}
       {Number(datosRemision.empresa?.id) === 3 && (
-        <RemisionConeltecRecoleccion datos={remisionParaVista} />
+        <RemisionEmpresaCRecoleccion datos={remisionParaVista} />
       )}
       </div>
       
