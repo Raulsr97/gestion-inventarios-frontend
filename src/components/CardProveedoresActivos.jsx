@@ -2,13 +2,15 @@ import { useEffect, useState } from "react";
 import { Dialog } from "@headlessui/react";
 import { FiTruck, FiExternalLink } from "react-icons/fi";
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL
+
 function CardProveedoresActivos() {
   const [proveedores, setProveedores] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [proveedorSeleccionado, setProveedorSeleccionado] = useState(null);
 
   useEffect(() => {
-    fetch("http://localhost:3000/api/dashboard/proveedores-activos/detalle")
+    fetch(`${backendUrl}/api/dashboard/proveedores-activos/detalle`)
       .then((res) => res.json())
       .then((data) => {
         setProveedores(data);

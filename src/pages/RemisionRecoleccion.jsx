@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { toast } from 'react-toastify'
 import { useNavigate, useLocation } from 'react-router-dom'
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL
+
 function RemisionRecoleccion() {
   const navigate = useNavigate()
   const location = useLocation()
@@ -41,11 +43,8 @@ function RemisionRecoleccion() {
   const [nuevoCliente, setNuevoCliente] = useState("");
   const [nuevoProyecto, setNuevoProyecto] = useState("");
 
- 
-
-
   useEffect(() => {
-  fetch("http://localhost:3000/api/empresas")
+  fetch(`${backendUrl}/api/empresas`)
     .then(res => res.json())
     .then(data => {
       console.log("📦 Empresas obtenidas:", data);
@@ -55,7 +54,7 @@ function RemisionRecoleccion() {
       console.error("❌ Error al cargar las empresas:", error)
     });
 
-  fetch("http://localhost:3000/api/clientes")
+  fetch(`${backendUrl}/api/clientes`)
     .then(res => res.json())
     .then(data => {
       console.log("📦 Clientes obtenidos:", data);
@@ -65,7 +64,7 @@ function RemisionRecoleccion() {
       console.error("❌ Error al cargar las empresas:", error)
     });
 
-  fetch("http://localhost:3000/api/proyectos")
+  fetch(`${backendUrl}/api/proyectos`)
     .then(res => res.json())
     .then(data => {
       console.log("📦 Proyectos obtenidos:", data);
@@ -142,7 +141,7 @@ function RemisionRecoleccion() {
   
       // 🔹 Crear cliente si hay uno nuevo
       if (nuevoCliente.trim() !== '') {
-        const res = await fetch('http://localhost:3000/api/clientes', {
+        const res = await fetch(`${backendUrl}/api/clientes`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ nombre: nuevoCliente.trim() })
@@ -157,7 +156,7 @@ function RemisionRecoleccion() {
   
       // 🔸 Crear proyecto si hay uno nuevo
       if (nuevoProyecto.trim() !== '') {
-        const res = await fetch('http://localhost:3000/api/proyectos', {
+        const res = await fetch(`${backendUrl}/api/proyectos`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from "recharts";
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL
+
 function GraficaProveedoresPorcentaje() {
   const [proveedores, setProveedores] = useState([]);
   const [cargando, setCargando] = useState(true);
@@ -11,7 +13,7 @@ function GraficaProveedoresPorcentaje() {
   ];
 
   useEffect(() => {
-    fetch("http://localhost:3000/api/dashboard/proveedores-porcentaje")
+    fetch(`${backendUrl}/api/dashboard/proveedores-porcentaje`)
       .then((res) => res.json())
       .then((data) => {
         setProveedores(data);

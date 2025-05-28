@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { FaBoxOpen } from "react-icons/fa";
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL
+
 function CardEntregadosMesToner() {
   const [cantidad, setCantidad] = useState(0);
 
   useEffect(() => {
-    fetch("http://localhost:3000/api/toners")
+    fetch(`${backendUrl}/api/toners`)
       .then((res) => res.json())
       .then((data) => {
         const ahora = new Date();

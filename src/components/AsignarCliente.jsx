@@ -2,6 +2,8 @@
 import { useState } from "react"
 import { toast } from "react-toastify"
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL
+
 // Componente AsignarCliente: Permite seleccionar o crear un cliente nuevo
 function AsignarCliente ({ 
     clientes, 
@@ -42,7 +44,7 @@ function AsignarCliente ({
 
         try {
              // Enviar solicitud para registrar nuevo cliente en el backend
-            const respuesta = await fetch("http://localhost:3000/api/clientes", {
+            const respuesta = await fetch(`${backendUrl}/api/clientes`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ nombre: nuevoCliente }),

@@ -2,13 +2,15 @@ import { useEffect, useState } from "react";
 import { Dialog } from "@headlessui/react";
 import { FiUsers, FiExternalLink } from "react-icons/fi";
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL
+
 function CardClientesCompradores() {
   const [clientes, setClientes] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [clienteSeleccionado, setClienteSeleccionado] = useState(null);
 
   useEffect(() => {
-    fetch("http://localhost:3000/api/dashboard/clientes-con-compras/detalle")
+    fetch(`${backendUrl}/api/dashboard/clientes-con-compras/detalle`)
       .then((res) => res.json())
       .then((data) => {
         setClientes(data);

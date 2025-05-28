@@ -6,6 +6,8 @@ import InputSerie from "../components/InputSerie"
 import BotonAgregar from "../components/BotonAgregar"
 import ListaSeries from "../components/ListaSeries"
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL
+
 function AgregarUnidadImagen() {
   const [modelo, setModelo] = useState('')
   const [tipo, setTipo] = useState('')
@@ -29,21 +31,30 @@ function AgregarUnidadImagen() {
   const [bloquearCampos, setBloquearCampos] = useState(false)
 
   useEffect(() => {
-    fetch("http://localhost:3000/api/clientes")
+     fetch(`${backendUrl}/api/clientes`)
       .then((res) => res.json())
-      .then((data) => setClientes(data))
+      .then((data) => {
+        setClientes(data)
+      })
+    
+    fetch(`${backendUrl}/api/proyectos`)
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("Proyectos obtenidos:", data); 
+        setProyectos(data)
+      })
+    
+    fetch(`${backendUrl}/api/marcas`)
+      .then((res) => res.json())
+      .then((data) => {
+        setMarcas(data)
+      }) 
 
-    fetch("http://localhost:3000/api/proyectos")
-      .then((res) => res.json())
-      .then((data) => setProyectos(data))
-
-    fetch("http://localhost:3000/api/marcas")
-      .then((res) => res.json())
-      .then((data) => setMarcas(data))
-
-    fetch("http://localhost:3000/api/proveedores")
-      .then((res) => res.json())
-      .then((data) => setProveedores(data))
+    fetch(`${backendUrl}/api/proveedores`)
+    .then((res) => res.json())
+    .then((data) => {
+      setProveedores(data)
+    }) 
   }, [])
 
   const agregarSerie = (e) => {
@@ -82,7 +93,7 @@ function AgregarUnidadImagen() {
       let proveedorId = proveedor
 
       if (marca === 'nuevo' && nuevaMarca) {
-        const res = await fetch("http://localhost:3000/api/marcas", {
+        const res = await fetch(`${backendUrl}/api/marcas`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ nombre: nuevaMarca.toUpperCase() })
@@ -96,7 +107,7 @@ function AgregarUnidadImagen() {
       }
 
       if (cliente === 'nuevo' && nuevoCliente) {
-        const res = await fetch("http://localhost:3000/api/clientes", {
+        const res = await fetch(`${backendUrl}/api/clientes`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ nombre: nuevoCliente.toUpperCase() })
@@ -114,7 +125,7 @@ function AgregarUnidadImagen() {
           toast.error('Debes seleccionar un cliente antes de agregar un proyecto.')
           return
         }
-        const res = await fetch("http://localhost:3000/api/proyectos", {
+        const res = await fetch(`${backendUrl}/api/proyectos`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -131,7 +142,7 @@ function AgregarUnidadImagen() {
       }
 
       if (proveedor === 'nuevo' && nuevoProveedor) {
-        const res = await fetch("http://localhost:3000/api/proveedores", {
+        const res = await fetch(`${backendUrl}/api/proveedores`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ nombre: nuevoProveedor.toUpperCase() })
@@ -155,7 +166,7 @@ function AgregarUnidadImagen() {
         series
       }
 
-      const response = await fetch("http://localhost:3000/api/unidades-imagen/registro-lote", {
+      const response = await fetch(`${backendUrl}/api/unidades-imagen/registro-lote`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(datosRegistro),

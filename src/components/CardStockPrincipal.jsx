@@ -2,12 +2,14 @@ import { useEffect, useState } from "react";
 import { FiBox, FiPrinter, FiTool, FiDroplet, FiCamera  } from "react-icons/fi";
 import { Dialog } from "@headlessui/react";
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL
+
 function CardStockPrincipal() {
   const [stock, setStock] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    fetch("http://localhost:3000/api/dashboard/stock")
+    fetch(`${backendUrl}/api/dashboard/stock`)
       .then((res) => res.json())
       .then((data) => {
         console.log("📦 Stock desglosado:", data);

@@ -6,6 +6,8 @@ import InputSerie from "../components/InputSerie"
 import BotonAgregar from "../components/BotonAgregar"
 import ListaSeries from "../components/ListaSeries"
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL
+
 function AgregarToner() {
   const [modelo, setModelo] = useState('')
   const [tipo, setTipo] = useState('')
@@ -31,19 +33,19 @@ function AgregarToner() {
 
 
   useEffect(() => {
-    fetch("http://localhost:3000/api/clientes")
+    fetch(`${backendUrl}/api/clientes`)
       .then((res) => res.json())
       .then((data) => setClientes(data))
   
-    fetch("http://localhost:3000/api/proyectos")
+    fetch(`${backendUrl}/api/proyectos`)
       .then((res) => res.json())
       .then((data) => setProyectos(data))
   
-    fetch("http://localhost:3000/api/marcas")
+    fetch(`${backendUrl}/api/marcas`)
       .then((res) => res.json())
       .then((data) => setMarcas(data))
   
-    fetch("http://localhost:3000/api/proveedores")
+    fetch(`${backendUrl}/api/proveedores`)
       .then((res) => res.json())
       .then((data) => setProveedores(data))
   }, [])
@@ -97,7 +99,7 @@ function AgregarToner() {
       if (marca === 'nuevo' && nuevaMarca) {
         const nuevaMarcaMayusculas = nuevaMarca.toUpperCase();
   
-        const res = await fetch("http://localhost:3000/api/marcas", {
+        const res = await fetch(`${backendUrl}/api/marcas`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ nombre: nuevaMarcaMayusculas }),
@@ -116,7 +118,7 @@ function AgregarToner() {
       if (cliente === 'nuevo' && nuevoCliente) {
         const nuevoClienteMayusculas = nuevoCliente.toUpperCase();
   
-        const res = await fetch("http://localhost:3000/api/clientes", {
+        const res = await fetch(`${backendUrl}/api/clientes`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ nombre: nuevoClienteMayusculas }),
@@ -140,7 +142,7 @@ function AgregarToner() {
           return;
         }
   
-        const res = await fetch("http://localhost:3000/api/proyectos", {
+        const res = await fetch(`${backendUrl}/api/proyectos`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -162,7 +164,7 @@ function AgregarToner() {
       if (proveedor === 'nuevo' && nuevoProveedor) {
         const nuevoProveedorMayusculas = nuevoProveedor.toUpperCase();
   
-        const res = await fetch("http://localhost:3000/api/proveedores", {
+        const res = await fetch(`${backendUrl}/api/proveedores`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ nombre: nuevoProveedorMayusculas }),
@@ -189,7 +191,7 @@ function AgregarToner() {
         series
       };
   
-      const response = await fetch("http://localhost:3000/api/toners/registro-lote", {
+      const response = await fetch(`${backendUrl}/api/toners/registro-lote`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(datosRegistro),

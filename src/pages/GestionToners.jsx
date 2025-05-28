@@ -6,6 +6,8 @@ import SeleccionEmpresa from "../components/SeleccionEmpresa";
 import AsignarClienteToners from "../components/AsignarClienteToners";
 import FormularioRemision from "../components/FormularioRemision";
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL
+
 function GestionToners() {
   // Estado para almacenar las impresoras que se encuentran en almacen
   const [tonersDisponibles ,setTonersDisponibles] = useState([])
@@ -96,10 +98,8 @@ function GestionToners() {
   
   }, [])
    
-  
-
   useEffect(() => {
-    fetch("http://localhost:3000/api/toners")
+    fetch(`${backendUrl}/api/toners`)
       .then(res => res.json())
       .then(data => {
         // Filtrar solo los toners que no tienen fecha de salida
@@ -111,17 +111,17 @@ function GestionToners() {
       })
       .catch(error => console.error('Error al obtener los toners', error))
     
-    fetch("http://localhost:3000/api/empresas")
+    fetch(`${backendUrl}/api/empresas`)
       .then(res => res.json())
       .then(data => setEmpresas(data))
       .catch(error => console.error('Error al obtener las empresas', error))
     
-    fetch("http://localhost:3000/api/clientes")
+    fetch(`${backendUrl}/api/clientes`)
       .then(res => res.json())
       .then(data => setClientes(data))
       .catch(error => console.error("Error al obtener clientes", error));
   
-    fetch("http://localhost:3000/api/proyectos")
+    fetch(`${backendUrl}/api/proyectos`)
       .then(res => res.json())
       .then(data => setProyectos(data))
       .catch(error => console.error("Error al obtener proyectos", error));
@@ -311,8 +311,6 @@ function GestionToners() {
     // Redirigir a VistaPreviaRemisionEntrega.jsx con los datos de la remisión
     navigate('/gestion-productos/gestionimpresoras/generar-remision', { state: { ...remisionData, tipoProducto: 'toner'}})
   }
-
-
 
   return (
     <div className="min-h-screen h-screen flex flex-col  py-4 px-4 overflow-hidden">

@@ -1,13 +1,15 @@
 import { useState, useEffect } from "react";
 import { FaExchangeAlt } from "react-icons/fa";
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL
+
 function CardMovimientosMes() {
   const [movimientos, setMovimientos] = useState({ entradas: 0, salidas: 0 });
   const [detalleMovimientos, setDetalleMovimientos] = useState([]);
   const [mostrarDetalle, setMostrarDetalle] = useState(false);
 
   useEffect(() => {
-    fetch("http://localhost:3000/api/impresoras/movimientos-mes")
+    fetch(`${backendUrl}/api/impresoras/movimientos-mes`)
       .then((res) => res.json())
       .then((data) => {
         const { entradas, salidas } = data

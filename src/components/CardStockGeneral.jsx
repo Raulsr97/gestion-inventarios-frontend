@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { FaPrint } from "react-icons/fa";
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL
+
 function CardStockGeneral() {
   const [modeloSeleccionado, setModeloSeleccionado] = useState(null)
   const [stockTotal, setStockTotal] = useState(0);
@@ -8,7 +10,7 @@ function CardStockGeneral() {
   const [mostrarDetalle, setMostrarDetalle] = useState(false);
 
   useEffect(() => {
-    fetch("http://localhost:3000/api/impresoras")
+    fetch(`${backendUrl}/api/impresoras`)
       .then((res) => res.json())
       .then((data) => {
         const impresorasEnAlmacen = data.filter(

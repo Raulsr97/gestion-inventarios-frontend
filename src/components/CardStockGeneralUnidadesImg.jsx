@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { FaTint } from "react-icons/fa";
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL
+
 function CardStockGeneralUnidadesImg() {
   const [modeloSeleccionado, setModeloSeleccionado] = useState(null)
   const [stockTotal, setStockTotal] = useState(0);
@@ -8,7 +10,7 @@ function CardStockGeneralUnidadesImg() {
   const [mostrarDetalle, setMostrarDetalle] = useState(false);
 
   useEffect(() => {
-    fetch("http://localhost:3000/api/unidades-imagen")
+    fetch(`${backendUrl}/api/unidades-imagen`)
       .then((res) => res.json())
       .then((data) => {
         const unidadesImgEnAlmacen = data.filter(

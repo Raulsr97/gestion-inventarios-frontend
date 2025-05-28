@@ -6,6 +6,8 @@ import CardMovimientosMes from "../components/CardMovimientos";
 import CardStockProyectos from "../components/CardStockProyectos";
 import CardStockPorTipo from '../components/CardStockPorTipo';
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL
+
 function ConsultaImpresoras() {
   // Guarda todas las impresoras obtenidas desde la API
   const [impresoras, setImpresoras] = useState([]);
@@ -34,7 +36,7 @@ function ConsultaImpresoras() {
   });
 
   useEffect(() => {
-    fetch("http://localhost:3000/api/impresoras")
+    fetch(`${backendUrl}/api/impresoras`)
       .then((res) => res.json())
       .then((data) => {
         console.log("📌 Impresoras obtenidas:", data);
@@ -42,7 +44,7 @@ function ConsultaImpresoras() {
       })
       .catch((error) => console.error("Error al obtener impresoras:", error))
 
-    fetch('http://localhost:3000/api/accesorios')
+    fetch(`${backendUrl}/api/accesorios`)
       .then(res => res.json())
       .then((data) => {
         console.log("📌 Accesorios obtenidos:", data);

@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import { FaTruckMoving } from "react-icons/fa"; // Ícono representativo para tránsito
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL
+
 function CardUnidadesImgEnTransito() {
   const [cantidadEnTransito, setCantidadEnTransito] = useState(0);
 
   useEffect(() => {
-    fetch("http://localhost:3000/api/unidades-imagen")
+    fetch(`${backendUrl}/api/unidades-imagen`)
       .then((res) => res.json())
       .then((data) => {
         const unidadesimgEnTransito = data.filter(

@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { FiShoppingCart, FiPrinter, FiDroplet, FiCamera, FiTool } from "react-icons/fi";
 import { Dialog } from "@headlessui/react";
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL
+
 function CardProductosVendidos() {
   const [ventasTotales, setVentasTotales] = useState(0);
   const [productosVendidos, setProductosVendidos] = useState([]);
@@ -10,17 +12,17 @@ function CardProductosVendidos() {
   const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
-    fetch("http://localhost:3000/api/dashboard/ventas-totales")
+    fetch(`${backendUrl}/api/dashboard/ventas-totales`)
       .then(res => res.json())
       .then(data => setVentasTotales(data.total || 0))
       .catch(err => console.error("Error al obtener ventas totales:", err));
 
-    fetch("http://localhost:3000/api/dashboard/productos-vendidos")
+    fetch(`${backendUrl}/api/dashboard/productos-vendidos`)
       .then(res => res.json())
       .then(data => setProductosVendidos(data))
       .catch(err => console.error("Error al obtener productos vendidos:", err));
 
-    fetch("http://localhost:3000/api/dashboard/ventas-meses")
+    fetch(`${backendUrl}/api/dashboard/ventas-meses`)
       .then(res => res.json())
       .then(data => {
         setMesesDisponibles(data);

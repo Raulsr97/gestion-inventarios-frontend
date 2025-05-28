@@ -5,7 +5,7 @@ import RemisionEmpresaARecoleccion from "../components/RemisionEmpresaARecolecci
 import RemisionEmpresaBRecoleccion from '../components/RemisionEmpresaBRecoleccion'
 import RemisionEmpresaCRecoleccion from "../components/RemisionEmpresaCRecoleccion";
 
-
+const backendUrl = import.meta.env.VITE_BACKEND_URL
 
 function VistaPreviaRemisionRecoleccion () {
   const location = useLocation()
@@ -31,15 +31,15 @@ function VistaPreviaRemisionRecoleccion () {
   const [fechaVisual, setFechaVisual] = useState(getLocalDay()) 
 
   useEffect(() => {
-    fetch("http://localhost:3000/api/clientes")
+    fetch(`${backendUrl}/api/clientes`)
       .then(res => res.json())
       .then(data => setClientes(data))
   
-    fetch("http://localhost:3000/api/proyectos")
+    fetch(`${backendUrl}/api/proyectos`)
       .then(res => res.json())
       .then(data => setProyectos(data))
 
-    fetch("http://localhost:3000/api/empresas")
+    fetch(`${backendUrl}/api/empresas`)
     .then(res => res.json())
     .then(setEmpresas)
   }, [])
@@ -85,7 +85,7 @@ function VistaPreviaRemisionRecoleccion () {
 
       console.log("📤 Enviando datos al backend:", datosParaEnviar)
 
-      const response = await fetch("http://localhost:3000/api/remisiones-recoleccion", {
+      const response = await fetch(`${backendUrl}/api/remisiones-recoleccion`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(datosParaEnviar)
@@ -97,7 +97,7 @@ function VistaPreviaRemisionRecoleccion () {
       toast.success("✅ Remisión registrada correctamente.")
 
       // 🔹 Generar PDF
-      const pdfRes = await fetch(`http://localhost:3000/api/remisiones-recoleccion/generar-pdf/${remisionGuardada.numero_remision}?fecha=${fechaVisual}`)
+      const pdfRes = await fetch(`${backendUrl}/api/remisiones-recoleccion/generar-pdf/${remisionGuardada.numero_remision}?fecha=${fechaVisual}`)
 
       if (!pdfRes.ok || !pdfRes.headers.get("Content-Type")?.includes("pdf")) {
         throw new Error("❌ No se pudo generar el PDF.")

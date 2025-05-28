@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL
+
 function GraficaVentasPorMes() {
   const [ventas, setVentas] = useState([]);
   const [cargando, setCargando] = useState(true);
 
   useEffect(() => {
-    fetch("http://localhost:3000/api/dashboard/ventas-por-mes")
+    fetch(`${backendUrl}/api/dashboard/ventas-por-mes`)
       .then((res) => res.json())
       .then((data) => {
         setVentas(data);

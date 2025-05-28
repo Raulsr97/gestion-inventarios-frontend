@@ -3,6 +3,7 @@ import { toast } from "react-toastify";
 import * as XLSX from "xlsx";
 import { Link } from 'react-router-dom';
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL
 
 function ConsultaRefacciones() {
   const [mesSeleccionadoSalidas, setMesSeleccionadoSalidas] = useState(() => {
@@ -25,7 +26,7 @@ function ConsultaRefacciones() {
   const [salidasRefacciones, setSalidasRefacciones] = useState([])
 
   useEffect(() => {
-    fetch(`http://localhost:3000/api/refacciones/historial-entradas?mes=${mesSeleccionadoEntradas}`)
+    fetch(`${backendUrl}/api/refacciones/historial-entradas?mes=${mesSeleccionadoEntradas}`)
       .then((res) => res.json())
       .then((data) => {
         console.log("📅 Historial entradas agrupadas:", data);
@@ -39,7 +40,7 @@ function ConsultaRefacciones() {
   
 
   useEffect(() => {
-    fetch(`http://localhost:3000/api/refacciones/historial-salidas?mes=${mesSeleccionadoSalidas}`)
+    fetch(`${backendUrl}/api/refacciones/historial-salidas?mes=${mesSeleccionadoSalidas}`)
       .then((res) => res.json())
       .then((data) => {
         console.log("📤 Historial de salidas agrupadas:", data);
@@ -52,7 +53,7 @@ function ConsultaRefacciones() {
   }, [mesSeleccionadoSalidas]);
   
   useEffect(() => {
-    fetch("http://localhost:3000/api/refacciones/stock-agrupado")
+    fetch(`${backendUrl}/api/refacciones/stock-agrupado`)
       .then((res) => res.json())
       .then((data) => {
         console.log("📦 Stock agrupado refacciones:", data);
@@ -62,7 +63,7 @@ function ConsultaRefacciones() {
         console.error("Error al obtener refacciones:", err);
         toast.error("Error al cargar el stock de refacciones");
       });
-      fetch("http://localhost:3000/api/refacciones/historial-entradas/meses")
+      fetch(`${backendUrl}/api/refacciones/historial-entradas/meses`)
       .then(res => res.json())
       .then((data) => {
         console.log("📅 Meses disponibles entradas:", data);
@@ -73,7 +74,7 @@ function ConsultaRefacciones() {
         toast.error("Error al cargar los meses de entradas");
       });
     
-      fetch("http://localhost:3000/api/refacciones/historial-salidas/meses")
+      fetch(`${backendUrl}/api/refacciones/historial-salidas/meses`)
       .then(res => res.json())
       .then((data) => {
         console.log("📅 Meses disponibles:", data);

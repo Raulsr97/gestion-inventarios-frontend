@@ -8,6 +8,7 @@ import RemisionRefaccionesEmpresaB from "../components/RemisionRefaccionesEmpres
 import RemisionEmpresaC from "../components/RemisionEmpresaC";
 import RemisionRefaccionesEmpresaC from "../components/RemisionRefaccionesEmpresaC";
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL
 
 function VistaPreviaRemisionEntrega() {
   const location = useLocation()
@@ -42,12 +43,12 @@ function VistaPreviaRemisionEntrega() {
   const [fechaVisual, setFechaVisual] = useState(getLocalDay()) 
 
   useEffect(() => {
-    fetch("http://localhost:3000/api/marcas")
+    fetch(`${backendUrl}/api/marcas`)
       .then(res => res.json())
       .then(data => setMarcas(data))
       .catch(error => console.error("Error al obtener las marcas", error))
 
-      fetch("http://localhost:3000/api/clientes")
+      fetch(`${backendUrl}/api/clientes`)
       .then(res => res.json())
       .then(data => setClientes(data))
       .catch(error => console.error("Error al obtener los clientes", error))
@@ -174,7 +175,7 @@ function VistaPreviaRemisionEntrega() {
       console.log("📦 Datos listos para enviar:", remisionData);
 
       // Enviar solicitud 'POST' al backend
-      const response = await fetch(`http://localhost:3000${endpointCrear}`, {
+      const response = await fetch(`${backendUrl}${endpointCrear}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json'},
         body: JSON.stringify(remisionData)
@@ -191,7 +192,7 @@ function VistaPreviaRemisionEntrega() {
       toast.success('✅ Remisión creada correctamente')
 
       // Generar y descargar el pdf
-      const pdfResponse = await fetch(`http://localhost:3000${endpointPDF}/${nuevaRemision.numero_remision}?fecha=${fechaVisual}`)
+      const pdfResponse = await fetch(`${backendUrl}${endpointPDF}/${nuevaRemision.numero_remision}?fecha=${fechaVisual}`)
 
       const contentType = pdfResponse.headers.get("Content-Type")
       console.log("🧾 Headers de la respuesta PDF:", contentType)

@@ -2,13 +2,15 @@ import { useEffect, useState } from "react";
 import { Dialog } from "@headlessui/react";
 import { FiClipboard, FiExternalLink } from "react-icons/fi";
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL
+
 function CardProyectos() {
   const [proyectos, setProyectos] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [proyectoSeleccionado, setProyectoSeleccionado] = useState(null);
 
   useEffect(() => {
-    fetch("http://localhost:3000/api/dashboard/proyectos-realizados/detalle")
+    fetch(`${backendUrl}/api/dashboard/proyectos-realizados/detalle`)
       .then((res) => res.json())
       .then((data) => {
         setProyectos(data);

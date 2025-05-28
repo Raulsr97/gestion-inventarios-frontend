@@ -7,6 +7,8 @@ import RemisionRefaccionesEmpresaA from "../components/RemisionRefaccionesEmpres
 import RemisionRefaccionesEmpresaB from "../components/RemisionRefaccionesEmpresaB";
 import RemisionRefaccionesEmpresaC from "../components/RemisionRefaccionesEmpresaC";
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL
+
 function VistaRemisionPorNumero() {
   const { numero_remision } = useParams() // Obtenemos el numero desde la URL
   const [remision, setRemision] = useState(null)
@@ -78,7 +80,7 @@ function VistaRemisionPorNumero() {
         let data = null;
   
         for (const { endpoint, tipo, campo } of endpoints) {
-          const res = await fetch(`http://localhost:3000/api/${endpoint}/${numero_remision}`);
+          const res = await fetch(`${backendUrl}/api/${endpoint}/${numero_remision}`);
           if (!res.ok) continue;
   
           const respuesta = await res.json();

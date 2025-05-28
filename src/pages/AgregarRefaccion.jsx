@@ -3,6 +3,8 @@ import { toast } from "react-toastify";
 import SelectDinamico from "../components/SelectDinamico";
 import BotonAgregar from "../components/BotonAgregar";
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL
+
 function AgregarRefaccion() {
   const [marca, setMarca] = useState("");
   const [tipo, setTipo] = useState("");
@@ -25,19 +27,19 @@ function AgregarRefaccion() {
   const [refacciones, setRefacciones] = useState([]);
 
   useEffect(() => {
-    fetch("http://localhost:3000/api/clientes")
+    fetch(`${backendUrl}/api/clientes`)
       .then((res) => res.json())
       .then((data) => setClientes(data));
 
-    fetch("http://localhost:3000/api/proyectos")
+    fetch(`${backendUrl}/api/proyectos`)
       .then((res) => res.json())
       .then((data) => setProyectos(data));
 
-    fetch("http://localhost:3000/api/marcas")
+    fetch(`${backendUrl}/api/marcas`)
       .then((res) => res.json())
       .then((data) => setMarcas(data));
 
-    fetch("http://localhost:3000/api/proveedores")
+    fetch(`${backendUrl}/api/proveedores`)
       .then((res) => res.json())
       .then((data) => setProveedores(data));
   }, []);
@@ -83,7 +85,7 @@ function AgregarRefaccion() {
       let proveedorId = proveedor;
 
       if (marca === "nuevo" && nuevaMarca) {
-        const res = await fetch("http://localhost:3000/api/marcas", {
+        const res = await fetch(`${backendUrl}/api/marcas`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ nombre: nuevaMarca.toUpperCase() }),
@@ -94,7 +96,7 @@ function AgregarRefaccion() {
       }
 
       if (cliente === "nuevo" && nuevoCliente) {
-        const res = await fetch("http://localhost:3000/api/clientes", {
+        const res = await fetch(`${backendUrl}/api/clientes`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ nombre: nuevoCliente.toUpperCase() }),
@@ -109,7 +111,7 @@ function AgregarRefaccion() {
           toast.error("Selecciona un cliente antes de registrar un proyecto.");
           return;
         }
-        const res = await fetch("http://localhost:3000/api/proyectos", {
+        const res = await fetch(`${backendUrl}/api/proyectos`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -123,7 +125,7 @@ function AgregarRefaccion() {
       }
 
       if (proveedor === "nuevo" && nuevoProveedor) {
-        const res = await fetch("http://localhost:3000/api/proveedores", {
+        const res = await fetch(`${backendUrl}/api/proveedores`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ nombre: nuevoProveedor.toUpperCase() }),
@@ -142,7 +144,7 @@ function AgregarRefaccion() {
         refacciones
       };
 
-      const res = await fetch("http://localhost:3000/api/refacciones/registro-lote", {
+      const res = await fetch(`${backendUrl}/api/refacciones/registro-lote`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(datos),

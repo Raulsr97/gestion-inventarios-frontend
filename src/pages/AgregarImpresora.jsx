@@ -6,6 +6,8 @@ import InputSerie from "../components/InputSerie"
 import BotonAgregar from "../components/BotonAgregar"
 import ListaSeries from "../components/ListaSeries"
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL
+
 // Componente principal para agregar impresoras
 function AgregarImpresora () {
   // Estados principales del formulario
@@ -40,26 +42,26 @@ function AgregarImpresora () {
 
   // Cargar datos iniciales (clientes, proyectos, marcas y proveedores)
   useEffect(() => {
-    fetch("http://localhost:3000/api/clientes")
+    fetch(`${backendUrl}/api/clientes`)
       .then((res) => res.json())
       .then((data) => {
         setClientes(data)
       })
     
-    fetch("http://localhost:3000/api/proyectos")
+    fetch(`${backendUrl}/api/proyectos`)
       .then((res) => res.json())
       .then((data) => {
         console.log("Proyectos obtenidos:", data); 
         setProyectos(data)
       })
     
-    fetch("http://localhost:3000/api/marcas")
+    fetch(`${backendUrl}/api/marcas`)
       .then((res) => res.json())
       .then((data) => {
         setMarcas(data)
       }) 
 
-    fetch("http://localhost:3000/api/proveedores")
+    fetch(`${backendUrl}/api/proveedores`)
     .then((res) => res.json())
     .then((data) => {
       setProveedores(data)
@@ -122,7 +124,7 @@ function AgregarImpresora () {
       if (marca === 'nuevo' && nuevaMarca) {
         const nuevaMarcaMayusculas = nuevaMarca.toUpperCase()
 
-        const res = await fetch("http://localhost:3000/api/marcas", {
+        const res = await fetch(`${backendUrl}/api/marcas`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({nombre: nuevaMarcaMayusculas})
@@ -141,7 +143,7 @@ function AgregarImpresora () {
       if (cliente === "nuevo" && nuevoCliente) {
         const nuevoClienteMayusculas = nuevoCliente.toUpperCase()
 
-        const res = await fetch("http://localhost:3000/api/clientes", {
+        const res = await fetch(`${backendUrl}/api/clientes`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ nombre: nuevoClienteMayusculas }),
@@ -165,7 +167,7 @@ function AgregarImpresora () {
           return;
         }
       
-        const res = await fetch("http://localhost:3000/api/proyectos", {
+        const res = await fetch(`${backendUrl}/api/proyectos`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ 
@@ -188,7 +190,7 @@ function AgregarImpresora () {
       if (proveedor === "nuevo" && nuevoProveedor) {
       const nuevoProveedorMayusculas = nuevoProveedor
 
-      const res = await fetch("http://localhost:3000/api/proveedores", {
+      const res = await fetch(`${backendUrl}/api/proveedores`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ nombre: nuevoProveedorMayusculas })
@@ -231,7 +233,7 @@ function AgregarImpresora () {
           origen_recoleccion: origenRecoleccion
         });
 
-        const response = await fetch("http://localhost:3000/api/impresoras/registrar-lote", {
+        const response = await fetch(`${backendUrl}/api/impresoras/registrar-lote`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(datosRegistro),

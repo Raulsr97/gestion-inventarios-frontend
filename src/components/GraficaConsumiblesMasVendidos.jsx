@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LabelList } from "recharts";
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL
+
 function GraficaConsumiblesMasVendidos() {
   const [consumibles, setConsumibles] = useState([]);
   const [cargando, setCargando] = useState(true);
 
   useEffect(() => {
-    fetch("http://localhost:3000/api/dashboard/consumibles-mas-vendidos")
+    fetch(`${backendUrl}/api/dashboard/consumibles-mas-vendidos`)
       .then((res) => res.json())
       .then((data) => {
         setConsumibles(data);

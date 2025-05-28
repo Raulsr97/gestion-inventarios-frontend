@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react"
 import { FaProjectDiagram } from "react-icons/fa"
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL
+
 function CardStockProyectos() {
   const [ proyectos, setProyectos ] = useState([])
   const [ mostrarDetalle, setMostrarDetalle] = useState(false)
   
 
   useEffect(() => {
-    fetch('http://localhost:3000/api/impresoras/almacen-por-proyecto')
+    fetch(`${backendUrl}/api/impresoras/almacen-por-proyecto`)
       .then((res) => res.json())
       .then((data) => setProyectos(data))
       .catch((error) => console.error("Error al obtener los proyectos:", error));

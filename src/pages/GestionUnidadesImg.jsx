@@ -6,6 +6,8 @@ import SeleccionEmpresa from "../components/SeleccionEmpresa";
 import AsignarClienteUnidadesImg from "../components/AsignarClienteUnidadesImg";
 import FormularioRemision from "../components/FormularioRemision";
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL
+
 function GestionUnidadesImg() {
   const [unidadesDisponibles, setUnidadesDisponibles] = useState([]);
   const [unidadesSeleccionadas, setUnidadesSeleccionadas] = useState([]);
@@ -68,22 +70,22 @@ function GestionUnidadesImg() {
   }, []);
 
   useEffect(() => {
-    fetch("http://localhost:3000/api/unidades-imagen")
+    fetch(`${backendUrl}/api/unidades-imagen`)
       .then(res => res.json())
       .then(data => {
         const disponibles = data.filter(u => !u.fecha_salida);
         setUnidadesDisponibles(disponibles);
       });
 
-    fetch("http://localhost:3000/api/empresas")
+    fetch(`${backendUrl}/api/empresas`)
       .then(res => res.json())
       .then(data => setEmpresas(data));
 
-    fetch("http://localhost:3000/api/clientes")
+    fetch(`${backendUrl}/api/clientes`)
       .then(res => res.json())
       .then(data => setClientes(data));
 
-    fetch("http://localhost:3000/api/proyectos")
+    fetch(`${backendUrl}/api/proyectos`)
       .then(res => res.json())
       .then(data => setProyectos(data));
   }, []);

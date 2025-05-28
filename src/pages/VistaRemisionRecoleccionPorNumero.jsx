@@ -4,6 +4,8 @@ import RemisionEmpresaARecoleccion from "../components/RemisionEmpresaARecolecci
 import RemisionEmpresaBRecoleccion from "../components/RemisionEmpresaBRecoleccion"
 import RemisionEmpresaCRecoleccion from "../components/RemisionEmpresaCRecoleccion"
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL
+
 function VistaRemisionRecoleccionPorNumero() {
   const { numero_remision } = useParams()
   const [remision, setRemision] = useState(null)
@@ -59,7 +61,7 @@ function VistaRemisionRecoleccionPorNumero() {
   }, [])
   
   useEffect(() => {
-    fetch(`http://localhost:3000/api/remisiones-recoleccion/${numero_remision}`)
+    fetch(`${backendUrl}/api/remisiones-recoleccion/${numero_remision}`)
       .then(res => {
         if (!res.ok) throw new Error('No se encontró la remisión')
         return res.json()

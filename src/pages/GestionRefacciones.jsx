@@ -6,6 +6,8 @@ import SeleccionEmpresa from "../components/SeleccionEmpresa";
 import AsignarClienteRefacciones from "../components/AsignarClienteRefacciones";
 import FormularioRemision from "../components/FormularioRemision";
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL
+
 function GestionRefacciones() {
   const [refaccionesDisponibles, setRefaccionesDisponibles] = useState([]);
   const [refaccionesSeleccionadas, setRefaccionesSeleccionadas] = useState([]);
@@ -84,7 +86,7 @@ function GestionRefacciones() {
   }, []);
   
    useEffect(() => {
-    fetch("http://localhost:3000/api/refacciones/disponibles-remision")
+    fetch(`${backendUrl}/api/refacciones/disponibles-remision`)
       .then((res) => res.json())
       .then((data) => {
         if (data.length === 0) {
@@ -97,19 +99,19 @@ function GestionRefacciones() {
         toast.error("Error al cargar refacciones.");
       });
 
-    fetch("http://localhost:3000/api/clientes")
+    fetch(`${backendUrl}/api/clientes`)
       .then((res) => res.json())
       .then((data) => setClientes(data));
 
-    fetch("http://localhost:3000/api/proyectos")
+    fetch(`${backendUrl}/api/proyectos`)
       .then((res) => res.json())
       .then((data) => setProyectos(data));
 
-    fetch("http://localhost:3000/api/empresas")
+    fetch(`${backendUrl}/api/empresas`)
       .then((res) => res.json())
       .then((data) => setEmpresas(data));
 
-    fetch("http://localhost:3000/api/marcas")
+    fetch(`${backendUrl}/api/marcas`)
       .then((res) => res.json())
       .then((data) => setMarcas(data));
   }, []);
@@ -215,7 +217,6 @@ function GestionRefacciones() {
     });
   };
   
-
   return (
     <div className="min-h-screen h-screen flex flex-col py-4 px-4 overflow-hidden">
       <h1 className="text-xl font-bold text-gray-800 mb-4 p-0">Gestión de Refacciones</h1>

@@ -6,6 +6,8 @@ import CardMovimientosMesUnidadesImg from "../components/CardMovimientosUnidades
 import CardEnTransitoUnidadesImg from "../components/CardEnTransitoUnidadesImg";
 import CardEntregadosMesUnidadesImg from "../components/CardEntregadoMesUnidadesImg";
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL
+
 function ConsultaUnidadesImagen() {
   const [unidades, setUnidades] = useState([]);
   const [resultados, setResultados] = useState([]);
@@ -26,7 +28,7 @@ function ConsultaUnidadesImagen() {
   });
 
   useEffect(() => {
-    fetch("http://localhost:3000/api/unidades-imagen")
+    fetch(`${backendUrl}/api/unidades-imagen`)
       .then((res) => res.json())
       .then((data) => {
         setUnidades(data);

@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import { FaTruckMoving } from "react-icons/fa"; // Ícono representativo para tránsito
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL
+
 function CardTonersEnTransito() {
   const [cantidadEnTransito, setCantidadEnTransito] = useState(0);
 
   useEffect(() => {
-    fetch("http://localhost:3000/api/toners")
+    fetch(`${backendUrl}/api/toners`)
       .then((res) => res.json())
       .then((data) => {
         const tonersEnTransito = data.filter(

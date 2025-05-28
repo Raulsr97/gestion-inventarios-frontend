@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { FaTags } from "react-icons/fa";
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL
+
 function CardStockPorTipo() {
   const [tipos, setTipos] = useState([]);
 
   useEffect(() => {
-    fetch("http://localhost:3000/api/impresoras/almacen-por-tipo")
+    fetch(`${backendUrl}/api/impresoras/almacen-por-tipo`)
       .then((res) => res.json())
       .then((data) => setTipos(data))
       .catch((error) =>

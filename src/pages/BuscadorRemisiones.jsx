@@ -3,6 +3,7 @@ import { toast } from "react-toastify";
 import { FiDownload } from 'react-icons/fi'
 import { useSearchParams } from "react-router-dom";
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL
 
 const BuscadorRemisiones = () => {
   // Estado para manejar la búsqueda y las remisiones cargadas
@@ -28,7 +29,7 @@ const BuscadorRemisiones = () => {
   // Función para obtener todas las remisiones del backend
   const obtenerRemisiones = async () => {
     try {
-      const response = await fetch("http://localhost:3000/api/remisiones-consulta")
+      const response = await fetch(`${backendUrl}/api/remisiones-consulta`)
       if (!response.ok) throw new Error("No se pudo obtener la lista de remisiones")
 
       const data = await response.json()
@@ -51,7 +52,7 @@ const BuscadorRemisiones = () => {
     } 
 
     try {
-      const response = await fetch(`http://localhost:3000/api/remisiones-consulta?numero_remision=${numero}`)
+      const response = await fetch(`${backendUrl}/api/remisiones-consulta?numero_remision=${numero}`)
       if (!response.ok) throw new Error('No se pudo buscar la remisión')
 
       const data = await response.json()
@@ -74,8 +75,8 @@ const BuscadorRemisiones = () => {
   
   const descargarPDF = async (remision) => {
     const endpoint = remision.tipo === 'recoleccion'
-      ? `http://localhost:3000/api/remisiones-recoleccion/generar-pdf/${remision.numero_remision}`
-      : `http://localhost:3000/api/remisiones/generar-pdf/${remision.numero_remision}`
+      ? `${backendUrl}/api/remisiones-recoleccion/generar-pdf/${remision.numero_remision}`
+      : `${backendUrl}/api/remisiones/generar-pdf/${remision.numero_remision}`
     
     try {
       const response = await fetch(endpoint)
@@ -113,21 +114,21 @@ const BuscadorRemisiones = () => {
     let endpoint = ''
 
     if (remision.tipo === 'recoleccion') {
-      endpoint = `http://localhost:3000/api/remisiones-recoleccion/${remision.numero_remision}/cancelar`
+      endpoint = `${backendUrl}/api/remisiones-recoleccion/${remision.numero_remision}/cancelar`
     } else {
       // tipo entrega
       switch (remision.categoria) {
         case 'toner':
-          endpoint = `http://localhost:3000/api/remisiones-toner/${remision.numero_remision}/cancelar`;
+          endpoint = `${backendUrl}/api/remisiones-toner/${remision.numero_remision}/cancelar`;
           break;
         case 'unidad_imagen':
-          endpoint = `http://localhost:3000/api/remisiones-unidad-imagen/${remision.numero_remision}/cancelar`;
+          endpoint = `${backendUrl}/api/remisiones-unidad-imagen/${remision.numero_remision}/cancelar`;
           break;
         case 'refaccion':
-          endpoint = `http://localhost:3000/api/remisiones-refaccion/${remision.numero_remision}/cancelar`;
+          endpoint = `${backendUrl}/api/remisiones-refaccion/${remision.numero_remision}/cancelar`;
           break;
         default:
-          endpoint = `http://localhost:3000/api/remisiones/${remision.numero_remision}/cancelar`; // impresora
+          endpoint = `${backendUrl}/api/remisiones/${remision.numero_remision}/cancelar`; // impresora
       }
     }
 
@@ -171,20 +172,20 @@ const BuscadorRemisiones = () => {
     let endpoint = ""
 
     if (remision.tipo === "recoleccion") {
-      endpoint = `http://localhost:3000/api/remisiones-recoleccion/${remision.numero_remision}/evidencia`
+      endpoint = `${backendUrl}/api/remisiones-recoleccion/${remision.numero_remision}/evidencia`
     } else {
       switch (remision.categoria) {
         case "toner":
-          endpoint = `http://localhost:3000/api/remisiones-toner/${remision.numero_remision}/evidencia`
+          endpoint = `${backendUrl}/api/remisiones-toner/${remision.numero_remision}/evidencia`
           break;
         case "unidad_imagen":
-          endpoint = `http://localhost:3000/api/remisiones-unidad-imagen/${remision.numero_remision}/evidencia`
+          endpoint = `${backendUrl}/api/remisiones-unidad-imagen/${remision.numero_remision}/evidencia`
           break;
         case "refaccion":
-          endpoint = `http://localhost:3000/api/remisiones-refaccion/${remision.numero_remision}/evidencia`
+          endpoint = `${backendUrl}/api/remisiones-refaccion/${remision.numero_remision}/evidencia`
           break;
         default:
-          endpoint = `http://localhost:3000/api/remisiones/${remision.numero_remision}/evidencia` // impresora
+          endpoint = `${backendUrl}/api/remisiones/${remision.numero_remision}/evidencia` // impresora
       }
     }
 
@@ -225,20 +226,20 @@ const BuscadorRemisiones = () => {
       let endpoint = ""
 
       if (remision.tipo === "recoleccion") {
-        endpoint = `http://localhost:3000/api/remisiones-recoleccion/${remision.numero_remision}/fecha-programada`
+        endpoint = `${backendUrl}/api/remisiones-recoleccion/${remision.numero_remision}/fecha-programada`
       } else {
         switch (remision.categoria) {
           case "toner":
-            endpoint = `http://localhost:3000/api/remisiones-toner/${remision.numero_remision}/fecha-programada`
+            endpoint = `${backendUrl}/api/remisiones-toner/${remision.numero_remision}/fecha-programada`
             break;
           case "unidad_imagen":
-            endpoint = `http://localhost:3000/api/remisiones-unidad-imagen/${remision.numero_remision}/fecha-programada`
+            endpoint = `${backendUrl}/api/remisiones-unidad-imagen/${remision.numero_remision}/fecha-programada`
             break;
           case "refaccion":
-            endpoint = `http://localhost:3000/api/remisiones-refaccion/${remision.numero_remision}/fecha-programada`
+            endpoint = `${backendUrl}/api/remisiones-refaccion/${remision.numero_remision}/fecha-programada`
             break;
           default:
-            endpoint = `http://localhost:3000/api/remisiones/${remision.numero_remision}/fecha-programada` // impresora
+            endpoint = `${backendUrl}/api/remisiones/${remision.numero_remision}/fecha-programada` // impresora
         }
       }
 

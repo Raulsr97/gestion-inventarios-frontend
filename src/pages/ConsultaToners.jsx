@@ -6,6 +6,8 @@ import CardMovimientosMesToner from "../components/CardMovimientosToner";
 import CardEnTransitoToner from "../components/CardEnTransitoToner";
 import CardEntregadosMesToner from "../components/CardEntregadoMesToner";
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL
+
 function ConsultaToner() {
   const [toners, setToners] = useState([]);
   const [resultados, setResultados] = useState([]);
@@ -26,7 +28,7 @@ function ConsultaToner() {
   });
 
   useEffect(() => {
-    fetch("http://localhost:3000/api/toners")
+    fetch(`${backendUrl}/api/toners`)
       .then((res) => res.json())
       .then((data) => {
         console.log("📦 Toners obtenidos:", data);
